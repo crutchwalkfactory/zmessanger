@@ -41,7 +41,7 @@ ZEyeDialog::ZEyeDialog()
 
 	QString title;
 	QString action;
-	for (int i=0;i<zgui->icq->listEye.size();i++)
+	for (uint i=0;i<zgui->icq->listEye.size();i++)
 	{
 		ZSettingItem* listitem = new ZSettingItem(lbList, QString("%M") );
 		title = zgui->icq->listEye[i].time+ " [";

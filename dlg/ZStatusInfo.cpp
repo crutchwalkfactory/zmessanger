@@ -1,10 +1,13 @@
 //
-// C++ Implementation: ZStatusInfo
+// Project: zMessanger (zIM)
 //
-// Description:
+// Version: 0.3
 //
+// Description: ICQ client for MOTOMAGX Platform.
+//				In future planed support XMPP protocol.
 //
 // Author: Ant-ON <prozanton@gmail.com>, (C) 2009-2010
+//
 
 #include "BaseDlg.h"
 #include "ZStatusInfo.h"
@@ -23,7 +26,7 @@
 #include "zgui.h"
 #include "zDefs.h"
 
-ZStatusInfo::ZStatusInfo( std::string _id, bool _protocol )
+ZStatusInfo::ZStatusInfo( std::string _id, int _protocol )
     :MyBaseDlg()
 {
  	setMainWidgetTitle ( LNG_STATUSS );

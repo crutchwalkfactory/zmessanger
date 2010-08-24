@@ -42,34 +42,34 @@ class zICQ : public ICQKid2
 
 	//Interface
 	int findContact(string uin);
-	int findGroup(int id);
+	int findGroup(uint id);
 	int getCountCL();
 	int getCountNoCL();
 	int getCountGroup();
 
 	//void setWaitAuth();
-	bool isWaitAuth(int id);
-	string getNick(int id);
-	string getUIN(int id);
-	bool isUnicodeCap(int id);
-	int getStatus(int id);
-	bool isMesIcon(int id);
-	void setMesIcon(int id, bool res);
-	void setAskAuth(int id, bool res);
-	bool isAskAuth(int id);
-	bool isInBLM(int id);
-	int getXStatus(int id);
-	string getXStatusTitle(int id);
-	string getXStatusDescription(int id);
-	int getClientId(int id);
-	int getGroupId(int id);
-	int getGroupItemId(int id);
+	bool isWaitAuth(uint id);
+	string getNick(uint id);
+	string getUIN(uint id);
+	bool isUnicodeCap(uint id);
+	int getStatus(uint id);
+	bool isMesIcon(uint id);
+	void setMesIcon(uint id, bool res);
+	void setAskAuth(uint id, bool res);
+	bool isAskAuth(uint id);
+	bool isInBLM(uint id);
+	int getXStatus(uint id);
+	string getXStatusTitle(uint id);
+	string getXStatusDescription(uint id);
+	int getClientId(uint id);
+	int getGroupId(uint id);
+	int getGroupItemId(uint id);
 
-	bool setXStatus(int idStatus, QString title, QString desc, bool write = true );
+	bool setXStatus( int idStatus, QString title, QString desc, bool write = true );
 	bool setStatus ( uint astat, bool write = true );
 	void loadOldStatusPostConnect(bool b){ loadOldStatus = b; };
 
-	string getGroupName(int id);
+	string getGroupName(uint id);
 	
 
   signals:

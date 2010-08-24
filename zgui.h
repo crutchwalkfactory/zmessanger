@@ -136,6 +136,8 @@ class ZGui :public ZKbMainWidget
     void createMenuDisconected();
 
     void onConnectChange (int protocol, bool online);
+    
+    void activSlot( bool connect );
 
   signals:
 	void clickOnStatusMenu( int i);
@@ -180,7 +182,7 @@ class ZGui :public ZKbMainWidget
     void slot_onXstatusChanged(string uin, size_t x_status, string x_title, string x_descr);
     void slot_onErrorConnectICQ(QString mes);
     void slot_onConnectedICQ(bool conect);
-    void slot_onClientChange( string uin, int clientId );
+    void slot_onClientChange( string uin, size_t clientId );
     void slot_onSingOff(uint16_t err_code, string err_url);
     void lbContactSel(int i);
 
@@ -240,6 +242,8 @@ class ZGui :public ZKbMainWidget
     QCopChannel *chenelZPlayer;
     QString cfg_nowPlaying;
     #endif
+    
+    dool slotActiv;
 };
 
 #endif

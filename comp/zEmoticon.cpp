@@ -36,11 +36,16 @@ zEmotIcons::zEmotIcons(QString dir)
 		smile2[0]=0;
 		fileName[0]=0;
 		int ret=0;
-		ret = fscanf(smiles,"%d, %d, %s, %s, %s", &height, &width, &smile1, &smile2, &fileName);
-		while ( !feof(smiles) && (ret==5) )
+		ret = fscanf(smiles,"%d %d %s %s %s\n", &height, &width, &smile1, &smile2, &fileName);
+		char * c = NULL;
+		while ( !feof(smiles) && (ret>=5) )
 		{
 			if ( emoticCount >= MAX_EMOTICON_COUNT )
 				break;
+			c = strchr(smile1, '_');
+			if ( c!=NULL ) *c = ' '; 
+			c = strchr(smile2, '_');
+			if ( c!=NULL ) *c = ' '; 
 			masEMOTICON[emoticCount].height = height;
 			masEMOTICON[emoticCount].width = width;
 			masEMOTICON[emoticCount].emoticonstr1 = (QString(smile1)!="-")?QString(smile1):"";
@@ -48,7 +53,7 @@ zEmotIcons::zEmotIcons(QString dir)
 			masEMOTICON[emoticCount].iconname =  QString(fileName);
 			masEMOTICON[emoticCount].emoticonPixmap =  NULL;
 			emoticCount++;
-			ret = fscanf(smiles,"%d, %d, %s, %s, %s", &height, &width, &smile1, &smile2, &fileName);
+			ret = fscanf(smiles,"%d %d %s %s %s\n", &height, &width, &smile1, &smile2, &fileName);
 		}
 		fclose(smiles);
 	}else

@@ -12,11 +12,11 @@
 #include "ZContactItem.h"
 
 #include "ZMyListBox.h"
-#include "config.h"
 
+#include "config.h"
 #include "zDefs.h"
 
-ZContactItem::ZContactItem( ZListBox* _container, CONTACT_TYPE _type ):
+ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 	ZSettingItem(_container, CONVERT_TYPE(_type) )
 {
 	type = _type;
@@ -72,6 +72,8 @@ bool ZContactItem::isGroup()
 void ZContactItem::setGroup(bool b)
 {
 	IsGroup = b;
+	if ( IsGroup )
+		setHide(false);
 }
 
 bool ZContactItem::isNoCL()
@@ -214,7 +216,9 @@ void ZContactItem::setStatusX(int _xStatus)
 
 void ZContactItem::setClient(int n)
 {
-	if ( (clientId == n) || ( clientId >= ICQ_CLIENTS_COUNT ) )
+	logMes_3("ZContactItem::setClient( "+QString::number(n)+" )");
+	
+	if ( (clientId == n) || ( n >= ICQ_CLIENTS_COUNT ) )
 		return;
 	
 	clientId = n;
@@ -324,6 +328,15 @@ bool ZContactItem::isHide()
 void ZContactItem::setHide(bool hide)
 {
 	IsHide = hide;
+	if ( IsGroup )
+	{
+		QPixmap pm;	
+		if ( IsHide )
+			pm.load( ProgDir + "/CL/group.png");
+		else
+			pm.load( ProgDir + "/CL/group_2.png");
+		setPixmap ( GET_NUM_STATUS(type), pm );
+	}
 }
 
 void ZContactItem::setBirthday(bool b)

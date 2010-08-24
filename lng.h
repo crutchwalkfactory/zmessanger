@@ -185,7 +185,13 @@
 
 //zAddProfile
 #define LNG_ADDPROFILE QString::fromUtf8("Новый профиль")
-#define LNG_PROTOCOL QString::fromUtf8("Новый профиль")
+#define LNG_PROTOCOL QString::fromUtf8("Протокол:")
+#ifndef _XMPP
+#define LNG_LOGIN QString::fromUtf8("UIN:")
+#else
+#define LNG_LOGIN QString::fromUtf8("ID:")
+#endif
+#define LNG_PASSWORD QString::fromUtf8("Пароль:")
 
 //XMPP
 #define LEFT_ROOM QString::fromUtf8(" покинул комнату")

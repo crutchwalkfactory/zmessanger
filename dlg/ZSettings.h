@@ -65,8 +65,14 @@ private:
     ZOptionItem * optSortType;
     
     ZWidget *myWidget;
+    
+    ZListBox *net;
+    ZListBox *alert;
+    ZListBox *CL;
+    ZListBox *Chat;
+    ZListBox *othe;
 
-private slots:
+public slots:
     void saveSetting();
 };
 

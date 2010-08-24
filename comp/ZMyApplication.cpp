@@ -11,7 +11,7 @@
 
 #include "ZMyApplication.h"
 
-ZMyApplication::ZMyApplication( int& argc, char **argv, QApplication::Type t ):
+ZMyApplication::ZMyApplication( int& argc, char **argv, QApplication::Type ):
 	ZApplication( argc, argv )
 {
 }

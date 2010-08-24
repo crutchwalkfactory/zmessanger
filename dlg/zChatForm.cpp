@@ -162,7 +162,8 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	nKbState = 0;
 	
 	this->installEventFilter( this );
-	
+	mleMes->installEventFilter( this );
+
 	startTyped = false;
 	timer = NULL;
 	
@@ -175,6 +176,8 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	setContentWidget(myWidget);
 	#endif
 	
+	setSoftKey(NULL);
+	
 	logMes_3("zChatForm: end");
 }
 
@@ -182,6 +185,7 @@ zChatForm::~zChatForm()
 {
 	QMutexLocker locker(&mutexOnAddMes);
 	this->removeEventFilter( this );
+	mleMes->removeEventFilter( this );
 	oldMes = mleMes->text();
 	if (!notSendTypeMes && protocol==PROT_ICQ )
 		stopTimerTyped();
@@ -447,7 +451,6 @@ void zChatForm::slotTranslit()
 		txt.replace( QString(rus[i].upper()), QString(rus_lat[i].upper()));
 	}
 	mleMes->setText(txt);
-	mleMes->atEnd();
 }
 
 void zChatForm::stopTimerTyped()
@@ -556,7 +559,7 @@ void zChatForm::sendClick()
 	#ifdef _XMPP
 	if ( (zgui->icq->connected && protocol==PROT_ICQ ) || (zgui->xmpp->connected && protocol==PROT_JABBER ) )
 	#else
-	if (zgui->icq->connected )
+	if ( zgui->icq->connected )
 	#endif
 	{
 		if (mleMes->text() != "")
@@ -570,14 +573,12 @@ void zChatForm::sendClick()
 		}
 	} else
 	{
-		if (mleMes->text() != "")
+		if ( mleMes->text() != "" )
 		{
 			eeChat->addText("[*MES*] $1%$Server#\nNot connect to server...");
 			mleMes->setText("");			
 		}
 	}
-	mleMes->setFocus();
-	mleMes->atEnd();
 }
 
 void zChatForm::kbChange()
@@ -700,7 +701,7 @@ bool zChatForm::eventFilter(QObject* o, QEvent* pEvent)
 		{
 			kbChange();
 		}
-	} else
+	}
 	#endif
 	if (  QEvent::KeyPress == pEvent->type())
 	{
@@ -730,7 +731,7 @@ bool zChatForm::eventFilter(QObject* o, QEvent* pEvent)
 		}
 	}
 	
-	return ZMainWidget::eventFilter( o, pEvent ); 
+	return QWidget::eventFilter( o, pEvent ); 
 }
 
 void zChatForm::copyText()

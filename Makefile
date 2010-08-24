@@ -598,3 +598,8 @@ endif
 #----------------------------------------------
 install: $(TARGETS)
 	ncftpput -u root -p "" 192.168.16.2 $(UPLOAD_PATH) $(TARGET)
+	
+up:
+	hg ci -m "Auto UP by MakeFile"
+	hg push
+	

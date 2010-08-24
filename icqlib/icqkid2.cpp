@@ -461,6 +461,7 @@ bool ICQKid2::setXStatusDescription ( string descr )
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
+/*
 bool ICQKid2::registerNewUIN ( string password, string & new_uin )
 {
 	logMes_4 ( "ICQKid2::registerNewUIN" );
@@ -539,6 +540,7 @@ bool ICQKid2::registerNewUIN ( string password, string & new_uin )
 	delete regist_serv;
 	return ret_flag;
 }
+*/
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::changePassword ( string new_password )
@@ -1468,6 +1470,7 @@ bool ICQKid2::sub_ssi_renameContact ( string uin, string nick, uint16_t * retfla
 	return true;
 }
 
+/*
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::sub_registerNewUIN_simply ( ICQKid2 * regist_serv, string password, string & new_uin, string * control_str )
 {
@@ -1635,6 +1638,7 @@ bool ICQKid2::renameContact ( string uin, string nick, uint16_t * retflag )
 	if ( retflag!=SSI_EDIT_OK ) return false;
 	return true;
 }
+*/
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::addContacts ( vector<SSITransactContact> & cont_vec )
@@ -2409,12 +2413,12 @@ bool ICQKid2::getServiceList ( void )
 	size_t curr_pos=0;
 	server_services_list.clear();
 	
-	int oldSize = 0;
+	size_t oldSize = 0;
 	int i = 0;
 	
 	while ( i < 300 )
 	{
-		if ( oldSize == curr_pos)
+		if ( oldSize == curr_pos )
 			i++;
 		else
 		{
@@ -2486,7 +2490,7 @@ bool ICQKid2::getServices ( void )
 	size_t curr_pos=0;
 	server_services_list.clear();
 	
-	int oldSize = 0;
+	size_t oldSize = 0;
 	int i = 0;
 	
 	while ( i < 300 )
@@ -2556,7 +2560,7 @@ bool ICQKid2::getRateLimits ( uint32_t sync_id )
 
 	server_rate_groups.clear();
 	
-	int oldSize = 0;
+	size_t oldSize = 0;
 	int i = 0;
 	
 	while ( i < 300 )
@@ -2656,14 +2660,14 @@ bool ICQKid2::sendLocationInfo ( void )
 {
 	logMes_4 ( "ICQKid2::sendLocationInfo" );
 	uint8_t aim2icq_capa[] =
-	{
-		0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3,   /* Mini Typing Notification */
-		0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* ICQ Server relaying */
+	{ 
 		0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* ICQ UTF-8 */
-		//0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* tZers */
+		0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* ICQ Server relaying */
+		0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3,   /* Mini Typing Notification */
 		0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0,   /* XtraZ */
-		0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* AIM_ICQGATE */
-
+		0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* AIM_ICQGATE */		
+		//0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* tZers */
+		//Client ID string
 		#if defined(EZX_Z6)
 		'z', 'I', 'M', ' ', 'Z', '6', ' ', '0'+VER_MAJOR, '.', '0'+VER_MINOR, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		#elif defined(EZX_ZN5)
@@ -3291,7 +3295,7 @@ bool ICQKid2::sendMD5authorize ( uint32_t * snac_sync, vector<uint8_t> & md5_sal
 	logMes_4 ( "ICQKid2::sendMD5authorize" );
 	TLVPack tlv_pack;
 	tlv_pack.data.push_back ( TLVField ( myuin, TLV_UID ) );
-	tlv_pack.data.push_back ( TLVField ( "IcqKid2", TLV_CLI_STR_ID ) ); // Client ID string
+	tlv_pack.data.push_back ( TLVField ( "zIM", TLV_CLI_STR_ID ) ); // Client ID string
 
 	vector<uint8_t> auth_sum=md5_salt;
 	if ( mypassword.length() >8 ) auth_sum.insert ( auth_sum.end(), ( uint8_t* ) mypassword.data(), ( ( uint8_t* ) mypassword.data() ) +8 ); // All passwords were cutted to 8 chars
@@ -4228,17 +4232,17 @@ bool ICQKid2::parseOnlineNotify ( string & uin, uint32_t & stat, vector<uint8_t>
 			if ( !ContactListUins[uen_ind].unicode_cap ) ContactListUins[uen_ind].unicode_cap=haveUnicodeCapability ( tlv.data );
 			//logMes_4("Num client: %d", haveClientsCapability(tlv.data) );
 
-			int ico_num = haveClientsCapability ( tlv.data );
+			size_t ico_num = haveClientsCapability ( tlv.data );
+			logMes_4 ( "Num icon: %d", ico_num );
 			if ( ContactListUins[uen_ind].clientId != ico_num )
 			{
-				logMes_4 ( "emit onClientChange(uin, %d)", ico_num );
+				logMes_4 ( "emit onClientChange(uin, " + QString::number(ico_num) +")" );
 				ContactListUins[uen_ind].clientId = ico_num;
 				emit onClientChange ( uin, ico_num );
 			}
 
 			ico_num = haveXtrazCapability ( tlv.data );
-			logMes_4 ( "Num icon: %d", ico_num );
-			if ( ico_num > -1 )
+			if ( ico_num > 0 )
 			{
 				if ( !noAutoXTrazRequest )
 				{
@@ -4329,7 +4333,7 @@ bool ICQKid2::parseSSIAddNotify ( vector<uint8_t> & data )
 	logMes_4 ( "ICQKid2::parseSSIAddNotify" );
 	size_t curr_pos=0;
 
-	int oldSize = 0;
+	size_t oldSize = 0;
 	int i = 0;
 	
 	while ( i < 300 )
@@ -4413,7 +4417,7 @@ bool ICQKid2::parseSSIDeleteNotify ( vector<uint8_t> & data )
 	logMes_4 ( "ICQKid2::parseSSIDeleteNotify" );
 	size_t curr_pos=0;
 
-	int oldSize = 0;
+	size_t oldSize = 0;
 	int i = 0;
 	
 	while ( i < 300 )
@@ -5864,7 +5868,7 @@ bool ICQKid2::haveUnicodeCapability ( vector<uint8_t> & data )
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
-int ICQKid2::haveXtrazCapability ( vector<uint8_t> & data )
+size_t ICQKid2::haveXtrazCapability ( vector<uint8_t> & data )
 {
 	logMes_4 ( "ICQKid2::haveXtrazCapability" );
 	size_t caps_num=data.size() /16;
@@ -5873,7 +5877,7 @@ int ICQKid2::haveXtrazCapability ( vector<uint8_t> & data )
 			if ( memcmp ( &data[i*16], XStatus_arr[j], 16 ) ==0 )
 				return j+1;
 
-	return -1;
+	return 0;
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
@@ -5922,7 +5926,7 @@ void ICQKid2::sendXtrazRequest ( string uin )
 	sendSNAC ( 0x0004, 0x0006, NULL, &data );
 }
 
-int ICQKid2::haveClientsCapability ( vector<uint8_t> & data )
+size_t ICQKid2::haveClientsCapability ( vector<uint8_t> & data )
 {
 	QMutexLocker locker ( &mutexClientData );
 	logMes_4 ( "ICQKid2::haveClientsCapability" );
@@ -5937,16 +5941,16 @@ int ICQKid2::haveClientsCapability ( vector<uint8_t> & data )
 	return 0;
 }
 
-QString ICQKid2::getClientName ( int id )
+QString ICQKid2::getClientName ( size_t id )
 {
 	QMutexLocker locker ( &mutexClientData );
-	logMes_4 ( "ICQKid2::getClientName" );
+	logMes_4 ( "ICQKid2::getClientName - " + QString::number(id) );
 	if ( id >= ICQ_CLIENTS_COUNT )
 		return "n/a";
 	return icq_clients[id].name;
 }
 
-QString ICQKid2::getClientImageNeme ( int id )
+QString ICQKid2::getClientImageNeme ( size_t id )
 {
 	QMutexLocker locker ( &mutexClientData );
 	logMes_4 ( "ICQKid2::getClientImageNeme" );

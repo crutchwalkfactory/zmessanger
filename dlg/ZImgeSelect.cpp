@@ -26,7 +26,7 @@
 ZImgeSelect::ZImgeSelect(bool smile)
     :MyBaseDlg()
 {
-	myWidget = new ZWidget ( this, NULL, 0);
+	myWidget = new ZWidget ();
 	
 	softKey = new ZSoftKey ( NULL, this, this );
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY )0 );
@@ -41,7 +41,7 @@ ZImgeSelect::ZImgeSelect(bool smile)
 
 		iconView->setShowLabel(false);
 
-		for ( int i = NO_SMILE; i < zSmile->getSmileCount(); i++ ) 
+		for ( uint i = NO_SMILE; i < zSmile->getSmileCount(); i++ ) 
 		{
 			ZIconViewItem *item = new ZIconViewItem(iconView);
 			item->setPixmap(zSmile->getEmotIcon(i), false, false);
@@ -68,7 +68,7 @@ ZImgeSelect::ZImgeSelect(bool smile)
 
 		init_strings_maps();
 
-		tabWidget = new ZNavTabWidget(this);
+		tabWidget = new ZNavTabWidget(myWidget);
 
 		lbStatus = new ZListBox ( QString ( "%I16%M" ), tabWidget, 0);
 		lbStatus->setFixedWidth ( SCREEN_WIDTH ); 
@@ -114,7 +114,6 @@ ZImgeSelect::ZImgeSelect(bool smile)
 				break;
 			}
 		}
-		//cfg.flush();
 
 		connect ( lbQuickStatus, SIGNAL ( selected ( int ) ), this, SLOT ( lbQStatusSel ( int ) ) );
 
@@ -138,6 +137,8 @@ ZImgeSelect::ZImgeSelect(bool smile)
 
 ZImgeSelect::~ZImgeSelect()
 {
+	delete myWidget;
+	myWidget=NULL;
 }
 
 void ZImgeSelect::lbStatusSel(int i)
@@ -146,6 +147,7 @@ void ZImgeSelect::lbStatusSel(int i)
     { 
     	zgui->icq->setXStatus(i,"", "");
     } else
+    if ( i>=0 )
     {
     	ZXStatusText * dlgXStatusText  = new ZXStatusText(i);
     	dlgXStatusText->exec();
@@ -157,30 +159,32 @@ void ZImgeSelect::lbStatusSel(int i)
 
 void ZImgeSelect::lbQStatusSel(int n)
 {
-	ZSettingItem* listitem = (ZSettingItem*)lbQuickStatus->item ( n );
-
-	int i = listitem->getReservedData();
-
-	ZConfig cfg(ProgDir+"/QuickXStatus.cfg");
-	int idStatus = cfg.readNumEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), -1);
-	QString statTitle = cfg.readEntry(QString("QuickXStatus"), QString("Text"+QString::number(i)), "");
-	QString statDesc = cfg.readEntry(QString("QuickXStatus"), QString("Desc"+QString::number(i)), ""); 
-	
-	#ifdef _SupportZPlayer
-	if ( statDesc == "%nowPlaying%" )
+	if ( n>=0 )
 	{
-		zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), "");
-		zgui->startPlayerChenel();
-	}
-	else
-	{
+		ZSettingItem* listitem = (ZSettingItem*)lbQuickStatus->item ( n );
+
+		int i = listitem->getReservedData();
+
+		ZConfig cfg(ProgDir+"/QuickXStatus.cfg");
+		int idStatus = cfg.readNumEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), -1);
+		QString statTitle = cfg.readEntry(QString("QuickXStatus"), QString("Text"+QString::number(i)), "");
+		QString statDesc = cfg.readEntry(QString("QuickXStatus"), QString("Desc"+QString::number(i)), ""); 
+		
+		#ifdef _SupportZPlayer
+		if ( statDesc == "%nowPlaying%" )
+		{
+			zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), "");
+			zgui->startPlayerChenel();
+		}
+		else
+		{
+			zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), statDesc.utf8().data());
+			zgui->stopPlayerChenel();
+		}
+		#else
 		zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), statDesc.utf8().data());
-		zgui->stopPlayerChenel();
+		#endif
 	}
-	#else
-	zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), statDesc.utf8().data());
-	#endif
-
 	accept();
 }
 
@@ -215,9 +219,12 @@ void ZImgeSelect::lbStatusChange()
 
 void ZImgeSelect::lbSmileSel(ZIconViewItem * item)
 {
-	int i = item->index();
-    emit addSmile(zSmile->getEmotStr(i, false));
-    oldSmile = i;
+	if ( item )
+	{	
+		int i = item->index();
+		emit addSmile(zSmile->getEmotStr(NO_SMILE+i, false));
+		oldSmile = i;
+	}
     accept();
 }
 

@@ -138,7 +138,7 @@ class SSIUINEntry{
   uint32_t online_since;
   uint32_t idle_since;
   bool mesIcon;
-  char clientId;
+  size_t clientId;
 };
 
 class SSIGroupEntry{
@@ -354,7 +354,7 @@ class ICQKid2 : public QObject
   bool setXStatus(size_t x_stat, string title, string descr);
   bool setXStatusDescription ( string descr );
   
-  bool registerNewUIN(string password, string & new_uin);
+  //bool registerNewUIN(string password, string & new_uin);
   bool changePassword(string new_password);
   
   bool getUserInfo(string uin, ICQKidShortUserInfo & info, bool force_update=false);
@@ -477,8 +477,8 @@ class ICQKid2 : public QObject
   bool noAutoMsgRequest;
   void sendXtrazRequest(string uin);
   bool enabledEye;
-  QString getClientName(int id);
-  QString getClientImageNeme(int id); 
+  QString getClientName(size_t id);
+  QString getClientImageNeme(size_t id); 
   int sendKeepAlive(void);
   char stepConnect;
   int timeWaitSnec;
@@ -504,7 +504,7 @@ class ICQKid2 : public QObject
   void onRegisterControlPicture(vector<uint8_t> & pic_data, string mime_type, string & pic_str);
   void onIncomingAutoStatusMsg(ICQKid2Message msg, uint8_t type);
   void onSingOff(uint16_t err_code, string err_url);
-  void onClientChange(string uin, int clientId );
+  void onClientChange(string uin, size_t clientId );
  protected:
   vector<SSIUINEntry> ContactListUins;
   vector<SSIGroupEntry> ContactListGroups;
@@ -636,16 +636,16 @@ class ICQKid2 : public QObject
   bool sub_ssi_removeContact(string uin, uint16_t * retflag);
   bool sub_ssi_renameContact(string uin, string nick, uint16_t * retflag);  
 
-  bool sub_registerNewUIN_simply(ICQKid2 * regist_serv, string password, string & new_uin, string * control_str=NULL);
-  bool sub_registerNewUIN_picture(ICQKid2 * regist_serv, string password, string & new_uin);
+  //bool sub_registerNewUIN_simply(ICQKid2 * regist_serv, string password, string & new_uin, string * control_str=NULL);
+  //bool sub_registerNewUIN_picture(ICQKid2 * regist_serv, string password, string & new_uin);
   
   //bool sub_getBuddyIcon(SSIUINEntry & uen);
   
   bool haveSrvRelayCapability(vector<uint8_t> & data);
   bool haveUnicodeCapability(vector<uint8_t> & data);
   //bool haveXtrazCapability(vector<uint8_t> & data);
-  int haveClientsCapability(vector<uint8_t> & data);
-  int haveXtrazCapability(vector<uint8_t> & data);
+  size_t haveClientsCapability(vector<uint8_t> & data);
+  size_t haveXtrazCapability(vector<uint8_t> & data);
   //void sendXtrazRequest(string uin);
   void sendXStatusNotifyAutoResponse(string touin, uint8_t * msg_cookie);
   

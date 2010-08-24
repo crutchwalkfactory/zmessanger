@@ -24,10 +24,12 @@
 
 using namespace std;
 
+class ZMyListBox;
+
 class Q_EXPORT ZContactItem : public ZSettingItem
 {   
 public: 
-	ZContactItem( ZListBox* _container, CONTACT_TYPE _type );
+	ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type );
 	~ZContactItem();
 
 	void setNick( QString nick );

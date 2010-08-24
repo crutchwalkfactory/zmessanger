@@ -58,7 +58,7 @@ iconList xTextView::smile(QString * s)
 		
 	int ret;
 	
-	for (int k = NO_SMILE ; k < zSmile->getSmileCount();k ++)
+	for (int k = 0 ; k < zSmile->getSmileCount();k ++)
 	{
 		ret = 0;
 		while ( ret > -1 )

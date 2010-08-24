@@ -95,7 +95,7 @@ bool zICQ::Connect()
 				error = error+"UNKNOWN";
 				break;
 		}
-		error = error+"\nDescription url:\n"+QString::fromLocal8Bit(connect_error_url.c_str())+"\nStep:"+QString::number( stepConnect );
+		error = error+"\nDescription url:\n"+QString::fromLocal8Bit(connect_error_url.c_str())+"\nStep: "+QString::number( stepConnect );
 		
 		logMes("zICQ: Error - "+error);
 		
@@ -139,7 +139,7 @@ string zICQ::USC2BEto8BIT(string str)
 QString zICQ::unicodeToUtf8(string str)
 {
 	 string ret_str;
-	 for ( int i = 0; i < str.length(); i +=2)
+	 for ( uint i = 0; i < str.length(); i +=2)
 	 {
 		 Q_UINT16 symbol = static_cast<Q_UINT16>(str[i] * 0x100 + str[i+1]);
 		 if ( symbol < 0x0080)
@@ -216,177 +216,177 @@ int zICQ::getCountGroup()
 	return ContactListGroups.size();
 }
 
-bool zICQ::isWaitAuth(int id)
+bool zICQ::isWaitAuth(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return false;
 		return ContactListUins[id].waitauth;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return false;
 		return NoContactListUins[id].waitauth;	
 	}
 }
 
-string zICQ::getNick(int id)
+string zICQ::getNick(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return "";
 		return ContactListUins[id].nick;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return "";
 		return NoContactListUins[id].nick;	
 	}
 }
 
-string zICQ::getUIN(int id)
+string zICQ::getUIN(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return "0";
 		return ContactListUins[id].uin;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return "0";
 		return NoContactListUins[id].uin;	
 	}
 }
 
-bool zICQ::isUnicodeCap(int id)
+bool zICQ::isUnicodeCap(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return 0;
 		return ContactListUins[id].unicode_cap;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return 0;
 		return NoContactListUins[id].unicode_cap;	
 	}
 }
 
-int zICQ::getStatus(int id)
+int zICQ::getStatus(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return 0;
 		return ContactListUins[id].invisible?STATUS_INVISIBLE:ContactListUins[id].online_status;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return 0;
 		return NoContactListUins[id].online_status;	
 	}
 }
 
-bool zICQ::isMesIcon(int id)
+bool zICQ::isMesIcon(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return false;
 		return ContactListUins[id].mesIcon;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return false;
 		return NoContactListUins[id].mesIcon;	
 	}
 }
 
-void zICQ::setMesIcon(int id, bool res)
+void zICQ::setMesIcon(uint id, bool res)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return;
 		ContactListUins[id].mesIcon = res;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return;
 		NoContactListUins[id].mesIcon = res;
 	}
 }
 
-void zICQ::setAskAuth(int id, bool res)
+void zICQ::setAskAuth(uint id, bool res)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return;
 		ContactListUins[id].askAuth = res;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return;
 		NoContactListUins[id].askAuth = res;
 	}
 }
 
-bool zICQ::isAskAuth(int id)
+bool zICQ::isAskAuth(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return false;
 		return ContactListUins[id].askAuth;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return false;
 		return NoContactListUins[id].askAuth;	
 	}
 }
 
-bool zICQ::isInBLM(int id)
+bool zICQ::isInBLM(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return true;
 		return ContactListUins[id].isBLM;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return true;
 		return NoContactListUins[id].isBLM;	
 	}
 }
 
-int zICQ::getXStatus(int id)
+int zICQ::getXStatus(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return 0;
 		return ContactListUins[id].xStatus;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return 0;
 		return NoContactListUins[id].xStatus;
 	}
@@ -424,87 +424,87 @@ bool zICQ::setStatus ( uint astat, bool write )
     return ICQKid2::setStatus(astat);	
 }
 
-string zICQ::getXStatusTitle(int id)
+string zICQ::getXStatusTitle(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return "";
 		return ContactListUins[id].xStatusTitle;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return "";
 		return NoContactListUins[id].xStatusTitle;	
 	}
 }
 
-string zICQ::getXStatusDescription(int id)
+string zICQ::getXStatusDescription(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return "";
 		return ContactListUins[id].xStatusDescription;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return "";
 		return NoContactListUins[id].xStatusDescription;	
 	}
 }
 
-int zICQ::getClientId(int id)
+int zICQ::getClientId(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return 0;
 		return ContactListUins[id].clientId;
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return 0;
 		return NoContactListUins[id].clientId;	
 	}
 }
 
-int zICQ::getGroupId(int id)
+int zICQ::getGroupId(uint id)
 {
 	if ( id < 1000 )
 	{
-		if ( id>=ContactListUins.size() || id<0 )
+		if ( id>=ContactListUins.size() )
 			return 0;
 		return ContactListUins[id].groupid;
 
 	} else
 	{
 		id -= 1000;
-		if ( id>=NoContactListUins.size() || id<0 )
+		if ( id>=NoContactListUins.size() )
 			return 0;
 		return NoContactListUins[id].groupid;
 
 	}
 }
 
-string zICQ::getGroupName(int id)
+string zICQ::getGroupName(uint id)
 {
-	if ( id>=ContactListGroups.size() || id<0 )
+	if ( id>=ContactListGroups.size() )
 		return " ";
 	return ContactListGroups[id].name;
 }
 
-int zICQ::getGroupItemId(int id)
+int zICQ::getGroupItemId(uint id)
 {
-	if ( id>=ContactListGroups.size() || id<0 )
+	if ( id>=ContactListGroups.size() )
 		return 0;
 	return ContactListGroups[id].id;
 }
 
-int zICQ::findGroup(int id)
+int zICQ::findGroup(uint id)
 {
 	id = findCLGroup(id);
 	return id;

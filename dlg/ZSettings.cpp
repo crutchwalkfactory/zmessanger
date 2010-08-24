@@ -29,20 +29,22 @@ ZSettingsDlg::ZSettingsDlg()
 {
 	setMainWidgetTitle(LNG_SETTINGS);
 
-	myWidget = new ZWidget ( this, NULL, 0);
+	myWidget = new ZWidget ();
 
-	tabWidget = new ZNavTabWidget(myWidget);
+	tabWidget = new ZNavTabWidget( myWidget );
+	setContentWidget ( tabWidget );
 
 	QPixmap pm;
 
 	ZConfig cfg ( ProgDir+"/zMessanger.cfg");
 	//##################################   1   ############################################
-	ZListBox *net = new ZListBox( this );
+	net = new ZListBox( tabWidget );
 	pm.load( ProgDir+ "/image/tab_net.png");
 	tabWidget->addTab(net, QIconSet(pm), "");
 	//#####################################################################################
 	optInetLink = new ZOptionItem(net, ZOptionItem::EDIT_INTERNET_PROFILE);
 	optInetLink->setText( cfg.readEntry(QString("Inet"), QString("ProfileName"), "") );
+	optInetLink->setTitle(LNG_INETPROF);
 	net->insertItem(optInetLink);
 	
 	optICQServer = new ZOptionItem(net, ZOptionItem::EDIT_TEXT);
@@ -72,7 +74,7 @@ ZSettingsDlg::ZSettingsDlg()
 	net->insertItem(optUSBNet);
 	#endif
 	//#######################################  2  #########################################
-	ZListBox *alert = new ZListBox( this );
+	alert = new ZListBox( tabWidget );
 	pm.load( ProgDir + "/image/tab_alert.png");
 	tabWidget->addTab(alert, QIconSet(pm), "");
 	//#####################################################################################
@@ -93,7 +95,7 @@ ZSettingsDlg::ZSettingsDlg()
 	alert->insertItem(optTonePath);
 
 	//#########################################  3  #######################################
-	ZListBox *CL = new ZListBox( this );
+	CL = new ZListBox( tabWidget );
 	pm.load( ProgDir+ "/image/tab_CL.png");
 	tabWidget->addTab(CL, QIconSet(pm), "");
 	//#####################################################################################
@@ -124,7 +126,7 @@ ZSettingsDlg::ZSettingsDlg()
 	CL->insertItem(optSortType);
 
 	//#######################################  4  ##########################################
-	ZListBox *Chat = new ZListBox( this );
+	Chat = new ZListBox( tabWidget );
 	pm.load( ProgDir+ "/image/tab_chat.png");
 	tabWidget->addTab(Chat, QIconSet(pm), "");
 	//#####################################################################################
@@ -157,7 +159,7 @@ ZSettingsDlg::ZSettingsDlg()
 	Chat->insertItem(optSendTypeMes);	
 	
 	//#####################################  5  ###########################################
-	ZListBox *othe = new ZListBox( this );
+	othe = new ZListBox( tabWidget );
 	pm.load( ProgDir+ "/image/tab_othe.png");
 	tabWidget->addTab(othe, QIconSet(pm), "");
 	//#####################################################################################
@@ -187,7 +189,7 @@ ZSettingsDlg::ZSettingsDlg()
 	othe->insertItem(optEye);
 	//#####################################################################################
 	
-	setContentWidget ( tabWidget );
+	net->setFocus(); // set focus to widget in first tab
 	
 	ZSoftKey *softKey = new ZSoftKey ( NULL, this, this );
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY ) 0 );
@@ -199,9 +201,7 @@ ZSettingsDlg::ZSettingsDlg()
 
 ZSettingsDlg::~ZSettingsDlg()
 {
-	//logMes_3("delete ZNavTabWidget");	
-	//delete tabWidget;
-	//logMes_3("delete ZNavTabWidget - OK");
+	delete myWidget;
 }
 
 void ZSettingsDlg::saveSetting()

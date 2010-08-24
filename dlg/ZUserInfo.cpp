@@ -39,8 +39,17 @@ ZUserInfo::ZUserInfo(std::string _id)
  	setMainWidgetTitle ( LNG_USERINFO );
 	id = _id;
 	
-	myWidget = new ZWidget ( this, NULL, 0);
+	myWidget = new ZWidget();
 	
+	tabWidget = NULL;
+	spFull = NULL;
+	spMain = NULL;
+	spHome = NULL;
+	spWork = NULL;
+	spPrivate = NULL;
+	spAbout = NULL;
+	desc = NULL;
+		
 	initInterface();
 
 	ZSoftKey *softKey = new ZSoftKey ( NULL, this, this );
@@ -65,18 +74,34 @@ void ZUserInfo::initInterface()
 
 	QPixmap pm;
 
+	if ( tabWidget )
+		delete tabWidget;
 	tabWidget = new ZNavTabWidget(ZNavTabWidget::NEIGHBOR, false, false, myWidget);
     tabWidget->setFocusPolicy(ZNavTabWidget::NoFocus);
     tabWidget->setTabPosition(ZNavTabWidget::TOP);	
 	setContentWidget ( tabWidget );
 
-	spFull = new ZDetailView(tabWidget);
-	spMain = new ZDetailView(tabWidget);
-	spHome = new ZDetailView(tabWidget);
-	spWork = new ZDetailView(tabWidget);
-	spPrivate = new ZDetailView(tabWidget);
-	spAbout = new QScrollView(tabWidget);
+	if ( spFull )
+		delete spFull;
+	spFull = new ZDetailView(this);
+	if ( spMain )
+		delete spMain;	
+	spMain = new ZDetailView(this);
+	if ( spHome )
+		delete spHome;		
+	spHome = new ZDetailView(this);
+	if ( spWork )
+		delete spWork;		
+	spWork = new ZDetailView(this);
+	if ( spPrivate )
+		delete spPrivate;	
+	spPrivate = new ZDetailView(this);
+	if ( spAbout )
+		delete spAbout;		
+	spAbout = new QScrollView(this);
 
+	if ( desc )
+		delete desc;	
 	desc = new xTextView(spAbout, zSmile);
 
 	spAbout->addChild(desc, 0, 0);
@@ -174,7 +199,23 @@ void * updateInfo(void * id)
 
 ZUserInfo::~ZUserInfo()
 {
-
+	delete myWidget;
+	myWidget = NULL;
+	
+	delete spFull;
+	delete spMain;	
+	delete spHome;		
+	delete spWork;		
+	delete spPrivate;	
+	delete spPrivate;		
+	delete desc;
+	spFull = NULL;
+	spMain = NULL;
+	spHome = NULL;
+	spWork = NULL;
+	spPrivate = NULL;
+	spAbout = NULL;
+	desc = NULL;	
 }
 
 void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)

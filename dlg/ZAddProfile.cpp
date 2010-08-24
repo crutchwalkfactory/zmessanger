@@ -40,12 +40,12 @@ ZAddProfile::ZAddProfile()
 	form->addChild(zcbProtocol);
 	
 	zleID = new ZLineEdit("", form);
-	zleID->setTitle("ID:");
+	zleID->setTitle( LNG_LOGIN );
 	
 	form->addChild ( zleID );
 	
 	zlePas = new ZLineEdit("", form);
-	zlePas->setTitle("PAS:");
+	zlePas->setTitle( LNG_PASSWORD );
 	
 	zlePas->setEchoMode(ZLineEdit::Password);
 	

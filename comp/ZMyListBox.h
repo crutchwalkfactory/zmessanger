@@ -43,7 +43,7 @@ class ZMyListBox : public ZListBox
     
     void clear();
     
-    void dellAllContactWithProtocol( int prot, bool clear=true );
+    void dellAllContactWithProtocol( int prot, bool clear=true, bool lock = true );
     
     void contactAdd( ZContactItem * item );
     void contactRemove( string idContact );
@@ -67,7 +67,7 @@ class ZMyListBox : public ZListBox
     void UpdateList();
 	ZContactItem * item( int index );
 	
-	void setShowGroup(bool show);
+	void setShowGroup( bool show );
 
   private slots: 
     virtual void viewportPaintEvent( QPaintEvent * pe);
@@ -76,6 +76,7 @@ class ZMyListBox : public ZListBox
   private:
     mutable QMutex mutexOnRepaint;
     mutable QMutex mutexPaintEvent;
+    mutable QMutex mutexAction;    
     bool showGroup;
 
   signals:

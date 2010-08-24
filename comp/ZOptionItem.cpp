@@ -46,7 +46,6 @@ ZOptionItem::ZOptionItem( ZListBox* _container, EDIT_TYPE _type ):
 ZOptionItem::~ZOptionItem()
 {
 	disconnect( listBox(), SIGNAL(selected(ZSettingItem*)), this, SLOT(selected(ZSettingItem*)));
-	delete this;
 }
 
 void ZOptionItem::selected(ZSettingItem* item)
@@ -126,7 +125,7 @@ void ZOptionItem::selected(ZSettingItem* item)
 				if(NAPI_ListAllProfile((INT8*)buf, &profiles) != -1) 
 				{
 					char *prof_ptr = buf;
-					for(int i = 0; i < profiles; i++, prof_ptr = buf + i * NAPI_MAX_PROFILE_NAME_LENGTH)
+					for(uint i = 0; i < profiles; i++, prof_ptr = buf + i * NAPI_MAX_PROFILE_NAME_LENGTH)
 						list.append(QString::fromUtf8(prof_ptr));
 				}
 				delete buf;	
@@ -147,7 +146,7 @@ void ZOptionItem::selected(ZSettingItem* item)
 			if ( dlg->exec() == QDialog::Accepted )
 			{
 				n=dlg->getCheckedItemIndex();
-				setText( *(list.at(n)) );
+				setText( (n>0)?(*(list.at(n))):"" );
 			}
 			delete dlg;
 			}
@@ -191,22 +190,22 @@ int ZOptionItem::getNum()
 void ZOptionItem::setTitle(QString _title)
 {
 	title=_title;
-	setSubItem(0, 0, title);	
+	setSubItem(0, 0, title, true);	
 }
 	
 void ZOptionItem::setText(QString _text)
 {
 	text=_text;
+	#ifndef WITHOUT_EDIT_INTERNET_PROFILE
+	if ( type == EDIT_INTERNET_PROFILE && text=="")
+		setSubItem(0, 1, LNG_ASK);		
+	else
+	#endif
 	setSubItem(0, 1, text);
 }
 
 QString ZOptionItem::getText()
-{		
-	#ifndef WITHOUT_EDIT_INTERNET_PROFILE
-	if ( type == EDIT_INTERNET_PROFILE && n==0 )
-		return "";
-	#endif
-	
+{
 	return text;
 }
 

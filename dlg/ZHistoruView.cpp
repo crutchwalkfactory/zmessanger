@@ -43,10 +43,10 @@ ZHistoryView::ZHistoryView( string uin )
 	QString str = "";
 	for ( tHistory::Iterator it = zgui->messageList.begin( ); it != zgui->messageList.end( ); it++) 
 	{ 
-		if ( it.key() == QString( uin.c_str() ).toInt() ) 
+		if ( it.key() == QString( uin.c_str() ).toUInt() ) 
 		{
 			messanges = it.data();
-			for ( int n = 0; n < messanges.count(); n++ )
+			for ( uint n = 0; n < messanges.count(); n++ )
 			{	
 				str = str + zgui->bdMesToText(  *messanges.at(n) , true  )+"\n";
 			}
