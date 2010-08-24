@@ -44,7 +44,7 @@ ZMyListBox::~ZMyListBox()
 {
 }
 
-void ZMyListBox::dellAllContactWithProtocol( int prot, bool clear, bool lock )
+void ZMyListBox::dellAllContactWithProtocol( int prot, bool lock )
 {
 	if ( lock )
 		QMutexLocker locker ( &mutexAction );
@@ -55,12 +55,6 @@ void ZMyListBox::dellAllContactWithProtocol( int prot, bool clear, bool lock )
 		{
 			if ( !it.data()->isHide() )			
 				takeItem( it.data() );			
-			if ( clear )
-			{
-				delete it.data();
-				it.data()=NULL;
-				listContact.remove( it );
-			}
 		}	
 	}
 		
@@ -69,13 +63,7 @@ void ZMyListBox::dellAllContactWithProtocol( int prot, bool clear, bool lock )
 		if ( it.data() && it.data()->getProtocol()==prot )
 		{
 			if ( !it.data()->isHide() )			
-				takeItem( it.data() );	
-			if ( clear )
-			{			
-				delete it.data();
-				it.data()=NULL;
-				listGroup.remove( it );
-			}
+				takeItem( it.data() );
 		}	
 	}
 }
@@ -87,7 +75,8 @@ void ZMyListBox::contactRemove( string idContact )
 	if ( item == NULL )
 		return;
 
-	takeItem(item);
+	if ( !item->isHide() )
+		takeItem(item);
 	delete item;
 	item=NULL;
 	listContact.remove(idContact);
@@ -265,9 +254,9 @@ void ZMyListBox::setShowGroup(bool show)
 				takeItem( it.data() );
 	} else
 	{
-		dellAllContactWithProtocol(PROT_ICQ, false, false);
+		dellAllContactWithProtocol(PROT_ICQ, false);
 		#ifdef _XMPP
-		dellAllContactWithProtocol(PROT_JABBER, false, false);	
+		dellAllContactWithProtocol(PROT_JABBER, false);	
 		#endif
 
 		int insertAt;

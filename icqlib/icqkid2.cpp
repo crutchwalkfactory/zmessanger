@@ -461,88 +461,6 @@ bool ICQKid2::setXStatusDescription ( string descr )
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
-/*
-bool ICQKid2::registerNewUIN ( string password, string & new_uin )
-{
-	logMes_4 ( "ICQKid2::registerNewUIN" );
-#ifdef _WIN32
-	WORD wVersionRequested = MAKEWORD ( 1, 1 );
-	WSADATA wsaData;
-	if ( WSAStartup ( wVersionRequested, &wsaData ) !=0 ) return false;
-#endif
-
-	ICQKid2 * regist_serv=NULL;
-
-#define CREATE_REG_SERVICE \
- { \
- regist_serv = new ICQKid2; \
- if (regist_serv==NULL) return false; \
-  \
- regist_serv->loginhost=loginhost; \
- regist_serv->loginport=loginport; \
- regist_serv->proxy_host=proxy_host; \
- regist_serv->proxy_port=proxy_port; \
- regist_serv->proxy_uid=proxy_uid; \
- regist_serv->proxy_pwd=proxy_pwd; \
- regist_serv->proxy_type=proxy_type; \
-				   \
- HttpProxy http_proxy(proxy_host, proxy_port, proxy_uid, proxy_pwd); \
- SOCKS4Proxy socks4_proxy(proxy_host, proxy_port, proxy_uid); \
- SOCKS5Proxy socks5_proxy(proxy_host, proxy_port, proxy_uid, proxy_pwd); \
- switch(proxy_type) \
-  { \
-  case NONE : \
-       regist_serv->sock=regist_serv->directConnect(loginhost, loginport); \
-       break; \
-  case HTTP : \
-       regist_serv->sock=http_proxy.connectTo(loginhost, loginport); \
-       break; \
-  case SOCKS4 : \
-       regist_serv->sock=socks4_proxy.connectTo(loginhost, loginport); \
-       break; \
-  case SOCKS5 : \
-       regist_serv->sock=socks5_proxy.connectTo(loginhost, loginport); \
-       break; \
-  } \
- if (regist_serv->sock<0) \
-  { \
-  delete regist_serv; \
-  return false; \
-  } \
-   \
- if (!regist_serv->waitHello()) \
-  { \
-  regist_serv->doDisconnect(); \
-  delete regist_serv; \
-  return false; \
-  } \
-  \
- if (!regist_serv->sendSignOn0()) \
-  { \
-  regist_serv->doDisconnect(); \
-  delete regist_serv; \
-  return false; \
-  } \
- }
-// end of define CREATE_REG_SERVICE
-
-	CREATE_REG_SERVICE
-
-	bool ret_flag=sub_registerNewUIN_simply ( regist_serv, password, new_uin );
-	regist_serv->doDisconnect();
-	delete regist_serv;
-	if ( ret_flag ) return true;
-
-	CREATE_REG_SERVICE
-
-	ret_flag=sub_registerNewUIN_picture ( regist_serv, password, new_uin );
-	regist_serv->doDisconnect();
-	delete regist_serv;
-	return ret_flag;
-}
-*/
-
-// ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::changePassword ( string new_password )
 {
 	logMes_4 ( "ICQKid2::changePassword" );
@@ -599,14 +517,6 @@ bool ICQKid2::changePassword ( string new_password )
 void ICQKid2::doDisconnect ( void )
 {
 	logMes_4 ( "ICQKid2::doDisconnect" );
-	/*
-	 if (icons_service && icons_service!=this)
-	  {
-	  icons_service->doDisconnect();
-	  delete icons_service;
-	  icons_service=NULL;
-	  }
-	*/
 	pthread_cancel ( keepConnect );
 	pthread_cancel ( threadWaitSNAC );
 	if ( sock<0 )
@@ -1265,7 +1175,7 @@ bool ICQKid2::sub_ssi_addContact ( string uin, string nick, string groupname, ui
 		return false;
 	}
 
-// If need auth, try add it as awaiting auth
+	// If need auth, try add it as awaiting auth
 	if ( my_retflag==SSI_EDIT_ERR_NEEDAUTH )
 	{
 		uen.waitauth=true;
@@ -1282,9 +1192,6 @@ bool ICQKid2::sub_ssi_addContact ( string uin, string nick, string groupname, ui
 	}
 	if ( retflag!=NULL ) *retflag=my_retflag;
 
-////////////
-//QMutexLocker locker(&mutexCLUser);//
-///////////
 	if ( my_retflag==SSI_EDIT_OK ) ContactListUins.push_back ( uen );
 	return true;
 }
@@ -1346,14 +1253,11 @@ bool ICQKid2::sub_ssi_removeContact ( string uin, uint16_t * retflag )
 	uint16_t my_retflag;
 	uint32_t sync_id;
 
-//mutexCLUser.lock();//
 	if ( !addDeleSSIUIN ( ContactListUins[uen_ind], SSI_ITEM_DELETE, &sync_id ) )
 	{
 		if ( retflag!=NULL ) *retflag=SSI_EDIT_ERR_NETWORK;
-		//mutexCLUser.unlock();//
 		return false;
 	}
-//mutexCLUser.unlock();//
 
 	if ( !getSSIEditAck ( my_retflag, sync_id ) )
 	{
@@ -1362,10 +1266,6 @@ bool ICQKid2::sub_ssi_removeContact ( string uin, uint16_t * retflag )
 	}
 
 	if ( retflag!=NULL ) *retflag=my_retflag;
-
-////////////
-//QMutexLocker locker(&mutexCLUser);//
-///////////
 
 	if ( my_retflag==SSI_EDIT_OK ) ContactListUins.erase ( ContactListUins.begin() +uen_ind );
 	return true;
@@ -1383,9 +1283,7 @@ bool ICQKid2::removeContact ( string uin, uint16_t * retflag )
 
 	uint16_t gr_id=0;
 	int uen_ind = findCLUIN ( uin );
-///mutexCLUser.lock();
 	if ( uen_ind>=0 ) gr_id=ContactListUins[uen_ind].groupid;
-///mutexCLUser.unlock();
 
 	if ( !sub_ssi_removeContact ( uin, retflag ) )
 	{
@@ -1430,20 +1328,17 @@ bool ICQKid2::sub_ssi_renameContact ( string uin, string nick, uint16_t * retfla
 		return false;
 	}
 
-// After my tests i think that we cant rename contacts
-// which awaiting auth, so we delete it and add once again
-//mutexCLUser.lock();//
+	// After my tests i think that we cant rename contacts
+	// which awaiting auth, so we delete it and add once again
 	if ( ContactListUins[uen_ind].waitauth )
 	{
 		string groupname=ContactListUins[uen_ind].groupname;
-		//mutexCLUser.unlock();//
 		if ( !sub_ssi_removeContact ( uin, retflag ) ) return false;
 		return sub_ssi_addContact ( uin, nick, groupname, retflag );
 	}
-//mutexCLUser.unlock();//
-///mutexCLUser.lock();
+
 	SSIUINEntry uen=ContactListUins[uen_ind];
-///mutexCLUser.unlock();
+
 
 	uen.nick=nick;
 
@@ -1463,182 +1358,9 @@ bool ICQKid2::sub_ssi_renameContact ( string uin, string nick, uint16_t * retfla
 
 	if ( retflag!=NULL ) *retflag=my_retflag;
 
-////////
-//QMutexLocker locker(&mutexCLUser);//
-////////
 	if ( my_retflag!=SSI_EDIT_OK ) ContactListUins[uen_ind]=uen;
 	return true;
 }
-
-/*
-// ----------------=========ooooOOOOOOOOOoooo=========----------------
-bool ICQKid2::sub_registerNewUIN_simply ( ICQKid2 * regist_serv, string password, string & new_uin, string * control_str )
-{
-	logMes_4 ( "ICQKid2::sub_registerNewUIN_simply" );
-	vector<uint8_t> data_vec;
-	srand ( time ( NULL ) );
-	uint32_t reg_cookie = ( uint32_t ) ( 2000000.0 * ( rand() / ( RAND_MAX + 1.0 ) ) );
-
-#define INSERT_LE_WORD(arg) \
- { \
- uint16_t uw=arg; \
- data_vec.insert(data_vec.end(), (uint8_t*)(&uw), ((uint8_t*)(&uw))+sizeof(uw)); \
- }
-
-#define INSERT_LE_DWORD(arg) \
- { \
- uint32_t udw=arg; \
- data_vec.insert(data_vec.end(), (uint8_t*)(&udw), ((uint8_t*)(&udw))+sizeof(udw)); \
- }
-
-#define INSERT_LE_ASCIIZ(str) \
- { \
- INSERT_LE_WORD(str.length()+1) \
- uint8_t * p_start = (uint8_t*)str.c_str(); \
- uint8_t * p_end = ((uint8_t*)str.c_str())+str.length()+1; \
- data_vec.insert(data_vec.end(), p_start, p_end); \
- }
-
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_WORD ( 0x0028 )
-	INSERT_LE_WORD ( 0x0000 )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_DWORD ( reg_cookie )
-	INSERT_LE_DWORD ( reg_cookie )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_DWORD ( 0x00000000 )
-	INSERT_LE_ASCIIZ ( password )
-	INSERT_LE_DWORD ( reg_cookie )
-	INSERT_LE_DWORD ( 0x01d10000 )
-
-	TLVField tlv_f ( data_vec, 0x0001 );
-	data_vec.clear();
-	tlv_f.encode_to ( data_vec, 0 );
-
-	if ( control_str!=NULL )
-	{
-		TLVField tlv_f2 ( *control_str, 0x0009 );
-		tlv_f2.encode_to ( data_vec, data_vec.size() );
-	}
-
-	uint32_t snac_sync;
-	if ( regist_serv->sendSNAC ( 0x0017, 0x0004, &snac_sync, &data_vec ) !=1 ) return false;
-
-	SNACData snd;
-	snd.service_id=0x0017;
-	snd.subtype_id=0;
-	snd.req_id=snac_sync;
-	if ( regist_serv->waitSNAC ( &snd ) !=1 ) return false;
-
-	if ( snd.subtype_id!=0x0005 ) return false;
-	if ( snd.data.size() <54 ) return false;
-	if ( snd.data[0]!=0 || snd.data[1]!=1 ) return false;
-	if ( snd.data[10]!=0x2d || snd.data[11]!=0 ) return false;
-	if ( snd.data[12]!=0 || snd.data[13]!=0 ) return false; // Hardcoded sequence number ^ INSERT_LE_WORD(0x0000)
-// if (memcmp(&snd.data[26], &reg_cookie, sizeof(reg_cookie))!=0) return false; // Unfortunately, cookies didn't match
-	uint32_t new_int_uin;
-	memcpy ( &new_int_uin, &snd.data[46], sizeof ( new_int_uin ) );
-// if (memcmp(&snd.data[50], &reg_cookie, sizeof(reg_cookie))!=0) return false; // Unfortunately, cookies didn't match
-
-	ostringstream ss;
-	ss << new_int_uin;
-	new_uin=ss.str();
-
-#undef INSERT_LE_WORD
-#undef INSERT_LE_DWORD
-#undef INSERT_LE_ASCIIZ
-
-	return true;
-}
-
-// ----------------=========ooooOOOOOOOOOoooo=========----------------
-bool ICQKid2::sub_registerNewUIN_picture ( ICQKid2 * regist_serv, string password, string & new_uin )
-{
-	logMes_4 ( "ICQKid2::sub_registerNewUIN_picture" );
-	uint32_t snac_sync;
-	if ( regist_serv->sendSNAC ( 0x0017, 0x000c, &snac_sync, NULL ) !=1 ) return false;
-
-	SNACData snd;
-	snd.service_id=0x0017;
-	snd.subtype_id=0;
-	snd.req_id=snac_sync;
-	if ( regist_serv->waitSNAC ( &snd ) !=1 ) return false;
-
-	if ( snd.subtype_id!=0x000d ) return false;
-	TLVPack tlv_pack;
-	if ( !tlv_pack.decode_from ( snd.data ) ) return false;
-	TLVField * tlvp1 = tlv_pack.findTLV ( 0x0001 ); // Mime type
-	if ( tlvp1==NULL ) return false;
-	TLVField * tlvp2 = tlv_pack.findTLV ( 0x0002 ); // Image data
-	if ( tlvp2==NULL ) return false;
-
-	string mime_type;
-	if ( !tlvp1->getAsString ( mime_type ) ) return false;
-	string pic_str;
-	emit onRegisterControlPicture ( tlvp2->data, mime_type, pic_str );
-
-	return sub_registerNewUIN_simply ( regist_serv, password, new_uin, &pic_str );
-}
-
-// ----------------=========ooooOOOOOOOOOoooo=========----------------
-bool ICQKid2::renameContact ( string uin, string nick, uint16_t * retflag )
-{
-	logMes_4 ( "ICQKid2::renameContact" );
-	if ( !startSSITransact() )
-	{
-		if ( retflag!=NULL ) *retflag=SSI_EDIT_ERR_NETWORK;
-		return false;
-	}
-
-	uint16_t it_id1=0;
-	int uen_ind = findCLUIN ( uin );
-///CLUser.lock();
-	if ( uen_ind>=0 ) it_id1=ContactListUins[uen_ind].itemid;
-///mutexCLUser.unlock();
-
-	if ( !sub_ssi_renameContact ( uin, nick, retflag ) )
-	{
-		if ( !endSSITransact() && retflag!=NULL ) *retflag=SSI_EDIT_ERR_NETWORK;
-		return false;
-	}
-
-	uint16_t it_id2=0;
-	uen_ind = findCLUIN ( uin );
-	if ( uen_ind>=0 )
-	{
-		///mutexCLUser.lock();
-		it_id2=ContactListUins[uen_ind].itemid;
-		///mutexCLUser.unlock();
-		if ( it_id1!=it_id2 )
-		{
-			uint32_t sync_id;
-			if ( !updateSSIGroupContent ( ContactListUins[uen_ind].groupid, &sync_id ) )
-			{
-				if ( retflag!=NULL ) *retflag=SSI_EDIT_ERR_NETWORK;
-				return false;
-			}
-			uint16_t my_retflag;
-			if ( !getSSIEditAck ( my_retflag, sync_id ) )
-			{
-				if ( retflag!=NULL ) *retflag=my_retflag;
-				return false;
-			}
-		}
-	}
-
-	if ( !endSSITransact() )
-	{
-		if ( retflag!=NULL ) *retflag=SSI_EDIT_ERR_NETWORK;
-		return false;
-	}
-
-	if ( retflag!=SSI_EDIT_OK ) return false;
-	return true;
-}
-*/
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::addContacts ( vector<SSITransactContact> & cont_vec )
@@ -1818,12 +1540,10 @@ bool ICQKid2::addBLMContacts ( vector<string> & uins )
 	{
 		int uen_ind=findCLUIN ( uins[i] );
 		if ( uen_ind>=0 ) continue;
-		//mutexCLUser.lock();
 		SSIUINEntry uen;
 		uen.uin=uins[i];
 		uen.isBLM=true;
 		ContactListUins.push_back ( uen );
-		//mutexCLUser.unlock();
 	}
 
 	return true;
@@ -1849,10 +1569,8 @@ bool ICQKid2::removeBLMContacts ( vector<string> & uins )
 	for ( size_t i=0; i<uins.size(); /* empty */ )
 	{
 		int uen_ind=findCLUIN ( uins[i] );
-		//mutexCLUser.lock();
 		if ( uen_ind>=0 && ContactListUins[uen_ind].isBLM ) ContactListUins.erase ( ContactListUins.begin() +uen_ind );
 		else ++i;
-		//mutexCLUser.unlock();
 	}
 
 	return true;
@@ -1929,9 +1647,8 @@ bool ICQKid2::removeGroup ( string groupname, uint16_t * retflag )
 
 	SSIGroupEntry gen=ContactListGroups[gr_ind];
 
-// Remove uins from this group
+	// Remove uins from this group
 	vector<SSITransactContact> cont_vec;
-///mutexCLUser.lock();
 	for ( size_t i=0; i<ContactListUins.size(); ++i )
 	{
 		if ( ContactListUins[i].groupid==gen.id )
@@ -1943,7 +1660,6 @@ bool ICQKid2::removeGroup ( string groupname, uint16_t * retflag )
 			cont_vec.push_back ( stc );
 		}
 	}
-///mutexCLUser.unlock();
 
 	if ( !removeContacts ( cont_vec ) )
 	{
@@ -2031,12 +1747,10 @@ bool ICQKid2::renameGroup ( string groupname, string newname, uint16_t * retflag
 	if ( retflag!=NULL ) *retflag=my_retflag;
 	if ( my_retflag!=SSI_EDIT_OK ) return false;
 
-// Rename groupname in uins from this group
-///mutexCLUser.lock();
+	// Rename groupname in uins from this group
 	for ( size_t i=0; i<ContactListUins.size(); ++i )
 		if ( ContactListUins[i].groupid==gen.id )
 			ContactListUins[i].groupname=newname;
-///mutexCLUser.unlock();
 
 	ContactListGroups[gr_ind].name=newname;
 	return true;
@@ -2067,223 +1781,6 @@ bool ICQKid2::authReply ( string uin, string text, uint8_t aflag )
 	return sendAuthResponse ( uin, text, aflag );
 }
 
-/*
-bool ICQKid2::getBuddyIcon(string uin)
-{
- int uen_ind=findCLUIN(uin);
- if (uen_ind<0) return false;
-
- return sub_getBuddyIcon(ContactListUins[uen_ind]);
-}
-*/
-/*
-bool ICQKid2::downloadMyIcon(void)
-{
- for (size_t i=0; i<ContactListIcons.size(); ++i)
-  if (!sub_getBuddyIcon(ContactListIcons[i])) return false;
-
- return true;
-}
-*/
-
-/*
-bool ICQKid2::uploadMyIcon(vector<uint8_t> & icon_data)
-{
- // It's not possible to upload file more than 6kb
- if (icon_data.size()>6144) return false;
-
- uint8_t addr_req_template[] = {0x00, 0x01, 0x31, // Item name = "1", is an avatar id number as text
-                                0x00, 0x00, // Group id
-                                0x18, 0x13, // Item id
-                                0x00, 0x14, // Item type - Own icon (avatar) info.
-                                0x00, 0x1A, // Length of the additional data
-                                0x00, 0xD5, 0x00, 0x12, // TLV 0xD5 - TLV for buddy icon info, len 0x12
-                                0x01, // avatar id number or icon flags?
-				0x10, // MD5 hash len - always 16
-				0xEC, 0x7B, 0x60, 0x67, 0xCF, 0xD1, 0x01, 0x99, 0x0C, 0xBD, 0x33, 0xF9, 0x00, 0xFC, 0x4B, 0x9B, // md5 hash
-				0x01, 0x31, 0x00, 0x00}; // TLV 0x0131 - predefined contact name - empty
-
- calculate_md5((const char *)&icon_data[0], icon_data.size(), (char *)addr_req_template+17);
-
- for (size_t i=0; i<ContactListIcons.size(); ++i)
-  if (memcmp(addr_req_template+17, &ContactListIcons[i].icon_md5_hash, 16)==0) return true; // This icon already was uploaded
-
- if (!ContactListIcons.empty())
-  if (!removeAllMyIcons()) return false;
-
- uint16_t item_id = htons(getUnusedItemID());
- if (item_id==0) return false;
-
- memcpy(addr_req_template+5, &item_id, sizeof(item_id));
-
- uint32_t req_id;
- vector<uint8_t> data_vec(addr_req_template, addr_req_template+sizeof(addr_req_template));
- if (sendSNAC(0x13, 0x08, &req_id, &data_vec)!=1) return false;
-
- SNACData snd;
- snd.service_id=0x0013;
- snd.subtype_id=0x000E;
- snd.req_id=req_id;
- if (waitSNAC(&snd)!=1) return false;
-
- if (snd.data.size()<2) return false;
- if (snd.data[0]!=0 || snd.data[1]!=0) return false; // Success code==0
-
- SSIUINEntry icon_uen;
- icon_uen.uin=myuin;
- icon_uen.nick="1";
- icon_uen.groupid=0;
- icon_uen.groupname="";
- icon_uen.itemid=ntohs(item_id);
- icon_uen.waitauth=false;
- icon_uen.have_icon=true;
- icon_uen.icon_id=1;
- icon_uen.icon_flags=0x01;
- memcpy(icon_uen.icon_md5_hash, addr_req_template+17, 16);
- icon_uen.icon_data=icon_data;
- ContactListIcons.push_back(icon_uen); // Icon entry was added in SSI-list
-
- snd.data.clear();
- snd.service_id=0x0001;
- snd.subtype_id=0x0021;
- snd.req_id=0;
- if (waitSNAC(&snd)!=1) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-
- bool need_upload=false;
- size_t pos=0;
- while(pos<snd.data.size())
-  {
-  if (snd.data.size()<(pos+2)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-  if (snd.data[pos]==0 && snd.data[pos+1]==1)
-   {
-   pos+=2;
-   if (snd.data.size()<(pos+18)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   if (snd.data[pos]!=0x81 && snd.data[pos]!=0x41 && snd.data[pos]!=0x1) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   if (snd.data[pos]==0x81 || snd.data[pos]==0x41) need_upload=true;
-   pos++;
-   uint8_t hash_len = snd.data[pos];
-   if (hash_len!=16) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   pos++;
-   if (memcmp(addr_req_template+17, &snd.data[pos], 16)!=0) need_upload=true;
-   pos+=16;
-   }
-  else if (snd.data[pos]==0 && snd.data[pos+1]==2)
-   {
-   pos+=2;
-   uint16_t ichat_len;
-
-   if (snd.data.size()<(pos+sizeof(ichat_len))) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   memcpy(&ichat_len, &snd.data[pos], sizeof(ichat_len));
-   ichat_len=ntohs(ichat_len);
-   pos+=sizeof(ichat_len);
-
-   if (snd.data.size()<(pos+ichat_len)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   pos+=ichat_len;
-   }
-  else { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-  }
-
- if (need_upload)
-  {
-  if (icons_service==NULL)
-   {
-   icons_service=getInstanceForService(0x0010);
-   if (icons_service==NULL) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   }
-  int old_serv_tm = icons_service->getNetworkTimeout();
-  icons_service->setNetworkTimeout(getNetworkTimeout());
-
-#define DEL_ICON_SERV \
-if (icons_service && icons_service!=this) \
- { \
- icons_service->doDisconnect(); \
- delete icons_service; \
- icons_service=NULL; \
- } \
-if (!ContactListIcons.empty()) removeAllMyIcons();
-
-  data_vec.resize(4);
-  data_vec[0]=0;
-  data_vec[1]=1; // Icon id
-  uint16_t icon_len = htons(icon_data.size());
-  memcpy(&data_vec[2], &icon_len, sizeof(icon_len));
-  data_vec.insert(data_vec.end(), icon_data.begin(), icon_data.end());
-  if (icons_service->sendSNAC(0x10, 0x02, &req_id, &data_vec)!=1)
-   {
-   DEL_ICON_SERV
-   return false;
-   }
-
-  snd.data.clear();
-  snd.service_id=0x0010;
-  snd.subtype_id=0x0003;
-  snd.req_id=req_id;
-  if (icons_service->waitSNAC(&snd)!=1)
-   {
-   DEL_ICON_SERV
-   return false;
-   }
-
-  icons_service->setNetworkTimeout(old_serv_tm);
-
-  if (snd.data.size()<21)
-   {
-   DEL_ICON_SERV
-   return false;
-   }
-  if (snd.data[4]!=16)
-   {
-   DEL_ICON_SERV
-   return false;
-   }
-  if (memcmp(addr_req_template+17, &snd.data[5], 16)!=0)
-   {
-   DEL_ICON_SERV
-   return false;
-   }
-
-  snd.data.clear();
-  snd.service_id=0x0001;
-  snd.subtype_id=0x0021;
-  snd.req_id=0;
-  if (waitSNAC(&snd)!=1) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-
-  pos=0;
-  while(pos<snd.data.size())
-   {
-   if (snd.data.size()<(pos+2)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   if (snd.data[pos]==0 && snd.data[pos+1]==1)
-    {
-    pos+=2;
-    if (snd.data.size()<(pos+18)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-    if (snd.data[pos]!=0x01) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; } // Upload not ok
-    pos++;
-    uint8_t hash_len = snd.data[pos];
-    if (hash_len!=16) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-    pos++;
-    if (memcmp(addr_req_template+17, &snd.data[pos], 16)!=0) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-    pos+=16;
-    }
-   else if (snd.data[pos]==0 && snd.data[pos+1]==2)
-    {
-    pos+=2;
-    uint16_t ichat_len;
-
-    if (snd.data.size()<(pos+sizeof(ichat_len))) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-    memcpy(&ichat_len, &snd.data[pos], sizeof(ichat_len));
-    ichat_len=ntohs(ichat_len);
-    pos+=sizeof(ichat_len);
-
-    if (snd.data.size()<(pos+ichat_len)) { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-    pos+=ichat_len;
-    }
-   else { if (!ContactListIcons.empty()) removeAllMyIcons(); return false; }
-   }
-  }
-
- return true;
-}
-*/
 void * pollKeepAlive ( void * )
 {
 	while ( !zgui->icq->network_break_flag )
@@ -2315,10 +1812,6 @@ bool ICQKid2::mainLoop()
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 int ICQKid2::findCLUIN ( string uin )
 {
-//////
-//QMutexLocker locker(&mutexCLUser);//
-/////
-
 	logMes_4 ( "ICQKid2::findCLUIN "+QString ( uin.c_str() ) );
 	for ( size_t i=0; i<ContactListUins.size(); ++i )
 		if ( ContactListUins[i].uin==uin )
@@ -2333,9 +1826,6 @@ int ICQKid2::findCLUIN ( string uin )
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 int ICQKid2::findCLUIN ( uint16_t item_id )
 {
-////
-//QMutexLocker locker(&mutexCLUser);//
-////
 	logMes_4 ( "ICQKid2::findCLUINс id %d", item_id );
 	for ( size_t i=0; i<ContactListUins.size(); ++i )
 		if ( ContactListUins[i].itemid==item_id )
@@ -2409,7 +1899,7 @@ bool ICQKid2::getServiceList ( void )
 	snd.req_id=0;
 	if ( waitSNAC ( &snd ) !=1 ) return false;
 
-// Server send to me SNAC families, which it supports.
+	// Server send to me SNAC families, which it supports.
 	size_t curr_pos=0;
 	server_services_list.clear();
 	
@@ -2469,7 +1959,7 @@ bool ICQKid2::askServices ( void )
 	TRY_ASK_SERVICE ( 0x15, 0x01 ) // AIM ICQ
 	TRY_ASK_SERVICE ( 0x04, 0x01 ) // AIM Messaging (ICBM)
 	TRY_ASK_SERVICE ( 0x09, 0x01 ) // AIM BOS, Privacy managment (PRM)
-//TRY_ASK_SERVICE(0x10, 0x01) // AIM Stored Buddy Icons (SST, SSBI)
+	//TRY_ASK_SERVICE(0x10, 0x01) // AIM Stored Buddy Icons (SST, SSBI)
 
 #undef TRY_ASK_SERVICE
 
@@ -2486,7 +1976,7 @@ bool ICQKid2::getServices ( void )
 	snd.req_id=0;
 	if ( waitSNAC ( &snd ) !=1 ) return false;
 
-// Server returns finally SNAC families, whit will be used in our session.
+	// Server returns finally SNAC families, whit will be used in our session.
 	size_t curr_pos=0;
 	server_services_list.clear();
 	
@@ -2543,9 +2033,9 @@ bool ICQKid2::getRateLimits ( uint32_t sync_id )
 	snd.req_id=sync_id;
 	if ( waitSNAC ( &snd ) !=1 ) return false;
 
-// Server sends to me rate limits.
-// I need to parse and remember it, because i need send
-// back rate groups later
+	// Server sends to me rate limits.
+	// I need to parse and remember it, because i need send
+	// back rate groups later
 	size_t curr_pos=0;
 
 	if ( snd.data.size() < ( curr_pos+2 ) ) return false;
@@ -2554,7 +2044,7 @@ bool ICQKid2::getRateLimits ( uint32_t sync_id )
 	class_count=ntohs ( class_count );
 	curr_pos+=sizeof ( class_count );
 
-// Skip rate classes, we dont need it
+	// Skip rate classes, we dont need it
 	if ( snd.data.size() < ( curr_pos+class_count*35 ) ) return false;
 	curr_pos+=class_count*35;
 
@@ -2599,7 +2089,7 @@ bool ICQKid2::getRateLimits ( uint32_t sync_id )
 bool ICQKid2::sendRateLimits ( void )
 {
 	logMes_4 ( "ICQKid2::sendRateLimits" );
-// I send rate groups back to server
+	// I send rate groups back to server
 	vector<uint8_t> vec ( server_rate_groups.size() *2 );
 	size_t curr_pos=0;
 	for ( unsigned int i=0; i<server_rate_groups.size(); ++i )
@@ -2628,7 +2118,7 @@ bool ICQKid2::getSelfInfo ( uint32_t sync_id )
 	snd.subtype_id=0x000f;
 	snd.req_id=sync_id;
 	if ( waitSNAC ( &snd ) !=1 ) return false;
-// FIXME - parse selfinfo
+	// FIXME - parse selfinfo
 	return true;
 }
 
@@ -2667,6 +2157,7 @@ bool ICQKid2::sendLocationInfo ( void )
 		0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0,   /* XtraZ */
 		0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* AIM_ICQGATE */		
 		//0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* tZers */
+		
 		//Client ID string
 		#if defined(EZX_Z6)
 		'z', 'I', 'M', ' ', 'Z', '6', ' ', '0'+VER_MAJOR, '.', '0'+VER_MINOR, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2873,10 +2364,6 @@ bool ICQKid2::getSSICopy ( uint32_t sync_id )
 	logMes_4 ( "Clear only SSI contacts from list" );
 // Clear only SSI contacts from list
 
-////////////
-//QMutexLocker locker(&mutexCLUser);//
-///////////
-
 	for ( size_t i=0; i<ContactListUins.size(); /* empty */ )
 	{
 		if ( !ContactListUins[i].isBLM ) ContactListUins.erase ( ContactListUins.begin() +i );
@@ -2884,11 +2371,9 @@ bool ICQKid2::getSSICopy ( uint32_t sync_id )
 	}
 
 	ContactListGroups.clear();
-//ContactListIcons.clear();
 	VisibleList.clear();
 	InvisibleList.clear();
 	IgnoreList.clear();
-//unknown_item_ids.clear();
 
 	for ( unsigned int i=0; i<cl.items.size(); ++i )
 	{
@@ -2908,9 +2393,6 @@ bool ICQKid2::getSSICopy ( uint32_t sync_id )
 					if ( cl.items[i].payload[j].type==0x0131 ) cl.items[i].payload[j].getAsString ( uen.nick );
 					if ( cl.items[i].payload[j].type==0x0066 ) uen.waitauth=true;
 				}
-				//uen.last_internal_ip=0;
-				//uen.last_internal_port=0;
-				//uen.last_external_ip=0;
 				ContactListUins.push_back ( uen );
 			}
 			break;
@@ -2926,36 +2408,6 @@ bool ICQKid2::getSSICopy ( uint32_t sync_id )
 			break;
 
 			case 0x0014 : // We have Icon
-			{
-				/*    SSIUINEntry uen;
-				    uen.uin=myuin;
-				    uen.nick=cl.items[i].name; // Avatar ID as text
-				    uen.groupid=cl.items[i].group_id;
-				    uen.groupname="";
-				    uen.itemid=cl.items[i].item_id;
-				    uen.waitauth=false;
-				    uen.have_icon=true;
-				    uen.icon_id=atoi(cl.items[i].name.c_str());
-				    for (unsigned int j=0; j<cl.items[i].payload.size(); ++j)
-				     {
-				     if (cl.items[i].payload[j].type!=0x00d5) continue;
-				     if (cl.items[i].payload[j].data.size()<18)
-					{
-					logMes_4("cl.items[i].payload[j].data.size() [%d]<18",cl.items[i].payload[j].data.size());
-					//return false;
-					break;
-					}
-				     uen.icon_flags=cl.items[i].payload[j].data[0];
-				     if (cl.items[i].payload[j].data[1]!=16)
-					{
-					logMes_4("cl.items[i].payload[j].data[1] [%d]!=16",cl.items[i].payload[j].data[1]);
-				 	//return false;
-					break;
-					}
-				     memcpy(uen.icon_md5_hash, &(cl.items[i].payload[j].data[2]), 16);
-				     }
-				    ContactListIcons.push_back(uen);*/
-			}
 			break;
 
 			case 0x0004 : // Privacy status
@@ -3044,8 +2496,8 @@ bool ICQKid2::sendStatus ( uint32_t astat, bool ext )
 	{
 		0x00, 0x00, 0x00, 0x00,  /* Internal IP address */
 		0x00, 0x00, 0x00, 0x00,  /* Internal TCP port */
-		0x04,  /* DC type - DC not possible */
-		0x00, 0x09,  /* DC protocol version - ICQ Lite (9) */
+		0x04,  					/* DC type - DC not possible */
+		0x00, 0x09,				/* DC protocol version - ICQ Lite (9) */
 		0x0a, 0x0b, 0x33, 0x45,  /* DC Auth cookie */
 		0x00, 0x00, 0x0b, 0xf5,  /* Web Front Port */
 		0x00, 0x00, 0x00, 0x01,  /* Client futures */
@@ -3102,7 +2554,7 @@ bool ICQKid2::sendReady ( void )
 	TRY_READY_SERVICE ( 0x15 ) // AIM ICQ
 	TRY_READY_SERVICE ( 0x04 ) // AIM Messaging (ICBM)
 	TRY_READY_SERVICE ( 0x09 ) // AIM BOS, Privacy managment (PRM)
-	TRY_READY_SERVICE ( 0x10 ) // AIM Stored Buddy Icons (SST, SSBI)
+	//TRY_READY_SERVICE ( 0x10 ) // AIM Stored Buddy Icons (SST, SSBI) //!!!!!!!!!!!
 
 #undef TRY_READY_SERVICE
 
@@ -3148,56 +2600,6 @@ int ICQKid2::directConnect(string ahost, int aport)
  return tmp_sock;
 }
 
-/*
-int ICQKid2::directConnect ( string ahost, int aport )
-{
-	logMes_4 ( "directConnect(%s, %d)",ahost.c_str(),aport );
-
-	struct hostent * he;
-	sockaddr_in addr;
-	int tmp_sock;
-
-	if ( ( he = gethostbyname( ahost.c_str() ) ) == NULL )//login.icq.com
-	{
-		logMes_4("Not host");
-	return -1;
-	}
-	if (he->h_addr==NULL) return -1;
-
-	memset(&addr, 0, sizeof(addr));
-	memcpy(&(addr.sin_addr.s_addr), he->h_addr, sizeof(addr.sin_addr.s_addr));
-	addr.sin_port=htons(aport);
-	addr.sin_family=PF_INET;
-
-	logMes_4 ( "CreaTe socket" );
-
-	if ( ( tmp_sock=socket ( PF_INET, SOCK_STREAM, 0 ) ) ==-1 ) return -1;
-
-	logMes_4 ( "bind" );
-
-	__napi_bindsocket2link(tmp_sock);
-
-	logMes_4 ( "Moto connect true" );
-
-
-	//if( ::connect( fd, (struct sockaddr *)&target, sizeof( struct sockaddr ) ) == 0 )
-	int conn_ret;
-	while ( ( conn_ret=t_connect ( tmp_sock, ( const struct sockaddr * ) &addr, ( socklen_t ) sizeof ( addr ), 1000 ) ) !=0 )
-	//while ( ( conn_ret=t_connect ( tmp_sock, (struct sockaddr *)&target, sizeof( struct sockaddr ), 1000 ) ) !=0 )
-	{
-		//logMes_4 ( "onIdle()" );
-		//emit onIdle();
-		if ( conn_ret!=TNETWORK_TIMEOUT )
-		{
-			logMes_4 ( "CLOSE_SOCK" );
-			CLOSE_SOCK ( tmp_sock );
-			return -1;
-		}
-	}
-	logMes_4 ( "return = %d", ( int ) tmp_sock );
-	return tmp_sock;
-}
-*/
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::waitHello ( void )
 {
@@ -3306,14 +2708,10 @@ bool ICQKid2::sendMD5authorize ( uint32_t * snac_sync, vector<uint8_t> & md5_sal
 	calculate_md5 ( ( const char* ) ( &auth_sum[0] ), auth_sum.size(), ( char * ) md5_hash );
 
 	tlv_pack.data.push_back ( TLVField ( md5_hash, 16, 0x0025 ) ); // MD5 hash of salt+password+AOL_SALT_STR
-//tlv_pack.data.push_back(TLVField((uint16_t)0x010a, TLV_CLI_NUM_ID)); // Client ID number
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_NUM_ID ) ); // Client ID number
-//tlv_pack.data.push_back(TLVField((uint16_t)0x0014, TLV_CLI_VER_MAJOR)); // Client major version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_MAJOR ) ); // Client major version
-//tlv_pack.data.push_back(TLVField((uint16_t)0x0034, TLV_CLI_VER_MINOR)); // Client minor version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_MINOR ) ); // Client minor version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_LESSER ) ); // Client lesser version
-//tlv_pack.data.push_back(TLVField((uint16_t)0x0bb8, TLV_CLI_NUM_BUILD)); // Client build number
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_NUM_BUILD ) ); // Client build number
 	tlv_pack.data.push_back ( TLVField ( ( uint32_t ) 0x0000043d, TLV_CLI_NUM_DISTR ) ); // Client distribution number
 	tlv_pack.data.push_back ( TLVField ( "en", TLV_CLI_LANG ) ); // Client language
@@ -3465,64 +2863,6 @@ ICQKid2 * ICQKid2::getInstanceForService ( uint16_t family )
 	return NULL;
 }
 
-/*
-bool ICQKid2::sub_getBuddyIcon(SSIUINEntry & uen)
-{
- if (!uen.have_icon) return false;
-
- if (icons_service==NULL)
-  {
-  icons_service=getInstanceForService(0x0010);
-  if (icons_service==NULL) return false;
-  }
-
- int old_serv_tm = icons_service->getNetworkTimeout();
- icons_service->setNetworkTimeout(getNetworkTimeout());
-
- DownloadBuddyIconRequest req;
- req.uin=uen.uin;
- req.icon_id=uen.icon_id;
- req.icon_flags=uen.icon_flags;
- memcpy(req.md5_hash, uen.icon_md5_hash, 16);
-
- vector<uint8_t> data_vec;
- req.encode_to(data_vec);
-
-#define REMOVE_ICONS_SERV \
-  if (icons_service && icons_service!=this) \
-   { \
-   icons_service->doDisconnect(); \
-   delete icons_service; \
-   icons_service=NULL; \
-   }
-// End of define REMOVE_ICONS_SERV
-
- uint32_t req_id;
- if (icons_service->sendSNAC(0x0010, 0x0006, &req_id, &data_vec)!=1)
-  {
-  REMOVE_ICONS_SERV
-  return false;
-  }
-
- SNACData snd;
- snd.service_id=0x0010;
- snd.subtype_id=0x0007;
- snd.req_id=req_id;
- if (icons_service->waitSNAC(&snd)!=1)
-  {
-  REMOVE_ICONS_SERV
-  return false;
-  }
-
- icons_service->setNetworkTimeout(old_serv_tm);
-
- DownloadBuddyIconReply rep;
- if (!rep.decode_from(snd.data)) return false;
-
- uen.icon_data = rep.icon_data;
- return true;
-}
-*/
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::addVisInvisIgnor ( vector<SSIUINEntry> & cont, uint16_t it_type, string uin, string nick )
 {
@@ -3598,96 +2938,6 @@ bool ICQKid2::removeVisInvisIgnor ( vector<SSIUINEntry> & cont, uint16_t it_type
 
 	return true;
 }
-
-/*
-int ICQKid2::waitSNAC(SNACData * snd)
-{
-	QString s;
-	s=" [ "+QString::number(snd->service_id)+", "+QString::number(snd->subtype_id)+"]";
-
- logMes_4("waitSNAC"+s);
- snac_cache->clearOlderThan(SNAC_CACHE_LIFETIME);
- if (snac_cache->findEntry(*snd))
-  {
-  emit onIdle();
-  logMes_4("Snec by cash");
-  return 1;
-  }
-
- timeb tmstamp1, tmstamp2;
- ftime(&tmstamp1);
-
- while (true)
-  {
-  logMes_4("wait"+s+"...");
-  FlapPacket fp;
-  while (true)
-   {
-   if (network_break_flag)
-    {
-    network_break_flag=false;
-    return TNETWORK_TIMEOUT;
-    }
-
-   if (network_timeout>0)
-    {
-    ftime(&tmstamp2);
-    int tmout=((tmstamp2.time-tmstamp1.time)*1000+tmstamp2.millitm-tmstamp1.millitm);
-    if (tmout>network_timeout){ return TNETWORK_TIMEOUT;}
-    }
-
-   if (fp.recv_from(sock)) break;
-   if (fp.t_network_error!=TNETWORK_TIMEOUT) {return fp.t_network_error;}
-   }
-
-// last_keepalive_timestamp=time(NULL);
-  if (fp.frame_type==FT_SIGNOFF)
-   {
-   TLVPack tlvp;
-   if (tlvp.decode_from(fp.payload))
-    {
-    uint16_t err_code=0;
-    TLVField * err_tlv = tlvp.findTLV(0x0009);
-    if (err_tlv!=NULL) err_tlv->getAsInt16(err_code);
-
-    string err_url;
-    TLVField * url_tlv = tlvp.findTLV(0x000b);
-    if (url_tlv!=NULL) url_tlv->getAsString(err_url);
-
-	logMes_4("emit onSingOff(err_code, err_url)");
-    emit onSingOff(err_code, err_url);
-    }
-   return TNETWORK_CLOSE;
-   }
-
-  if (fp.frame_type!=FT_DATA) continue;
-
-  SNACData sncd;
-  if (!sncd.decode_from(fp.payload)) continue;
-  if (sncd.flags&0x8000 && sncd.data.size()>=2)
-   {
-   uint16_t trash_len;
-   memcpy(&trash_len, &sncd.data[0], sizeof(trash_len));
-   trash_len=ntohs(trash_len);
-   if (sncd.data.size()>=(unsigned int)(2+trash_len))
-    sncd.data.erase(sncd.data.begin(), sncd.data.begin()+2+trash_len);
-   }
-
-  if ((sncd.service_id!=snd->service_id && snd->service_id!=0) || \
-      (sncd.subtype_id!=snd->subtype_id && snd->subtype_id!=0) || \
-      (sncd.req_id!=snd->req_id && snd->req_id!=0))
-   {
-   snac_cache->addEntry(sncd);
-   continue;
-   }
-
-  *snd=sncd;
-  break;
-  }
-
- return 1;
-}
-*/
 
 void * startReadSNAC ( void * )
 {
@@ -3833,7 +3083,6 @@ int ICQKid2::sendSNAC ( uint16_t service_id, uint16_t subtype_id, uint32_t * req
 	ftime ( &tmstamp1 );
 	while ( true )
 	{
-		//emit onIdle();
 		if ( network_break_flag )
 		{
 			network_break_flag=false;
@@ -4133,85 +3382,23 @@ bool ICQKid2::parseOnlineNotify ( string & uin, uint32_t & stat, vector<uint8_t>
 	curr_pos+=2;
 
 	stat=STATUS_ONLINE; // default value;
-//uint32_t int_ip=0, int_port=0, ext_ip=0; // default value;
 
 	int uen_ind=findCLUIN ( uin );
 
-
-////////////
-//QMutexLocker locker(&mutexCLUser);
-///////////
-
 	if ( uen_ind>=0 )
 	{
-		///mutexCLUser.lock();
-		//ContactListUins[uen_ind].have_icon=false;
 		ContactListUins[uen_ind].srv_relay_cap=false;
 		ContactListUins[uen_ind].unicode_cap=false;
-		///mutexCLUser.unlock();
 	}
 
 	for ( int i=0; i<tlv_count; ++i )
 	{
 		TLVField tlv;
-		//if (!tlv.decode_from(data, curr_pos)) return false;
 		if ( !tlv.decode_from ( data, curr_pos ) ) break;
 		curr_pos+=tlv.data.size() +4; // +2 for TLVtype +2 for TLV length
 		if ( tlv.type==0x0006 ) // User status
 		{
-			//if (!tlv.getAsInt32(stat)) return false;
 			if ( !tlv.getAsInt32 ( stat ) ) break;
-		}
-		else if ( tlv.type==0x000c ) // DC info
-		{
-			/*
-				   //if (tlv.data.size()<8) return false;
-				   if (tlv.data.size()<8) break;
-				   memcpy(&int_ip, &tlv.data[0], sizeof(int_ip));
-				   memcpy(&int_port, &tlv.data[4], sizeof(int_port));
-				   int_port=ntohl(int_port);
-			*/
-		}
-		else if ( tlv.type==0x000a ) // Ext IP
-		{
-			/*
-				   //if (tlv.data.size()<4) return false;
-				   if (tlv.data.size()<4) break;
-				   memcpy(&ext_ip, &tlv.data[0], sizeof(ext_ip));
-			*/
-		}
-		else if ( tlv.type==0x001d && uen_ind>=0 ) // UserIcon Info
-		{
-			/*
-				   //if (tlv.data.size()<20) return false;
-				   if (tlv.data.size()<20) break;
-				   size_t curpos=0;
-
-				   memcpy(&ContactListUins[uen_ind].icon_id, &tlv.data[curpos], sizeof(ContactListUins[uen_ind].icon_id));
-				   ContactListUins[uen_ind].icon_id=ntohs(ContactListUins[uen_ind].icon_id);
-				   curpos+=sizeof(ContactListUins[uen_ind].icon_id);
-
-				   ContactListUins[uen_ind].icon_flags=tlv.data[curpos];
-				   curpos++;
-
-				   uint8_t hash_len=tlv.data[curpos];
-				   //if (hash_len!=16) return false;
-				   if (hash_len!=16) break;
-				   curpos++;
-
-				   uint8_t tmp_md5_hash[16];
-				   memcpy(tmp_md5_hash, &tlv.data[curpos], 16);
-
-				   ContactListUins[uen_ind].have_icon=true;
-
-				   if (memcmp(tmp_md5_hash, ContactListUins[uen_ind].icon_md5_hash, 16)!=0)
-					{
-					memcpy(ContactListUins[uen_ind].icon_md5_hash, tmp_md5_hash, 16);
-					logMes_4("emit onIconChanged(uin)");
-					emit onIconChanged(uin);
-
-			    		}
-			*/
 		}
 		else if ( tlv.type==0x0019 && uen_ind>=0 ) // New type capabilities list
 		{
@@ -4284,14 +3471,6 @@ bool ICQKid2::parseOnlineNotify ( string & uin, uint32_t & stat, vector<uint8_t>
 			ContactListUins[uen_ind].idle_since=time ( NULL )-60*ntohs ( * ( ( uint16_t* ) &tlv.data[0] ) );
 		}
 	}
-	/*
-	 if ((int_ip!=0 || int_port!=0 || ext_ip!=0) && uen_ind>=0)
-	  {
-		  if (int_ip!=0) ContactListUins[uen_ind].last_internal_ip=int_ip;
-		  if (int_port!=0) ContactListUins[uen_ind].last_internal_port=int_port;
-		  if (ext_ip!=0) ContactListUins[uen_ind].last_external_ip=ext_ip;
-	  }
-	*/
 
 	if ( enabledEye )
 	{
@@ -4355,9 +3534,7 @@ bool ICQKid2::parseSSIAddNotify ( vector<uint8_t> & data )
 		{
 			SSIUINEntry uen;
 			int uen_ind=findCLUIN ( clit.item_id );
-			///mutexCLUser.lock();
 			if ( uen_ind>=0 ) uen=ContactListUins[uen_ind];
-			///mutexCLUser.unlock();
 			uen.uin=clit.name;
 			uen.groupid=clit.group_id;
 			uen.itemid=clit.item_id;
@@ -4370,7 +3547,6 @@ bool ICQKid2::parseSSIAddNotify ( vector<uint8_t> & data )
 				if ( clit.payload[j].type==0x0066 ) uen.waitauth=true;
 			}
 
-			//int uen_ind=findCLUIN(uen.itemid);
 			if ( uen_ind>=0 )
 				ContactListUins[uen_ind]=uen;
 			else
@@ -4440,16 +3616,13 @@ bool ICQKid2::parseSSIDeleteNotify ( vector<uint8_t> & data )
 			int uen_ind;
 			while ( ( uen_ind=findCLUIN ( clit.item_id ) ) >=0 )
 			{
-				//mutexCLUser.lock();//
 				ContactListUins.erase ( ContactListUins.begin() +uen_ind );
-				//mutexCLUser.unlock();//
 			}
 		}
 
 		if ( clit.type==0x0001 && clit.group_id!=0x0000 ) // We dont need to virtual MasterGroup with group_id=0
 		{
 			// Remove uins from this group
-			// mutexCLUser.lock();//
 			for ( size_t i=0; i<ContactListUins.size(); /*empty*/ )
 			{
 				if ( ContactListUins[i].groupid==clit.group_id )
@@ -4457,7 +3630,6 @@ bool ICQKid2::parseSSIDeleteNotify ( vector<uint8_t> & data )
 				else
 					++i;
 			}
-			//mutexCLUser.unlock();//
 			int gen_ind;
 			while ( ( gen_ind=findCLGroup ( clit.group_id ) ) >=0 )
 				ContactListGroups.erase ( ContactListGroups.begin() +gen_ind );
@@ -4736,7 +3908,6 @@ bool ICQKid2::getOfflMsg ( vector<ICQKid2Message> & offl_vec, uint32_t sync_id )
 		ostringstream ss;
 		ss << sender_uin;
 
-		//ICQKid2Message msg(ss.str(), text, ICQKid2Message::LOCAL8BIT, 0, true);
 		ICQKid2Message msg ( ss.str(), text, ICQKid2Message::USASCII, 0, true );
 		msg.timestamp=mktime ( &tm_time )-timezone;
 
@@ -5194,15 +4365,6 @@ uint16_t ICQKid2::getUnusedItemID ( void )
 				break;
 			}
 		if ( has_collis ) continue;
-		/*
-		  for (size_t j=0; j<ContactListIcons.size(); ++j)
-		   if (ContactListIcons[j].itemid==i)
-		    {
-		    has_collis=true;
-		    break;
-		    }
-		  if (has_collis) continue;
-		*/
 		for ( size_t j=0; j<VisibleList.size(); ++j )
 			if ( VisibleList[j].itemid==i )
 			{
@@ -5226,16 +4388,6 @@ uint16_t ICQKid2::getUnusedItemID ( void )
 				break;
 			}
 		if ( has_collis ) continue;
-
-		/*
-		  for (set<uint16_t>::iterator iter=unknown_item_ids.begin(); iter!=unknown_item_ids.end(); ++iter)
-		   if (*iter==i)
-		    {
-		    has_collis=true;
-		    break;
-		    }
-		  if (has_collis) continue;
-		*/
 
 		return i;
 	}
@@ -5428,22 +4580,6 @@ bool ICQKid2::getOfflineMessages ( void )
 int ICQKid2::pollIncomingEvents ( SNACData & snd )
 {
 	logMes_4 ( "ICQKid2::pollIncomingEvents" );
-	//int tmp_tm = getNetworkTimeout();
-	//setNetworkTimeout(tmout);
-
-	// Send keepalive every 60 secs
-	//if ((time(NULL)-last_keepalive_timestamp)>60) sendKeepAlive();
-
-	// Process incoming packets
-	//SNACData snd;
-	//snd.service_id=0;
-	//snd.subtype_id=0;
-	//snd.req_id=0;
-	// int net_ret=waitSNAC(&snd);
-
-	//setNetworkTimeout(tmp_tm);
-
-	// if (net_ret!=1) return net_ret;
 
 	logMes_4 ( "snd.service_id=%d,snd.subtype_id=%d",snd.service_id,snd.subtype_id );
 
@@ -5482,10 +4618,8 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						ContactListUins[uen_ind].xStatus=x_status;
 					}
 
-					///mutexCLUser.lock();
 					ContactListUins[uen_ind].xStatusTitle=x_title;
 					ContactListUins[uen_ind].xStatusDescription=x_descr;
-					///mutexCLUser.unlock();
 
 					logMes_4 ( "emit onXstatusChanged(from, x_status, x_title, x_descr)" );
 					emit onXstatusChanged ( from, ContactListUins[uen_ind].xStatus, x_title, x_descr );
@@ -5502,9 +4636,7 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						case MSG_TYPE_AUTOAWAY  :
 							if ( ContactListUins[uen_ind].AutoAwayMessageText!=msg.text )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].AutoAwayMessageText=msg.text;
-								///mutexCLUser.unlock();
 								onIncomingAutoStatusMsg ( msg, type );
 							}
 							break;
@@ -5512,9 +4644,7 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						case MSG_TYPE_AUTOBUSY  :
 							if ( ContactListUins[uen_ind].AutoBusyMessageText!=msg.text )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].AutoBusyMessageText=msg.text;
-								///mutexCLUser.unlock();
 								onIncomingAutoStatusMsg ( msg, type );
 							}
 							break;
@@ -5522,9 +4652,7 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						case MSG_TYPE_AUTONA    :
 							if ( ContactListUins[uen_ind].AutoNotAvailableMessageText!=msg.text )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].AutoNotAvailableMessageText=msg.text;
-								///mutexCLUser.unlock();
 								onIncomingAutoStatusMsg ( msg, type );
 							}
 							break;
@@ -5532,9 +4660,7 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						case MSG_TYPE_AUTODND   :
 							if ( ContactListUins[uen_ind].AutoDoNotDisturbMessageText!=msg.text )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].AutoDoNotDisturbMessageText=msg.text;
-								///mutexCLUser.unlock();
 								onIncomingAutoStatusMsg ( msg, type );
 							}
 							break;
@@ -5542,9 +4668,7 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						case MSG_TYPE_AUTOFFC   :
 							if ( ContactListUins[uen_ind].AutoFreeForChatMessageText!=msg.text )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].AutoFreeForChatMessageText=msg.text;
-								///mutexCLUser.unlock();
 								onIncomingAutoStatusMsg ( msg, type );
 							}
 							break;
@@ -5619,11 +4743,9 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						{
 							if ( uen_ind>=0 )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].status_modifiers=stat1;
 								ContactListUins[uen_ind].online_status=stat2;
 								ContactListUins[uen_ind].invisible=invis_flag;
-								///mutexCLUser.unlock();
 							}
 							logMes_4 ( "emit onUserNotify(from, stat1, stat2, invis_flag)" );
 							emit onUserNotify ( from, stat1, stat2, invis_flag );
@@ -5644,13 +4766,11 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						else
 							if ( ContactListUins[uen_ind].status_modifiers!=0 || ContactListUins[uen_ind].online_status!=STATUS_OFFLINE || ContactListUins[uen_ind].invisible!=false )
 							{
-								///mutexCLUser.lock();
 								ContactListUins[uen_ind].status_modifiers=0;
 								ContactListUins[uen_ind].online_status=STATUS_OFFLINE;
 								ContactListUins[uen_ind].invisible=false;
 								ContactListUins[uen_ind].srv_relay_cap=false;
 								ContactListUins[uen_ind].unicode_cap=false;
-								///mutexCLUser.unlock();
 								logMes_4 ( "emit onUserNotify(from, 0, STATUS_OFFLINE, false)" );
 								emit onUserNotify ( from, 0, STATUS_OFFLINE, false );
 								//return 1;
@@ -5702,55 +4822,11 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 										logMes_4 ( "ICQKid2::pollIncomingEvents end" );
 										return TNETWORK_TIMEOUT;
 									}
-	/*
-	if (icons_service && icons_service!=this)
-	{
-	int icons_service_ret = icons_service->pollIncomingEvents(0);///tmout!!!!!!!!
-	if (icons_service_ret!=1 && icons_service_ret!=TNETWORK_TIMEOUT)
-	{
-	icons_service->doDisconnect();
-	delete icons_service;
-	icons_service=NULL;
-	}
-	}*/
+
 	logMes_4 ( "ICQKid2::pollIncomingEvents end" );
 	return 1;
 }
 
-/*
-bool ICQKid2::removeAllMyIcons(void)
-{
- if (!startSSITransact()) return false;
- for (size_t i=0; i<ContactListIcons.size(); ++i)
-  {
-  SSIContactListItem cli;
-  cli.name=ContactListIcons[i].uin;
-  cli.group_id=ContactListIcons[i].groupid;
-  cli.item_id=ContactListIcons[i].itemid;
-  cli.type=0x0014; // Avatar Icon
-
-  vector<uint8_t> md5_data(2);
-  md5_data[0]=ContactListIcons[i].icon_flags;
-  md5_data[1]=16;
-  md5_data.insert(md5_data.end(), ContactListIcons[i].icon_md5_hash, ContactListIcons[i].icon_md5_hash+16);
-  TLVField tlv1(md5_data, 0x00d5);
-  cli.payload.push_back(tlv1);
-
-  TLVField tlv2("", 0x0131);
-  cli.payload.push_back(tlv2);
-
-  vector<uint8_t> data;
-  cli.encode_to(data, 0);
-
-  if (sendSNAC(0x0013, SSI_ITEM_DELETE, NULL, &data)!=1) return false;
-  }
- if (!endSSITransact()) return false;
-
- ContactListIcons.clear();
-
- return true;
-}
-*/
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 void ICQKid2::sendXStatusNotifyAutoResponse ( string touin, uint8_t * msg_cookie )
 {

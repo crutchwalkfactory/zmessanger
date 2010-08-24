@@ -43,8 +43,6 @@ class ZMyListBox : public ZListBox
     
     void clear();
     
-    void dellAllContactWithProtocol( int prot, bool clear=true, bool lock = true );
-    
     void contactAdd( ZContactItem * item );
     void contactRemove( string idContact );
     ZContactItem * getConact(string id);
@@ -68,6 +66,9 @@ class ZMyListBox : public ZListBox
 	ZContactItem * item( int index );
 	
 	void setShowGroup( bool show );
+
+	// this function is bad
+	void dellAllContactWithProtocol( int prot, bool lock = true );
 
   private slots: 
     virtual void viewportPaintEvent( QPaintEvent * pe);

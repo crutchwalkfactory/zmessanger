@@ -82,7 +82,7 @@ ZAboutDialog::ZAboutDialog()
 	sep->setLength(SCREEN_WIDTH-20);
 	sv->addChild(sep, 10,90);	
 	
-	a = new ZLabel("Copyrigth "+LNG_COPYRIGHT+": Ant-ON, 2009",this);
+	a = new ZLabel("Copyrigth "+LNG_COPYRIGHT+": Ant-ON, 2010",this);
 	a->setAutoResize(true);
 	a->setPreferredWidth(SCREEN_WIDTH-10);
 	sv->addChild(a, 15,100);

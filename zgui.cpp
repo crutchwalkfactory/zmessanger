@@ -457,11 +457,11 @@ void ZGui::CreateWindow ( QWidget* )
 	logMes_2("CreateWindow: End create form");
 }
 
-void ZGui::activSlot( bool connect )
+void ZGui::activSlot( bool con )
 {
-	if (slotActiv == connect) return;
-	slotActiv = connect;
-	if ( connect )
+	if (slotActiv == con) return;
+	slotActiv = con;
+	if ( con )
 	{
 	connect( icq, SIGNAL( onUserNotify(string, uint32_t, uint32_t, bool) ), this, SLOT( slot_onUserNotify(string, uint32_t, uint32_t, bool) ) );
 	connect( icq, SIGNAL( onIncomingMTN(string, uint16_t) ), this, SLOT( slot_onIncomingMTN(string, uint16_t) ) );
@@ -1071,7 +1071,7 @@ void ZGui::slot_onAuthRequest(string from, string text)
 
 void ZGui::slot_onContactListChanged(void)
 {
-	printContact();
+	printContact(true);
 }
 
 void ZGui::slot_onSingOff(uint16_t err_code, string err_url)
@@ -1841,7 +1841,7 @@ void ZGui::printContact(bool Clear)
 	lbContact->groupAdd(listitem, ICQ_NOT_IN_LIST_GROUP );
 	
 	//Add no list contact
-	for (uint j=0; j<icq->NoContactListUins.size(); ++j)
+	for (uint j=1000; j<1000+icq->NoContactListUins.size(); ++j)
 		icqAddUser(strtoqstr( icq->getNick(j).c_str() ), icq->getUIN(j), icq->getStatus(j), icq->getXStatus(j), icq->getClientId(j), j, icq->getGroupId(j),  icq->isWaitAuth(j), icq->isMesIcon(j));
 }
 
@@ -2351,7 +2351,8 @@ bool  ZGui::eventFilter( QObject * o, QEvent * e)
 					return true;
 				
 				cfg_dontShowOffLine = !cfg_dontShowOffLine;
-				printContact( true );
+				clearList();
+				printContact( false );
 				return true;
 			}
 			case Z6KEY_RED:

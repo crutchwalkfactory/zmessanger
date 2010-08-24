@@ -41,17 +41,7 @@ using namespace std;
 
 #include <time.h>
 
-#ifdef _WIN32
- typedef char int8_t;
- typedef short int int16_t;
- typedef long int int32_t;
- 
- typedef unsigned char uint8_t;
- typedef unsigned short int uint16_t;
- typedef unsigned long int uint32_t;
-#else
- #include <sys/types.h>
-#endif
+#include <sys/types.h>
 
 #include "icqkid2_constants.h"
 
@@ -78,13 +68,6 @@ class SSIUINEntry{
    itemid=0;
    waitauth=false;
    askAuth=false;
-   //last_internal_ip=0;
-   //last_internal_port=0;
-   //last_external_ip=0;
-   //have_icon=false; 
-   //icon_id=0;
-   //icon_flags=0;
-   //memset(icon_md5_hash, 0, 16); 
    online_status=STATUS_OFFLINE;
    status_modifiers=0;
    invisible=false;
@@ -105,16 +88,6 @@ class SSIUINEntry{
   uint16_t itemid;
   bool waitauth;
   bool askAuth;
-  
-  //uint32_t last_internal_ip;
-  //uint32_t last_internal_port;
-  //uint32_t last_external_ip;
-  
-//  bool have_icon;
-//  uint16_t icon_id;
-//  uint8_t icon_flags;
-//  uint8_t icon_md5_hash[16];
-//  vector<uint8_t> icon_data;
 
   uint32_t online_status;
   uint32_t status_modifiers;
@@ -354,7 +327,6 @@ class ICQKid2 : public QObject
   bool setXStatus(size_t x_stat, string title, string descr);
   bool setXStatusDescription ( string descr );
   
-  //bool registerNewUIN(string password, string & new_uin);
   bool changePassword(string new_password);
   
   bool getUserInfo(string uin, ICQKidShortUserInfo & info, bool force_update=false);
@@ -396,18 +368,12 @@ class ICQKid2 : public QObject
   bool authRequest(string uin, string text);
   bool authReply(string uin, string text, uint8_t aflag);
   
-  //bool getBuddyIcon(string uin);
-  //bool downloadMyIcon(void);
-  //bool uploadMyIcon(vector<uint8_t> & icon_data);
-  //inline bool deleteMyIcon(void) { return removeAllMyIcons(); }  
-  
   inline bool addVisible(string uin, string nick="") { return addVisInvisIgnor(VisibleList, 0x0002, uin, nick); }
   inline bool removeVisible(string uin, string nick="") { return removeVisInvisIgnor(VisibleList, 0x0002, uin); }
   
   inline bool addInvisible(string uin, string nick="") { return addVisInvisIgnor(InvisibleList, 0x0003, uin, nick); }
   inline bool removeInvisible(string uin, string nick="") { return removeVisInvisIgnor(InvisibleList, 0x0003, uin); }
 
-//  inline bool addIgnore(string uin, string nick="") { if (!removeContact(uin)) return false; return addVisInvisIgnor(IgnoreList, 0x000E, uin, nick); }
   inline bool addIgnore(string uin, string nick="") { return addVisInvisIgnor(IgnoreList, 0x000E, uin, nick); }
   inline bool removeIgnore(string uin, string nick="") { return removeVisInvisIgnor(IgnoreList, 0x000E, uin); }
 
@@ -420,28 +386,10 @@ class ICQKid2 : public QObject
   bool sendMTN(string to, uint16_t atype);
   bool mainLoop();
   
-  /*
-  virtual inline void onIdle(void) {}
-  virtual inline void onIncomingMTN(string from, uint16_t atype) {}
-  virtual inline void onIncomingMsg(ICQKid2Message msg) {}
-  virtual inline void onAuthRequest(string from, string text) {}
-  virtual inline void onAuthReply(string from, string text, uint8_t aflag) {}
-  virtual inline void onUserNotify(string uin, uint32_t stat1, uint32_t stat2, bool invis_flag) {}
-  virtual inline void onContactListChanged(void) {}
-  virtual inline void onWasAdded(string from) {}
-  virtual inline void onIconChanged(string uin) {}
-  virtual inline void onXstatusChanged(string uin, size_t x_status, string x_title, string x_descr) {}
-  virtual inline void onRegisterControlPicture(vector<uint8_t> & pic_data, string mime_type, string & pic_str) {}
-  virtual inline void onIncomingAutoStatusMsg(ICQKid2Message msg, uint8_t type) {}
-  virtual inline void onSingOff(uint16_t err_code, string err_url) {}
-  */
   int findCLUIN(string uin);
   int findCLUIN(uint16_t item_id);
   int findCLGroup(string groupname);
   int findCLGroup(uint16_t group_id);
-  
-  //vector<SSIUINEntry> ContactListUins;
-  //vector<SSIGroupEntry> ContactListGroups;
 
   vector<itemEye> listEye;
   
@@ -461,15 +409,12 @@ class ICQKid2 : public QObject
   inline void breakNetworkOperation(void) { network_break_flag=true; }
 
   bool getOfflineMessages(void);
-  //int pollIncomingEvents(int tmout);
   int pollIncomingEvents(SNACData & snd);
   
   uint16_t connect_error_code;
   string connect_error_url;
 
   //////////////////////////////////////////////////////////////////
-  //mutable QMutex mutexCLUser;
-
   mutable QMutex mutexClientData;
 
   bool network_break_flag;
@@ -487,7 +432,6 @@ class ICQKid2 : public QObject
   pthread_t threadWaitSNAC;
   pthread_t keepConnect;
   time_t last_keepalive_timestamp;
-  //virtual inline void notInListContactStatusChange(string uin, uint32_t stat1, uint32_t stat2, bool invis_flag) {};
   //////////////////////////////////////////////////////////////////
  
  signals:
@@ -530,8 +474,6 @@ class ICQKid2 : public QObject
 
   map<string, ICQKidShortUserInfo> userinfo_map;
   map<string, ICQKidFullUserInfo> userfullinfo_map;
-  
-  //ICQKid2 * icons_service;
   
   int directConnect(string ahost, int aport);
 
@@ -630,40 +572,27 @@ class ICQKid2 : public QObject
   bool addDeleSSIGroup(SSIGroupEntry gen, uint16_t flag, uint32_t * sync_id);
   bool updateSSIGroupContent(uint16_t group_id, uint32_t * sync_id);
   
-  //bool removeAllMyIcons(void);
-  
   bool sub_ssi_addContact(string uin, string nick, string groupname, uint16_t * retflag);
   bool sub_ssi_removeContact(string uin, uint16_t * retflag);
   bool sub_ssi_renameContact(string uin, string nick, uint16_t * retflag);  
 
-  //bool sub_registerNewUIN_simply(ICQKid2 * regist_serv, string password, string & new_uin, string * control_str=NULL);
-  //bool sub_registerNewUIN_picture(ICQKid2 * regist_serv, string password, string & new_uin);
-  
-  //bool sub_getBuddyIcon(SSIUINEntry & uen);
-  
   bool haveSrvRelayCapability(vector<uint8_t> & data);
   bool haveUnicodeCapability(vector<uint8_t> & data);
-  //bool haveXtrazCapability(vector<uint8_t> & data);
   size_t haveClientsCapability(vector<uint8_t> & data);
   size_t haveXtrazCapability(vector<uint8_t> & data);
-  //void sendXtrazRequest(string uin);
+
   void sendXStatusNotifyAutoResponse(string touin, uint8_t * msg_cookie);
   
   bool addVisInvisIgnor(vector<SSIUINEntry> & cont, uint16_t it_type, string uin, string nick="");
   bool removeVisInvisIgnor(vector<SSIUINEntry> & cont, uint16_t it_type, string uin);
   
   SnacCache * snac_cache;
-  //set<uint16_t> unknown_item_ids;
   
   int waitSNAC(SNACData * snd);
   int sendSNAC(uint16_t service_id, uint16_t subtype_id, uint32_t * req_id=NULL, vector<uint8_t> * data_ptr=NULL);
-  //int sendKeepAlive(void);
   
   int network_timeout;
-  //bool network_break_flag;
   int connect_phase_percentage;
-  
-  //time_t last_keepalive_timestamp;
   
   uint32_t online_status;
   

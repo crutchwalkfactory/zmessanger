@@ -137,7 +137,7 @@ class ZGui :public ZKbMainWidget
 
     void onConnectChange (int protocol, bool online);
     
-    void activSlot( bool connect );
+    void activSlot( bool con );
 
   signals:
 	void clickOnStatusMenu( int i);
@@ -243,7 +243,7 @@ class ZGui :public ZKbMainWidget
     QString cfg_nowPlaying;
     #endif
     
-    dool slotActiv;
+    bool slotActiv;
 };
 
 #endif

@@ -60,14 +60,14 @@ int zICQ::addContactToNoCLList(QString uin, QString nick)
 	SSIUINEntry uen;
 	uen.uin=uin.latin1();
 	uen.nick=nick.latin1();
-	uen.groupid=0;/*PREF_GROUP_SEP;*/ //FIX ME !!!
-	uen.groupname="Not in the list";
+	uen.groupid=ICQ_NOT_IN_LIST_GROUP;
+	uen.groupname="";
 	uen.itemid=0;
 	uen.waitauth = false;
 	uen.unicode_cap = false;	
 	NoContactListUins.push_back(uen);
 	int id = NoContactListUins.size()-1;
-	return id+1000;
+	return id + 1000;
 }
 
 bool zICQ::Connect()

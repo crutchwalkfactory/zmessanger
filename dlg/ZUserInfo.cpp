@@ -1,14 +1,14 @@
 //
-// C++ Implementation: ZAboutDlg
+// Project: zMessanger (zIM)
 //
-// Description:
+// Version: 0.3
 //
+// Description: ICQ client for MOTOMAGX Platform.
+//				In future planed support XMPP protocol.
 //
-// Author: root <root@andLinux>, (C) 2008
+// Author: Ant-ON <prozanton@gmail.com>, (C) 2009-2010
 //
-// Copyright: See COPYING file that comes with this distribution
-//
-//
+
 #include "BaseDlg.h"
 #include "ZUserInfo.h"
 #include "config.h"
