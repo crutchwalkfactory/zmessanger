@@ -143,8 +143,15 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	if ( !notSendTypeMes && protocol==PROT_ICQ )
 		connect( mleMes, SIGNAL( textChanged() ), this, SLOT( mesTextChanged() ) );
 	
-	logMes_3("zChatForm: create softkey and menu");
-	menu = NULL;
+	logMes_3("zChatForm: create menu");
+	
+	QRect rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	QPoint p = QPoint( 0, SCREEN_HEIGHT );
+	menu = new ZOptionsMenu ( rect, this, NULL, 0);
+	menu->setItemSpacing(10);
+	menu->setSpacing(0);
+	menu->setLimitRect(rect);
+	menu->setPosition( ZOptionsMenu::BottomLeft, p );
 	#ifdef _XMPP
 	if ( _conference )
 	{
@@ -230,18 +237,8 @@ void zChatForm::buildMenu()
 		}
 	}
 	#endif
-	
+
 	QPixmap* pm  = new QPixmap();
-	QRect rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-	if ( menu!=NULL )
-	{
-		delete menu;
-	}
-
-	menu = new ZOptionsMenu ( rect, this, NULL, 0);
-	menu->setItemSpacing(10);
-	menu->setSpacing(0);
 
 	pm->load(ProgDir+ "/menu/send_mes.png");
 	menu->insertItem ( LNG_SEND , NULL, pm, true, 0, 0 );
@@ -304,10 +301,6 @@ void zChatForm::buildMenu()
 	pm->load(ProgDir+ "/menu/translit.png");
 	menu->insertItem ( LNG_TRANSLIT , NULL, pm, true, 13, 13 );	
 	menu->connectItem ( 13, this, SLOT ( slotTranslit() ) );
-
-	QPoint p = QPoint( 0, SCREEN_HEIGHT );
-	menu->setPosition( ZOptionsMenu::BottomLeft, p );
-	
 	
 	logMes_3("zChatForm->buildMenu: end");
 }
@@ -316,15 +309,8 @@ void zChatForm::buildMenu()
 void zChatForm::buildMenuConference()
 {
 	QPixmap* pm  = new QPixmap();
-	QRect rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	if ( menu!=NULL )
-	{
-		delete menu;
-	}
-
-	menu = new ZOptionsMenu ( rect, softKey, NULL, 0);
-	menu->setItemSpacing(10);
+	menu->clear();
 
 	//pm->load(ProgDir+ "/menu/auth_acepted.png");
 	menu->insertItem ( LNG_JOIN_ROOM , NULL, pm, true, 3, 3 );
@@ -356,11 +342,6 @@ void zChatForm::buildMenuConference()
 	pm->load(ProgDir+ "/menu/translit.png");
 	menu->insertItem ( LNG_TRANSLIT , NULL, pm, true, 13, 13 );	
 	menu->connectItem ( 13, this, SLOT ( slotTranslit() ) );
-
-	softKey->setOptMenu ( ZSoftKey::LEFT, menu );
-
-	QPoint p = QPoint( 0, 320 );
-	menu->setPosition( ZOptionsMenu::BottomLeft, p );
 }
 #endif
 
@@ -581,14 +562,15 @@ void zChatForm::sendClick()
 	}
 }
 
+#include <ZKbInputField.h>
+
 void zChatForm::kbChange()
 {
 	logMes_3("zChatForm->kbChange: start");
 	#ifndef NEW_PLATFORM
 	QUuid inputMode = kbInput->getFieldInputMode(0);
 	#else
-	QUuid inputMode;
-	ZKbConfig::getFieldInputMode(mleMes->getInputField()->getType(), inputMode);
+	QUuid inputMode = mleMes->getInputField()->getTextEntryMode();
 	#endif
 	logMes_3("zChatForm->kbChange: mode - "+inputMode);
 
@@ -614,7 +596,6 @@ void zChatForm::kbChange()
 	logMes_3("zChatForm->kbChange: is num "+QString::number(nKbState));
 
 	QString n;
-	#ifndef NEW_PLATFORM
 	switch (nKbState)
 	{
 		case 0:  n="iTap"; break;
@@ -623,16 +604,6 @@ void zChatForm::kbChange()
 		case 3:  n="#*)";  break;
 		default: n="?";	
 	}
-	#else
-	switch (nKbState)
-	{
-		case 0:  n="#*)"; break;
-		case 1:  n="iTap";  break;
-		case 2:  n="Tap";  break;
-		case 3:  
-		default: n="123";  break;
-	}	
-	#endif
 	
 	#ifndef NEW_PLATFORM
 	labLng->setText(QString(kbInput->getFieldInputLang(0).at(0))+QString(kbInput->getFieldInputLang(0).at(1)));

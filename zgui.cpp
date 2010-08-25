@@ -76,10 +76,10 @@ void * slot_onClickMenu( void * status);
 ZGui::ZGui ( QWidget* parent, const char* name, WFlags fl )
     :ZKbMainWidget ( ZHeader::MAINDISPLAY_HEADER, parent, name, fl )
 {
-  getProgramDir();
-  QCopChannel* channel = new QCopChannel(ZMESSANGER_CHENEL,this,"zMessanger");
-  connect( channel, SIGNAL(received(const QCString&, const QByteArray&)), this, SLOT( siganalReceived(const QCString&, const QByteArray&) ) );
-  CreateWindow ( parent );
+	getProgramDir();
+	QCopChannel* channel = new QCopChannel(ZMESSANGER_CHENEL,this,"zMessanger");
+	connect( channel, SIGNAL(received(const QCString&, const QByteArray&)), this, SLOT( siganalReceived(const QCString&, const QByteArray&) ) );
+	CreateWindow ( parent );
 }
 
 void ZGui::siganalReceived( const QCString &msg, const QByteArray & data )
@@ -344,13 +344,13 @@ void ZGui::CreateWindow ( QWidget* )
 	
 	string MyServ  = cfg.readEntry(QString("Inet"), QString("Server"), "login.icq.com").latin1();
 	int MyPort  = cfg.readNumEntry(QString("Inet"), QString("Port"), 5190 );
-	MyProfile = cfg.readEntry(QString("Inet"), QString("ProfileName"), "");
+	icq->setLoginHost(MyServ, MyPort);
+	cfg_inetProfile = cfg.readEntry(QString("Inet"), QString("ProfileName"), "");
 	cfg_timeKeepConnect = cfg.readNumEntry(QString("Inet"), QString("TimeKeepConnect"), 500); 
-	int delayReadSnec = cfg.readNumEntry(QString("Inet"), QString("delayReadSnec"), 2000); 
-
+	icq->delayReadSnec = cfg.readNumEntry(QString("Inet"), QString("delayReadSnec"), 2000);
 	QString codePage = cfg.readEntry(QString("Message"), QString("CodePage"), "CP1251");
-	bool noAutoXTrazRequest = cfg.readBoolEntry(QString("Message"), QString("noAutoXTrazRequest"), true);
-	bool noAutoMsgRequest = cfg.readBoolEntry(QString("Message"), QString("noAutoMsgRequest"), true);
+	icq->noAutoXTrazRequest = cfg.readBoolEntry(QString("Message"), QString("noAutoXTrazRequest"), true);
+	icq->noAutoMsgRequest = cfg.readBoolEntry(QString("Message"), QString("noAutoMsgRequest"), true);
 	cfg_alertVibr = cfg.readBoolEntry(QString("Alert"), QString("Vibrate"), true);
 	cfg_alertRing = cfg.readBoolEntry(QString("Alert"), QString("Ring"), false);
 	cfg_alertPath = cfg.readEntry(QString("Alert"), QString("Path"), "");
@@ -358,34 +358,22 @@ void ZGui::CreateWindow ( QWidget* )
 	cfg_dontShowGroup = cfg.readBoolEntry(QString("ContactList"), QString("dontShowGroup"), false);
 	cfg_rigthAlignXStatus = cfg.readBoolEntry(QString("ContactList"), QString("rigthAlignXStatus"), true);
 	cfg_sortType = cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2);
-	
 	cfg_chatFontSize = cfg.readNumEntry(QString("Chat"), QString("chatFontSize"), 11);
 	cfg_mesFontSize = cfg.readNumEntry(QString("Chat"), QString("writeMesFontSize"), 11);
 	cfg_maxNumLines = cfg.readNumEntry(QString("Chat"), QString("maxNumLines"), 40);
 	cfg_notSendTypeMes = cfg.readBoolEntry(QString("Chat"), QString("notSendTypeMes"), false);
 	cfg_sendByCenter = cfg.readBoolEntry(QString("Chat"), QString("sendByCenter"), false);
-
-	bool enabledEye = cfg.readBoolEntry(QString("Othe"), QString("enabledEye"), true);
-
+	icq->enabledEye = cfg.readBoolEntry(QString("Othe"), QString("enabledEye"), true);
 	#ifdef _SupportZPlayer
 	cfg_nowPlaying = cfg.readEntry(QString("Status"), QString("nowPlaying"), "%artist% - %title%");
 	#endif
-
 	icq->loadOldStatusPostConnect( cfg.readBoolEntry(QString("Status"), QString("saveStausCanDisconect"), true) );
-
-
 	#ifndef _NoUSBNetOption
 	cfg_InetOnUSB = cfg.readBoolEntry(QString("Inet"), QString("inetOnUSB"), false);
 	#else
 	cfg_InetOnUSB = false;	
 	#endif
 
-	icq->setLoginHost(MyServ, MyPort);
-	icq->noAutoXTrazRequest = noAutoXTrazRequest;
-	icq->noAutoMsgRequest = noAutoMsgRequest;
-	icq->enabledEye = enabledEye;
-	icq->delayReadSnec = delayReadSnec;
-	
 	zSmile = new zEmotIcons(ProgDir);
 	
 	dlgChat = NULL;
@@ -617,7 +605,7 @@ void ZGui::createMenuConected()
 
 	menu->connectItem ( 0, this, SLOT ( menu_connect() ) );
 	menu->connectItem ( 3, this, SLOT ( menu_setXStatus() ) );
-	menu->connectItem ( 7, this, SLOT ( menu_settings() ) );
+	menu->connectItem ( 8, this, SLOT ( menu_settings() ) );
 	menu->connectItem ( 9, this, SLOT ( menu_about() ) );	
 	menu->connectItem ( 11, this, SLOT ( menu_minimize() ) );
 	menu->connectItem ( 12, qApp, SLOT ( quit() ) );
@@ -671,13 +659,13 @@ void ZGui::createMenuDisconected()
 	
 	menuProfile->clear();
 	
-	pm->load(ProgDir+ "/menu/app_add.png");
+	pm->load(ProgDir+ "/menu/profile_add.png");
 	menuProfile->insertItem ( LNG_ADD , NULL, pm, true, 0, 0 );
-	pm->load(ProgDir+ "/menu/app_del.png");
+	pm->load(ProgDir+ "/menu/profile_del.png");
 	menuProfile->insertItem ( LNG_REMOVE , NULL, pm, true, 1, 1 );
-	//pm->load(ProgDir+ "/menu/app_del.png");
+	pm->load(ProgDir+ "/menu/profile_edit.png");
 	menuProfile->insertItem ( LNG_CHANGE , NULL, pm, true, 2, 2 );	
-	//pm->load(ProgDir+ "/menu/app_del.png");
+	pm->load(ProgDir+ "/menu/auth_acepted.png");
 	menuProfile->insertItem ( LNG_SET_DEFS , NULL, pm, true, 3, 3 );
 	
 	menu->connectItem ( 0, this, SLOT ( menu_connect() ) );
@@ -808,8 +796,10 @@ void ZGui::onConnectChange (int protocol, bool online)
 
 void ZGui::slot_onUserNotify(string uin, uint32_t stat1, uint32_t stat2, bool invis_flag)
 {
+	logMes_3("ZGui::slot_onUserNotify");
 	if ( stat2 == STATUS_OFFLINE && cfg_dontShowOffLine )
 	{
+		logMes_3("delete contact");
 		lbContact->contactRemove(uin);
 	} else
 	{	
@@ -838,7 +828,7 @@ void ZGui::slot_onIncomingMsg(ICQKid2Message msg)
 			mes = strtoqstr( msg.text.c_str() );
 			break;
 		case ICQKid2Message::LOCAL8BIT :
-			logMes_3("Coded: 8 bit encoded with %d codepage", msg.codepage);
+			logMes_3("Coded: 8 bit encoded with "+QString::number(msg.codepage)+" codepage");
 			mes = codec->toUnicode( msg.text.c_str() );
 			break;
 		case ICQKid2Message::UCS2BE :
@@ -854,7 +844,7 @@ void ZGui::slot_onIncomingMsg(ICQKid2Message msg)
 	int uin_ind = icq->findContact( msg.uin );
 	if ( uin_ind < 0 ) // if not exist contact
 		uin_ind = icq->addContactToNoCLList(QString(msg.uin.c_str()),QString(msg.uin.c_str()));
-	icq->setMesIcon(uin_ind, 1);
+	icq->setMesIcon(uin_ind, true);
 	
 	QDateTime time;
 	time.setTime_t(msg.timestamp);	
@@ -1018,8 +1008,6 @@ void ZGui::slot_onChangeTextChat(std::string jid, QString mes)
 			return;
 		}	
 	}
-	
-	//alert();
 }
 #endif
 
@@ -1027,13 +1015,11 @@ void ZGui::slot_onAuthReply(string from, string text, uint8_t aflag)
 {
 	logMes_3("slot_onAuthReply: run");
 	int uin_ind = icq->findContact(from);
-	
-	int type = ((aflag==AUTH_DECLINED) ? TYPE_AUTH_DECLINED : TYPE_AUTH_ACCEPTED);
-	
+
 	newMes( QString::fromLocal8Bit( from.c_str() ),
 		strtoqstr( icq->getNick(uin_ind) ),
 		QString::fromLocal8Bit( text.c_str() ),
-		QDateTime::currentDateTime(), type);
+		QDateTime::currentDateTime(), ((aflag==AUTH_DECLINED) ? TYPE_AUTH_DECLINED : TYPE_AUTH_ACCEPTED) );
 
 	alert();
 }
@@ -1041,8 +1027,6 @@ void ZGui::slot_onAuthReply(string from, string text, uint8_t aflag)
 void ZGui::slot_onAuthRequest(string from, string text)
 {
 	logMes_3("slot_onAuthRequest: run");
-	trayMes = true;
-	ZHeader::changeStatus(ZHeader::IM, 4);
 
 	int uin_ind = icq->findCLUIN(from);
 	QString qtext;
@@ -1063,6 +1047,9 @@ void ZGui::slot_onAuthRequest(string from, string text)
 
 	uin_ind = icq->findContact( from );	
 	icq->setAskAuth(uin_ind, true);
+
+	if ( dlgChat && dlgChat->uin == from )		
+		dlgChat->buildMenu();
 
 	alert();
 
@@ -1302,10 +1289,9 @@ void ZGui::menu_userInfo()
 		return;
 
 	qApp->removeEventFilter( this );
-	dlgUserInfo  = new ZUserInfo( listitem->getUID() );
+	ZUserInfo * dlgUserInfo  = new ZUserInfo( listitem->getUID() );
 	dlgUserInfo->exec();
-	delete dlgUserInfo;
-	dlgUserInfo = NULL;	
+	delete dlgUserInfo;	
 	qApp->installEventFilter( this );
 }
 
@@ -1336,7 +1322,7 @@ void ZGui::menu_connect()
 			if ( napi_link == 0)
 			{
 				inetConnec = true;
-				link = napi->openLink(MyProfile);
+				link = napi->openLink( cfg_inetProfile );
 				napi_link = link;
 			}
 		} else
@@ -1435,7 +1421,6 @@ void ZGui::clearList()
 	QPixmap pm;
 	pm.load( ProgDir + QString ( "/split/icq.png" ) );
 	listitem->setPixmap ( 0, pm );
-	listitem->setSelectable(false);
 	lbContact->protAdd ( listitem );
 
 	#ifdef _XMPP
@@ -1443,7 +1428,6 @@ void ZGui::clearList()
 	listitem->setProtocol(PROT_SPLIT2);
 	pm.load( ProgDir + QString ( "/split/jabber.png" ) );
 	listitem->setPixmap ( 0, pm );
-	listitem->setSelectable(false);
 	lbContact->protAdd ( listitem );
 	#endif
 }
@@ -1553,6 +1537,8 @@ void ZGui::menu_removeContact()
 	{
 		icq->removeContact(suin);
 	}
+	
+	qApp->installEventFilter( this );	
 }
 
 void ZGui::menu_addGroup()
@@ -1818,8 +1804,8 @@ void ZGui::printContact(bool Clear)
 	if (Clear)
 		lbContact->dellAllContactWithProtocol(PROT_ICQ);
 
-	logMes_1("Group in list: %d",icq->getCountGroup());
-	logMes_1("Contact in list: %d",icq->getCountCL());
+	logMes_1("Group in list: "+QString::number(icq->getCountGroup()));
+	logMes_1("Contact in list: "+QString::number(icq->getCountCL()));
 
 	for (int i=0; i<icq->getCountGroup(); ++i)
 		icqAddGroup( strtoqstr( icq->getGroupName(i).c_str() ), icq->getGroupItemId(i) );
@@ -1843,6 +1829,8 @@ void ZGui::printContact(bool Clear)
 	//Add no list contact
 	for (uint j=1000; j<1000+icq->NoContactListUins.size(); ++j)
 		icqAddUser(strtoqstr( icq->getNick(j).c_str() ), icq->getUIN(j), icq->getStatus(j), icq->getXStatus(j), icq->getClientId(j), j, icq->getGroupId(j),  icq->isWaitAuth(j), icq->isMesIcon(j));
+
+	lbContact->UpdateList();
 }
 
 #ifdef _XMPP
@@ -1853,8 +1841,8 @@ void ZGui::xmppPrintContact(bool Clear)
 	if (Clear)
 		lbContact->dellAllContactWithProtocol(PROT_JABBER);
 
-	logMes_3("Group in list: %d",xmpp->getGroupCount());
-	logMes_3("Contact in list: %d",xmpp->getContactCount());
+	logMes_3("Group in list: "+QString::number(xmpp->getGroupCount());
+	logMes_3("Group in list: "+QString::number(xmpp->getContactCount());
 	
 	for (int i=0; i<xmpp->getGroupCount(); ++i)
 	{
@@ -1967,17 +1955,14 @@ void ZGui::newMes(QString uin, QString title, QString mes, QDateTime time, int t
 {
 	logMes_2("newMes: "+uin);
 	messageList[uin.toUInt()].append( BDMes(title, mes, time, type) );
-	if ( dlgChat != NULL )
+	if ( dlgChat && dlgChat->uin == uin.latin1() )
 	{
-		logMes_2("newMes: Add New Message to Chat");
-		if ( dlgChat->uin == uin.latin1() )
-		{
-			dlgChat->addMes( bdMesToText( BDMes(title, mes, time, type )) );
-			logMes_2("newMes: Added mes");
-			return;
-		}	
+		logMes_2("newMes: Add New Message to Chat");		
+		dlgChat->addMes( bdMesToText( BDMes(title, mes, time, type )) );
+		logMes_2("newMes: Added mes");
+		return;
 	}
-	
+
 	trayMes = true;
 	ZHeader::changeStatus(ZHeader::IM, 4);
 
@@ -2139,6 +2124,7 @@ void ZGui::openChat(ZContactItem* listitem)
 	if ( listitem->getProtocol() == PROT_ICQ )
 	{
 		messanges = messageList[QString( listitem->getUID().c_str() ).toUInt()];
+		icq->setMesIcon(listitem->getReservedData(), false);
 	} else
 	#ifdef _XMPP
 	if ( listitem->getProtocol() == PROT_JABBER )
@@ -2166,8 +2152,8 @@ void ZGui::openChat(ZContactItem* listitem)
 		return;
 	}
 	
-	listitem->setNewMes(false);
-	listitem->setType(false);
+	listitem->setNewMes( false );
+	listitem->setType( false );
 
 	updateMyIcon();
 

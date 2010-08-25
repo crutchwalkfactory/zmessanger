@@ -33,30 +33,23 @@
 void * getInfo(void *);
 void * updateInfo(void *);
 
+ZUserInfo * dlgUserInfo;
+
 ZUserInfo::ZUserInfo(std::string _id)
     :MyBaseDlg()
 {
  	setMainWidgetTitle ( LNG_USERINFO );
 	id = _id;
-	
-	myWidget = new ZWidget();
-	
-	tabWidget = NULL;
-	spFull = NULL;
-	spMain = NULL;
-	spHome = NULL;
-	spWork = NULL;
-	spPrivate = NULL;
-	spAbout = NULL;
-	desc = NULL;
-		
+	dlgUserInfo = this;
+
 	initInterface();
 
 	ZSoftKey *softKey = new ZSoftKey ( NULL, this, this );
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY ) 0 );
 	softKey->setClickedSlot ( ZSoftKey::LEFT, this, SLOT ( menu_close() ) );
-	softKey->setText ( ZSoftKey::RIGHT, LNG_UPD, ( ZSoftKey::TEXT_PRIORITY ) 0 );
-	softKey->setClickedSlot ( ZSoftKey::RIGHT, this, SLOT ( menu_update() ) );	
+	// TODO: FIX - Add update button
+	//softKey->setText ( ZSoftKey::RIGHT, LNG_UPD, ( ZSoftKey::TEXT_PRIORITY ) 0 );
+	//softKey->setClickedSlot ( ZSoftKey::RIGHT, this, SLOT ( menu_update() ) );	
 	setCSTWidget ( softKey );
 
 	pthread_attr_t attr;
@@ -74,37 +67,17 @@ void ZUserInfo::initInterface()
 
 	QPixmap pm;
 
-	if ( tabWidget )
-		delete tabWidget;
+	myWidget = new ZWidget();
 	tabWidget = new ZNavTabWidget(ZNavTabWidget::NEIGHBOR, false, false, myWidget);
-    tabWidget->setFocusPolicy(ZNavTabWidget::NoFocus);
-    tabWidget->setTabPosition(ZNavTabWidget::TOP);	
+	tabWidget->setFocusPolicy(ZNavTabWidget::NoFocus);
+	tabWidget->setTabPosition(ZNavTabWidget::TOP);	
 	setContentWidget ( tabWidget );
 
-	if ( spFull )
-		delete spFull;
 	spFull = new ZDetailView(this);
-	if ( spMain )
-		delete spMain;	
-	spMain = new ZDetailView(this);
-	if ( spHome )
-		delete spHome;		
-	spHome = new ZDetailView(this);
-	if ( spWork )
-		delete spWork;		
+	spMain = new ZDetailView(this);	
+	spHome = new ZDetailView(this);	
 	spWork = new ZDetailView(this);
-	if ( spPrivate )
-		delete spPrivate;	
-	spPrivate = new ZDetailView(this);
-	if ( spAbout )
-		delete spAbout;		
-	spAbout = new QScrollView(this);
-
-	if ( desc )
-		delete desc;	
-	desc = new xTextView(spAbout, zSmile);
-
-	spAbout->addChild(desc, 0, 0);
+	tvDesc = new xTextView(this, zSmile);
 
 	spFull->setFont(ZDetailItem::FontContent, font);
 	spFull->setFont(ZDetailItem::FontTitle, font);
@@ -112,8 +85,6 @@ void ZUserInfo::initInterface()
 	spMain->setFont(ZDetailItem::FontTitle, font);
 	spHome->setFont(ZDetailItem::FontContent, font);
 	spHome->setFont(ZDetailItem::FontTitle, font);
-	spPrivate->setFont(ZDetailItem::FontContent, font);
-	spPrivate->setFont(ZDetailItem::FontTitle, font);
 	spWork->setFont(ZDetailItem::FontContent, font);
 	spWork->setFont(ZDetailItem::FontTitle, font);
 
@@ -126,7 +97,7 @@ void ZUserInfo::initInterface()
 	pm.load(ProgDir+ "/image/tab_work.png");
 	tabWidget->addTab(spWork, QIconSet(pm), "");
 	pm.load(ProgDir+ "/image/tab_note.png");
-	tabWidget->addTab(spAbout, QIconSet(pm), "");
+	tabWidget->addTab(tvDesc, QIconSet(pm), "");
 
 	tabWidget->setFocus();
 	
@@ -150,9 +121,9 @@ void ZUserInfo::menu_update()
 		pthread_cancel(thread);
 		pthreadExit = true;
 	}
-
+	
 	initInterface();
-
+			
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -162,7 +133,7 @@ void ZUserInfo::menu_update()
 
 void * getInfo(void * id)
 {
-	zgui->dlgUserInfo->pthreadExit = false;
+	dlgUserInfo->pthreadExit = false;
 	ICQKidFullUserInfo uinfo;
 
 	logMes_2("ZUserInfo: Get full usr info");
@@ -172,16 +143,16 @@ void * getInfo(void * id)
 	if (zgui->icq->getFullUserInfo(suin, uinfo, false)) 
 	{
 		logMes_2("ZUserInfo: Show info");
-		zgui->dlgUserInfo->showInfo(uinfo);
+		dlgUserInfo->showInfo(uinfo);
 	}
 	logMes_2("ZUserInfo: End show");	
-	zgui->dlgUserInfo->pthreadExit = true;
+	dlgUserInfo->pthreadExit = true;
 	pthread_exit(NULL);
 }
 
 void * updateInfo(void * id)
 {
-	zgui->dlgUserInfo->pthreadExit = false;	
+	dlgUserInfo->pthreadExit = false;	
 	ICQKidFullUserInfo uinfo;
 
 	logMes_2("ZUserInfo: Update full usr info");
@@ -190,10 +161,10 @@ void * updateInfo(void * id)
 	if (zgui->icq->getFullUserInfo(suin, uinfo, true)) 
 	{
 		logMes_2("ZUserInfo: Show info");
-		zgui->dlgUserInfo->showInfo(uinfo);
+		dlgUserInfo->showInfo(uinfo);
 	}
 	logMes_2("ZUserInfo: End show");
-	zgui->dlgUserInfo->pthreadExit = true;	
+	dlgUserInfo->pthreadExit = true;	
 	pthread_exit(NULL);
 }
 
@@ -205,17 +176,13 @@ ZUserInfo::~ZUserInfo()
 	delete spFull;
 	delete spMain;	
 	delete spHome;		
-	delete spWork;		
-	delete spPrivate;	
-	delete spPrivate;		
-	delete desc;
+	delete spWork;			
+	delete tvDesc;
 	spFull = NULL;
 	spMain = NULL;
 	spHome = NULL;
 	spWork = NULL;
-	spPrivate = NULL;
-	spAbout = NULL;
-	desc = NULL;	
+	tvDesc = NULL;	
 }
 
 void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)
@@ -250,14 +217,14 @@ void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)
     }
     if ( strGender != "" )
     {
-	detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_GANDER+strGender, QChar());
+		detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_GANDER+strGender, QChar());
 		detailItem->enableStructureDataParse(false);
 		spFull->addItem(detailItem);
     }
 	
     if (uinfo.Birthmonth != 0 && uinfo.Birthday!=0)
     {
-	detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_BYRTHDAY +QString::number(uinfo.Birthday) +"."+QString::number(uinfo.Birthmonth) +"."+QString::number(uinfo.Birthyear), QChar());
+		detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_BYRTHDAY +QString::number(uinfo.Birthday) +"."+QString::number(uinfo.Birthmonth) +"."+QString::number(uinfo.Birthyear), QChar());
 		detailItem->enableStructureDataParse(false);
 		spFull->addItem(detailItem);
     }
@@ -285,7 +252,7 @@ void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)
 	
     if ( strGender != "" )
     {
-	detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_GANDER+strGender, QChar());
+		detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_GANDER+strGender, QChar());
 		detailItem->enableStructureDataParse(false);
 		spMain->addItem(detailItem);
     }	
@@ -489,13 +456,11 @@ void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)
     detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_WEBPAGE+zgui->strtoqstr(uinfo.Workwebpage), QChar());
 	detailItem->enableStructureDataParse(false);
 	spWork->addItem(detailItem);	
-		
-	// Private info	
 
 	// About info
-	desc->setFontSize( cfg_chatFontSize );
-	desc->setFixedHeight(SCREEN_WIDTH-5);
-	desc->setText(zgui->strtoqstr(uinfo.Notes));	
+	tvDesc->setFontSize( cfg_chatFontSize );
+	tvDesc->setFixedHeight(SCREEN_WIDTH-5);
+	tvDesc->setText(zgui->strtoqstr(uinfo.Notes));	
 	
 	tabWidget->setCurrentPage(0);
 	spFull->repaintContents(tabWidget->currentPage()->rect());

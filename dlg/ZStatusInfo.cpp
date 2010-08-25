@@ -216,6 +216,7 @@ void ZStatusInfo::setDesc(QString S)
 		return;
 	#endif
 	desc->setText(S);
+	desc->update();
 }
 
 void ZStatusInfo::setTitle(QString S)
@@ -225,12 +226,5 @@ void ZStatusInfo::setTitle(QString S)
 		return;
 	#endif
 	title->setText(S);
-	int h = title->height();
-	if ( h%2 != 0 )
-	{
-		title->resize(title->width(),++h);
-	} else
-	{
-		title->resize(title->width(),--h);
-	}
+	title->update();
 }

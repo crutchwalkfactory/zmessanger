@@ -15,7 +15,6 @@
 #include "BaseDlg.h"
 #include "xTextView.h"
 #include <ZLabel.h>
-#include <qscrollview.h>
 #include <ZDetailView.h>
 #include <ZNavTabWidget.h>
 #include <qlabel.h>
@@ -42,10 +41,8 @@ class ZUserInfo : public MyBaseDlg {
   	ZDetailView * spMain;
   	ZDetailView * spHome;
   	ZDetailView * spWork;
-  	ZDetailView * spPrivate;
-	QScrollView * spAbout;
 	pthread_t thread;
-	xTextView * desc;
+	xTextView * tvDesc;
 	
 	ZWidget *myWidget;
 

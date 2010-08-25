@@ -16,11 +16,13 @@
 #include "config.h"
 #include <stdio.h>
 
-//#ifndef _AllLogInFile
-//#define logMes printf
-//#else
+#if defined(NEW_PLATFORM)&&!defined(CUTED_PLATFORM)&&!defined(_AllLogInFile)
+#define logMes printf
+#else
 #define logMes qDebug
-//#endif
+#endif
+
+//#define logMes(s) std::cout<<s<<std::endl
 
 #define logMes_1
 #define logMes_2
@@ -54,6 +56,7 @@ extern zEmotIcons * zSmile;
 extern ZMyApplication * app;
 extern QString ProgDir;
 
+extern QString cfg_inetProfile;
 extern bool cfg_alertVibr;
 extern bool cfg_alertRing;
 extern QString cfg_alertPath;

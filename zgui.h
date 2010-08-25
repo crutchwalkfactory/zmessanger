@@ -15,7 +15,6 @@
 #include "zICQ.h"
 
 //C/C++
-#include <qobject.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
@@ -28,6 +27,7 @@
 #include <ZProgressDlg.h>
 
 //QT
+#include <qobject.h>
 #include <qmap.h>
 #include <qdatetime.h>
 #include <qvaluelist.h>
@@ -86,7 +86,6 @@ class ZGui :public ZKbMainWidget
 
     tHistory messageList;
 
-    QString MyProfile;
     zICQ *icq; 
     void sendMessange(string id, QString mes, int protocol = PROT_ICQ);
 
@@ -97,7 +96,6 @@ class ZGui :public ZKbMainWidget
     ZOptionsMenu* menu;
 
     QTextCodec * codec;
-    ZUserInfo * dlgUserInfo;
 
     int strtoint(string str);
     QString strtoqstr( string str, bool detectCodec = true );

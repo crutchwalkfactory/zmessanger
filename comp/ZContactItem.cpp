@@ -16,6 +16,8 @@
 #include "config.h"
 #include "zDefs.h"
 
+using namespace std;
+
 ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 	ZSettingItem(_container, CONVERT_TYPE(_type) )
 {
@@ -30,11 +32,18 @@ ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 	clientId = 255;
 	uid = "";
 	IsHide = false;
-	invis = false;
 
 	// for dont jump image in list
-	if ( type == ITEM_CONACT )
-		setPixmap ( GET_NUM_FAKE(type), QPixmap(ProgDir + "/CL/fake.png") );	
+	switch ( type )
+	{
+		case ITEM_CONACT:
+			setPixmap ( GET_NUM_FAKE(type), QPixmap(ProgDir + "/CL/fake.png") );
+			break;
+		case ITEM_SPLITER:
+			setSelectable(false);
+			setSeparator("-",NULL);
+			break;			
+	}
 }
 
 ZContactItem::~ZContactItem()
@@ -160,7 +169,7 @@ void ZContactItem::setStatus(int n, bool update)
 			default: 
 			{
 				ico = "invisible.png";
-				logMes("Error Status %d not found!!!", status);
+				logMes("Error Status "+QString::number(status)+" not found!!!");
 			}
 		}
 		pm.load( ProgDir + QString ( "/status/icq/" ) + ico );

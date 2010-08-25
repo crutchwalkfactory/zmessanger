@@ -12,7 +12,7 @@
 #ifndef ZMYLISTBOX_H
 #define ZMYLISTBOX_H
 
-#include "./../config.h"
+#include "config.h"
 
 #include "ZContactItem.h"
 
@@ -21,10 +21,9 @@
 
 #include <string>
 
+
 typedef QMap<std::string, ZContactItem*> ListMap;
 typedef QMap<int, ZContactItem*> List2Map;
-
-using namespace std;
 
 #define PROT_JABBER      100   //0x1000
 #define PROT_ICQ         200   //0x2000

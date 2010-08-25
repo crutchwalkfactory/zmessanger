@@ -26,6 +26,7 @@ zEmotIcons * zSmile;
 
 QString ProgDir;
 
+QString cfg_inetProfile;
 bool cfg_alertVibr;
 bool cfg_alertRing;
 QString cfg_alertPath;
@@ -52,6 +53,7 @@ int main ( int argc, char **argv )
 	oldSmile = 0;
 	trafIN = 0;
 	trafOUT = 0;
+	cfg_inetProfile="";
 
 	// Create ZApplication
 	app = new ZMyApplication ( argc, argv );

@@ -22,8 +22,6 @@
 
 #include "zDefs.h"
 
-using namespace std;
-
 class ZMyListBox;
 
 class Q_EXPORT ZContactItem : public ZSettingItem
@@ -79,7 +77,6 @@ protected:
 	int group;
 	char protocol;
 	
-	bool invis;
 	bool typeIn;
 	bool newMes;
 	int status;

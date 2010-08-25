@@ -41,14 +41,12 @@ ZAddProfile::ZAddProfile()
 	
 	zleID = new ZLineEdit("", form);
 	zleID->setTitle( LNG_LOGIN );
-	
 	form->addChild ( zleID );
 	
 	zlePas = new ZLineEdit("", form);
 	zlePas->setTitle( LNG_PASSWORD );
-	
+	setInputMethod(zlePas, ZKB_INPUT_PREDICTIVE, ZKbInputField::FIELD_TYPE_PASSWORD);
 	zlePas->setEchoMode(ZLineEdit::Password);
-	
 	form->addChild ( zlePas );
 
 	connect ( zcbProtocol, SIGNAL ( activated(int) ), this, SLOT ( changeProtocol(int) ) );
@@ -131,7 +129,7 @@ void ZAddProfile::changeProtocol(int n)
 	flist1.append( ZKB_INPUT_NUMERIC );
 
 	QValueList<QUuid> flist2;
-	flist2.append( ZKB_INPUT_MULTITAP );
+	flist2.append( ZKB_INPUT_PREDICTIVE );
 	flist2.append( ZKB_INPUT_SYMBOL );
 	
 	switch(n)
@@ -143,7 +141,7 @@ void ZAddProfile::changeProtocol(int n)
 		}
 		case 1: //JABBER
 		{
-			setInputMethods((QWidget*)zleID, (const QUuid&)ZKB_INPUT_MULTITAP, flist2);
+			setInputMethods((QWidget*)zleID, (const QUuid&)ZKB_INPUT_PREDICTIVE, flist2);
 			break;
 		}
 	}

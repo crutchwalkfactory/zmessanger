@@ -240,18 +240,26 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry(QString("Status"), QString("saveStausCanDisconect"), optSaveStusWithExit->getNum());
 	cfg.flush();
 
+	cfg_inetProfile = optInetLink->getText();
+	zgui->icq->setLoginHost(optICQServer->getText().latin1(), optICQPort->getText().toInt());
+	cfg_timeKeepConnect = optICQKeepTime->getText().toInt();
+	zgui->icq->delayReadSnec = optICQdelayReadSnec->getText().toInt();
+	#ifndef _NoUSBNetOption
+	cfg_InetOnUSB = optUSBNet->getNum();
+	#endif
+	
+	zgui->icq->noAutoXTrazRequest = !optXTrazRequest->getNum();
+	zgui->icq->noAutoMsgRequest = !optAutoMsgRequest->getNum();
+	zgui->icq->enabledEye = optEye->getNum();
+	
 	cfg_alertVibr = optVibrate->getNum();
 	cfg_alertRing = optTone->getNum();
 	cfg_dontShowGroup = !optShowGroup->getNum();
 	cfg_rigthAlignXStatus = optRigthXStatus->getNum();
 	cfg_notSendTypeMes = !optSendTypeMes->getNum();
 	cfg_sendByCenter = optSendByCenter->getNum();
-	#ifndef _NoUSBNetOption
-	cfg_InetOnUSB = optUSBNet->getNum();
-	#endif
 
 	cfg_alertPath = optTonePath->getText();
-	cfg_timeKeepConnect = optICQKeepTime->getText().toInt();
 	cfg_sortType = optSortType->getNum();
 	cfg_maxNumLines = optMaxNumLine->getNum();
 	cfg_mesFontSize = optMesFontSize->getNum();
@@ -259,9 +267,7 @@ void ZSettingsDlg::saveSetting()
 
 	zgui->codec = QTextCodec::codecForName( optCodePage->getText() );
 	if ( zgui->codec == 0 )
-	{
 		zgui->codec = QTextCodec::codecForName( "CP1251" );
-	}
 	
 	accept();
 }

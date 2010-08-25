@@ -197,7 +197,7 @@ int zICQ::findContact(string uin)
 			logMes_3("findContact: Not in no cl");
 	}
 	
-	logMes_2("findContact: Return: %d", id);
+	logMes_2("findContact: Return: "+QString::number(id));
 	return id;
 }
 

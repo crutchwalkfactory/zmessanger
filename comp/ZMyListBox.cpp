@@ -11,8 +11,10 @@
 
 #include "ZMyListBox.h"
 
+#define qstrcmp strcmp
 #include "zDefs.h"
 
+using namespace std;
 
 ZMyListBox::ZMyListBox( QWidget* parent, WFlags f)
  : ZListBox ( parent, f )
@@ -70,16 +72,16 @@ void ZMyListBox::dellAllContactWithProtocol( int prot, bool lock )
 
 void ZMyListBox::contactRemove( string idContact )
 {
-	ZContactItem * item = listContact[idContact];
+	ListMap::Iterator it = listContact.find(idContact);
 	
-	if ( item == NULL )
-		return;
-
-	if ( !item->isHide() )
-		takeItem(item);
-	delete item;
-	item=NULL;
-	listContact.remove(idContact);
+	if ( it == listContact.end() )
+		return;	
+		
+	ZContactItem* item = it.data();
+	
+	listContact.remove(it);
+	if ( item && !item->isHide() )
+		takeItem( item );	
 }
 
 void ZMyListBox::contactAdd( ZContactItem * item )
@@ -94,7 +96,7 @@ void ZMyListBox::contactAdd( ZContactItem * item )
 	else
 		itemAt = listProt[PROT_SPLIT2];
 	
-	if ( itemAt != NULL )
+	if ( itemAt )
 		insertAt = index(itemAt)+1;
 			
 	insertItem( item, insertAt);
@@ -116,7 +118,7 @@ void ZMyListBox::groupAdd( ZContactItem * item, string idGroup )
 	if ( item->getProtocol() == PROT_ICQ )
 	{
 		ZContactItem * itemAt = listProt[PROT_SPLIT2];
-		if ( itemAt != NULL )
+		if ( itemAt )
 			insertAt = index(itemAt)+1;
 	}
 	
@@ -284,10 +286,10 @@ void ZMyListBox::setShowGroup(bool show)
 void ZMyListBox::clear()
 {
 	mutexOnRepaint.lock();
-	ZListBox::clear();
 	listContact.clear();
 	listGroup.clear();
-	listProt.clear();
+	listProt.clear();	
+	ZListBox::clear();
 	mutexOnRepaint.unlock();
 }
 
