@@ -66,6 +66,7 @@ ZHistoryView::ZHistoryView( string uin )
 	}
 	
 	zmleHistory->toEnd();
+	zmleHistory->installEventFilter( this );
 
 	setContentWidget ( zmleHistory );
 
@@ -73,5 +74,26 @@ ZHistoryView::ZHistoryView( string uin )
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY ) 0 );
 	softKey->setClickedSlot ( ZSoftKey::LEFT, this, SLOT ( reject() ) );
 	setCSTWidget ( softKey );
+}
+
+ZHistoryView::~ZHistoryView()
+{
+	zmleHistory->removeEventFilter( this );	
+}
+
+bool ZHistoryView::eventFilter(QObject* o, QEvent* pEvent)
+{
+	if (  QEvent::KeyPress == pEvent->type())
+	{
+		switch ( ((QKeyEvent*)pEvent)->key() )
+		{
+			case Z6KEY_SIDE_UP:     zmleHistory->pageUp();		return true;  break;
+			case Z6KEY_SIDE_DOWN:   zmleHistory->pageDown(); 	return true;  break;
+			case Z6KEY_RED:
+			case Z6KEY_C:
+									reject();					return true;  break;		
+		}
+	} 
+	return false;
 }
 

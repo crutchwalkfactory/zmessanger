@@ -13,7 +13,7 @@
 
 	#define VER_MAJOR  0
 	#define VER_MINOR  3
-	#define VER_STATUS 0 
+	#define VER_STATUS 1 
 	// 0 - PreAlpha 1 - Alpha 2 - Betta 3 - RC 4 - Stable
 
 	#define ZMESSANGER_CHENEL "/Ant-ON/zIM/"

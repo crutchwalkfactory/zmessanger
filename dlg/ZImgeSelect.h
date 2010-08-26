@@ -24,7 +24,7 @@ class ZImgeSelect : public MyBaseDlg
     Q_OBJECT
 
 public:
-    ZImgeSelect( bool smile = true);
+    ZImgeSelect( bool _smile=true, bool _addHotStatus=false);
     ~ZImgeSelect();
   
 signals:
@@ -37,6 +37,8 @@ private:
     ZSoftKey *softKey;
     ZNavTabWidget *tabWidget;
     ZWidget *myWidget;
+    bool addHotStatus;
+    bool smile;
     
 protected slots:
     void slotImegeSelected();
@@ -46,6 +48,7 @@ protected slots:
     void lbStatusChange( );
     void lbQStatusChange( );
     void slotPageChanged(QWidget* );
+    void slotLeftSoftKey();
     
 };
 

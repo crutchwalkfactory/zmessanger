@@ -88,23 +88,24 @@
 #define LNG_UNKNOWN QString::fromUtf8("Неизвестный")
 
 //ZSetting
-#define LNG_INETPROF QString::fromUtf8("Профиль интернета:")
-#define LNG_ICQSERV QString::fromUtf8("ICQ сервер:")
-#define LNG_PORT QString::fromUtf8("Порт:")
-#define LNG_KEEPCONNECTTIME QString::fromUtf8("Поддерживать подключение\nкаждые(сек):")
+#define LNG_INETPROF QString::fromUtf8("Профиль интернета")
+#define LNG_ICQSERV QString::fromUtf8("ICQ сервер")
+#define LNG_PORT QString::fromUtf8("Порт")
+#define LNG_KEEPCONNECTTIME QString::fromUtf8("Поддерживать подключение каждые(сек)")
 #define LNG_VIBRATE QString::fromUtf8("Вибрация")
 #define LNG_RINGTONE QString::fromUtf8("Звуковое оповещение")
-#define LNG_RINGTONEPATH QString::fromUtf8("Мелодия:")
+#define LNG_RINGTONEVOL QString::fromUtf8("Громкость мелодии")
+#define LNG_RINGTONEPATH QString::fromUtf8("Мелодия")
 #define LNG_SHOWOFFCONT QString::fromUtf8("Показывать контакты не в сети")
 #define LNG_SHOWGROUP QString::fromUtf8("Показывать группы")
 #define LNG_XSTATUSRIGTH QString::fromUtf8("Значёк xStatus справа")
-#define LNG_FONTSIZECHAT QString::fromUtf8("Размер шрифта в окне\nистории:")
-#define LNG_FONTSIZEMES QString::fromUtf8("Размер шрифта в окне\nнабора сообщения:")
-#define LNG_MAXNUMLINESCHAT QString::fromUtf8("Максимальное число строк\nистории в окне чата:")
+#define LNG_FONTSIZECHAT QString::fromUtf8("Размер шрифта в окне истории:")
+#define LNG_FONTSIZEMES QString::fromUtf8("Размер шрифта в окне набора сообщения:")
+#define LNG_MAXNUMLINESCHAT QString::fromUtf8("Максимальное число строк истории в окне чата:")
 #define LNG_DEFCP QString::fromUtf8("Кодировка поумолчанию:")
 #define LNG_XSTATUSAUTOREQUEST QString::fromUtf8("Автоматический запрос xStatus")
 #define LNG_STATUSAUTOREQUEST QString::fromUtf8("Автоматический запрос статуса")
-#define LNG_DELAYNEWSOCKREAD QString::fromUtf8("Задержка нового чтения\nиз сокета (милсек):")
+#define LNG_DELAYNEWSOCKREAD QString::fromUtf8("Задержка нового чтения из сокета (милсек):")
 #define LNG_SENDTYPEMES QString::fromUtf8("Отправлять оповещения о наборе сообщения")
 #define LNG_SORTCONTACT QString::fromUtf8("Сортировка контактов:")
 #define LNG_NO_SORTCONTACT QString::fromUtf8("Не сортировать")
@@ -112,6 +113,7 @@
 #define LNG_STATUS_NICK_SORTCONTACT QString::fromUtf8("По статусу и нику")
 #define LNG_SEND_BY_CENTER QString::fromUtf8("Отправлять по нажатию центра джойстика")
 #define LNG_SAVE_STATUS_WITH_EXIT QString::fromUtf8("Сохранять статусы при выходе")
+#define LNG_NO_SHOW_STATUS_BAR_IN_CHAT QString::fromUtf8("Заголовок в окне чата")
 
 //ZStatusInfo
 #define LNG_STATUS QString::fromUtf8("Статус")
@@ -224,17 +226,17 @@
 #define LNG_XSTATUS_WORK "Работаю"
 #define LNG_XSTATUS_TYPE "Печатаю"
 #define LNG_XSTATUS_PICNIC "Пикник"
-#define LNG_XSTATUS_COOK "Cook"
-#define LNG_XSTATUS_SMOKE "Smoke"
-#define LNG_XSTATUS_IM_HIGH "Im_high"
+#define LNG_XSTATUS_COOK "КПК"
+#define LNG_XSTATUS_SMOKE "Мобильник"
+#define LNG_XSTATUS_IM_HIGH "Засыпаю"
 #define LNG_XSTATUS_WC "В туалете"
 #define LNG_XSTATUS_BE_NOT_BE "Вопрос"
 #define LNG_XSTATUS_PRO7_TV "Дорога"
-#define LNG_XSTATUS_LOVE "Love"
-#define LNG_XSTATUS_SMOKING "Smoking"
+#define LNG_XSTATUS_LOVE "Сердце"
+#define LNG_XSTATUS_SMOKING "Перекур"
 #define LNG_XSTATUS_SEX "Sex"
-#define LNG_XSTATUS_SEARCHING "Searching"
-#define LNG_XSTATUS_JOURNAL "Journal"
+#define LNG_XSTATUS_SEARCHING "Поиск"
+#define LNG_XSTATUS_JOURNAL "Дневник"
 #define LNG_XSTATUS_LOVE2 "Love"
 
 //ZOptionItem

@@ -31,8 +31,6 @@ class zICQ : public ICQKid2
 	void startConnect();
 	bool connected;
 
-	bool miif_break_flag;
-
 	string USC2BEto8BIT(string str);
 	QString unicodeToUtf8(string str);
 
@@ -71,6 +69,7 @@ class zICQ : public ICQKid2
 
 	string getGroupName(uint id);
 	
+	void breakNetworkOperation(void);
 
   signals:
   	void onErrorConnect(QString mes);

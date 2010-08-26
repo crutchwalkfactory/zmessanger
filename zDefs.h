@@ -59,6 +59,7 @@ extern QString ProgDir;
 extern QString cfg_inetProfile;
 extern bool cfg_alertVibr;
 extern bool cfg_alertRing;
+extern int cfg_alertRingVol;
 extern QString cfg_alertPath;
 extern int cfg_timeKeepConnect;
 extern int cfg_maxNumLines;
@@ -71,6 +72,7 @@ extern bool cfg_InetOnUSB;
 extern int cfg_chatFontSize;
 extern int cfg_mesFontSize;
 extern bool cfg_sendByCenter; 
+extern bool cfg_noShowStatusBarInChat; 
 extern QString oldMes;//For save old typed text
 extern int oldSmile;//For save old smile position    
 extern long int trafIN;

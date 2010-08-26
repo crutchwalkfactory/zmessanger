@@ -45,7 +45,7 @@ ZAddProfile::ZAddProfile()
 	
 	zlePas = new ZLineEdit("", form);
 	zlePas->setTitle( LNG_PASSWORD );
-	setInputMethod(zlePas, ZKB_INPUT_PREDICTIVE, ZKbInputField::FIELD_TYPE_PASSWORD);
+	setInputMethod(zlePas, ZKB_INPUT_MULTITAP, ZKbInputField::FIELD_TYPE_PASSWORD);
 	zlePas->setEchoMode(ZLineEdit::Password);
 	form->addChild ( zlePas );
 

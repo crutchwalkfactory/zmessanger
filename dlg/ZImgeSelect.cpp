@@ -23,15 +23,17 @@
 #include "zDefs.h"
 
 
-ZImgeSelect::ZImgeSelect(bool smile)
+ZImgeSelect::ZImgeSelect(bool _smile, bool _addHotStatus)
     :MyBaseDlg()
 {
+	smile = _smile;
+	addHotStatus = _addHotStatus;
+	
 	myWidget = new ZWidget ();
 	
 	softKey = new ZSoftKey ( NULL, this, this );
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY )0 );
-	softKey->setText ( ZSoftKey::RIGHT, LNG_CANCEL, ( ZSoftKey::TEXT_PRIORITY )0 );
-	softKey->setClickedSlot ( ZSoftKey::RIGHT, this, SLOT ( reject() ) );
+	softKey->setClickedSlot ( ZSoftKey::RIGHT, this, SLOT ( slotLeftSoftKey()) );
 
 	if (smile)
 	{
@@ -73,9 +75,6 @@ ZImgeSelect::ZImgeSelect(bool smile)
 		lbStatus = new ZListBox ( QString ( "%I16%M" ), tabWidget, 0);
 		lbStatus->setFixedWidth ( SCREEN_WIDTH ); 
 
-		lbQuickStatus = new ZListBox ( QString ( "%I16%M" ), tabWidget, 0);
-		lbQuickStatus->setFixedWidth ( SCREEN_WIDTH ); 
-
 		QPixmap pm;
 		for (int i=0;i<38;i++)
 		{
@@ -87,42 +86,50 @@ ZImgeSelect::ZImgeSelect(bool smile)
 		}
 		
 		connect ( lbStatus, SIGNAL ( selected ( int ) ), this, SLOT ( lbStatusSel ( int ) ) );
-		
-		ZConfig cfg(ProgDir+"/QuickXStatus.cfg");
-		lbQuickStatus->clear();
-		QString st;
-		int nst;
-		for (int i=1;i<20;i++)
-		{
-			nst = cfg.readNumEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), -1);
-			if (nst > -1)
-			{
-				pm.load( ProgDir + "/status/icq/x/icq_xstatus"  + QString::number(nst-1) + ".png" );
-				ZSettingItem* listitem = new ZSettingItem(lbQuickStatus, QString("%I16%M") );
-				listitem->setPixmap ( 0, pm );
-				st = cfg.readEntry(QString("QuickXStatus"), QString("Text"+QString::number(i)), "") + " "+cfg.readEntry(QString("QuickXStatus"), QString("Desc"+QString::number(i)), "");
-				if (st.length()>30)
-				{
-					st.remove(30,st.length());
-					st = st + "...";	
-				}
-				listitem->appendSubItem ( 1, st , false );	
-				listitem->setReservedData ( i );
-				lbQuickStatus->insertItem ( listitem,-1,true );
-			} else
-			{
-				break;
-			}
-		}
-
-		connect ( lbQuickStatus, SIGNAL ( selected ( int ) ), this, SLOT ( lbQStatusSel ( int ) ) );
 
 		pm.load(ProgDir+ "/menu/xStatus.png");
 		tabWidget->addTab(lbStatus, QIconSet(pm), "");
-		pm.load(ProgDir+ "/image/tab_private.png");
-		tabWidget->addTab(lbQuickStatus, QIconSet(pm), "");
 		
-		connect(tabWidget,SIGNAL(currentChanged(QWidget* )),this,SLOT(slotPageChanged(QWidget* )));
+		if ( !addHotStatus )
+		{
+			lbQuickStatus = new ZListBox ( QString ( "%I16%M" ), tabWidget, 0);
+			lbQuickStatus->setFixedWidth ( SCREEN_WIDTH ); 		
+			
+			ZConfig cfg(ProgDir+"/QuickXStatus.cfg");
+			lbQuickStatus->clear();
+			QString st;
+			int nst;
+			for (int i=1;i<20;i++)
+			{
+				nst = cfg.readNumEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), -1);
+				if (nst > -1)
+				{
+					pm.load( ProgDir + "/status/icq/x/icq_xstatus"  + QString::number(nst-1) + ".png" );
+					ZSettingItem* listitem = new ZSettingItem(lbQuickStatus, QString("%I16%M") );
+					listitem->setPixmap ( 0, pm );
+					st = cfg.readEntry(QString("QuickXStatus"), QString("Text"+QString::number(i)), "") + " "+cfg.readEntry(QString("QuickXStatus"), QString("Desc"+QString::number(i)), "");
+					if (st.length()>30)
+					{
+						st.remove(30,st.length());
+						st = st + "...";	
+					}
+					listitem->appendSubItem ( 1, st , false );	
+					listitem->setReservedData ( i );
+					lbQuickStatus->insertItem ( listitem,-1,true );
+				} else
+				{
+					break;
+				}
+			}
+
+			connect ( lbQuickStatus, SIGNAL ( selected ( int ) ), this, SLOT ( lbQStatusSel ( int ) ) );
+
+			pm.load(ProgDir+ "/image/tab_private.png");
+			tabWidget->addTab(lbQuickStatus, QIconSet(pm), "");
+		
+			connect(tabWidget,SIGNAL(currentChanged(QWidget* )),this,SLOT(slotPageChanged(QWidget* )));
+		} else
+			slotPageChanged(NULL);
 
 		softKey->setClickedSlot ( ZSoftKey::LEFT, this, SLOT ( lbStatusSel ( int ) ) );
 
@@ -143,17 +150,21 @@ ZImgeSelect::~ZImgeSelect()
 
 void ZImgeSelect::lbStatusSel(int i)
 {
+	if ( addHotStatus && i==0 )
+		accept();
+	
     if( i == 0)
     { 
     	zgui->icq->setXStatus(i,"", "");
     } else
     if ( i>=0 )
     {
-    	ZXStatusText * dlgXStatusText  = new ZXStatusText(i);
+    	ZXStatusText * dlgXStatusText = new ZXStatusText(i, addHotStatus);
     	dlgXStatusText->exec();
     	delete dlgXStatusText;
     	dlgXStatusText = NULL;
     }
+    
     accept();
 }
 
@@ -178,11 +189,11 @@ void ZImgeSelect::lbQStatusSel(int n)
 		}
 		else
 		{
-			zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), statDesc.utf8().data());
+			zgui->icq->setXStatus(idStatus, statTitle, statDesc);
 			zgui->stopPlayerChenel();
 		}
 		#else
-		zgui->icq->setXStatus(idStatus, statTitle.utf8().data(), statDesc.utf8().data());
+		zgui->icq->setXStatus(idStatus, statTitle, statDesc);
 		#endif
 	}
 	accept();
@@ -197,11 +208,13 @@ void ZImgeSelect::slotPageChanged(QWidget* )
 		case 0:
 		{
 			softKey->setClickedSlot( ZSoftKey::LEFT, this, SLOT( lbStatusChange() ) );
+			softKey->setText ( ZSoftKey::RIGHT, LNG_CANCEL, ( ZSoftKey::TEXT_PRIORITY )0 );
 			break;
 		}
 		case 1:
 		{
 			softKey->setClickedSlot( ZSoftKey::LEFT, this, SLOT( lbQStatusChange() ) );
+			softKey->setText ( ZSoftKey::RIGHT, LNG_ADD, ( ZSoftKey::TEXT_PRIORITY )0 );
 			break;
 		}
 	}
@@ -231,4 +244,16 @@ void ZImgeSelect::lbSmileSel(ZIconViewItem * item)
 void ZImgeSelect::slotImegeSelected()
 {
     lbSmileSel(iconView->currentItem());
+}
+
+void ZImgeSelect::slotLeftSoftKey()
+{
+	if ( !smile && !addHotStatus && tabWidget->currentPageIndex()==1 )
+	{
+		ZImgeSelect * dlg = new ZImgeSelect(smile, !addHotStatus);
+		dlg->exec();
+		delete dlg;
+		dlg = NULL; 
+	}
+	reject();
 }

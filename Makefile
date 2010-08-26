@@ -138,7 +138,6 @@ HEADERS =   zgui.h\
             dlg/ZAboutDlg.h\
             dlg/ZEye.h\
             dlg/ZSettings.h\
-            dlg/MessageDlg.h\
             dlg/ZAddProfile.h\
             dlg/ZHistoruView.h
 
@@ -178,7 +177,6 @@ SOURCES =   main.cpp\
             dlg/ZAboutDlg.cpp\
             dlg/ZEye.cpp\
             dlg/ZSettings.cpp\
-			dlg/MessageDlg.cpp\
 			dlg/ZAddProfile.cpp\
             dlg/ZHistoruView.cpp
 
@@ -218,7 +216,6 @@ OBJECTS =   main.o\
             dlg/ZAboutDlg.o\
             dlg/ZEye.o\
             dlg/ZSettings.o\
-            dlg/MessageDlg.o\
             dlg/ZAddProfile.o\
             dlg/ZHistoruView.o
 
@@ -258,7 +255,6 @@ OBJECTS2 =  $(MAKETO)main.o\
             $(MAKETO)dlg/ZAboutDlg.o\
             $(MAKETO)dlg/ZEye.o\
             $(MAKETO)dlg/ZSettings.o\
-            $(MAKETO)dlg/MessageDlg.o\
             $(MAKETO)dlg/ZAddProfile.o\
             $(MAKETO)dlg/ZHistoruView.o\
             $(MAKETO)zXMPP.o\
@@ -293,7 +289,6 @@ SRCMOC	= moc_zgui.cpp\
           dlg/moc_ZAboutDlg.cpp\
           dlg/moc_ZEye.cpp\
           dlg/moc_ZSettings.cpp\
-          dlg/moc_MessageDlg.cpp\
           dlg/moc_ZAddProfile.cpp\
           dlg/moc_ZHistoruView.cpp
 
@@ -332,7 +327,6 @@ SRCMOC2	= $(MAKETO)moc_zgui.cpp\
           $(MAKETO)dlg/moc_ZAboutDlg.cpp\
           $(MAKETO)dlg/moc_ZEye.cpp\
           $(MAKETO)dlg/moc_ZSettings.cpp\
-          $(MAKETO)dlg/moc_MessageDlg.cpp\
           $(MAKETO)dlg/moc_ZAddProfile.cpp\
           $(MAKETO)dlg/moc_ZHistoruView.cpp\
           $(MAKETO)moc_zXMPP.cpp\
@@ -367,7 +361,6 @@ OBJMOC	= moc_zgui.o\
           dlg/moc_ZAboutDlg.o\
           dlg/moc_ZEye.o\
           dlg/moc_ZSettings.o\
-          dlg/moc_MessageDlg.o\
           dlg/moc_ZAddProfile.o\
           dlg/moc_ZHistoruView.o
 
@@ -406,7 +399,6 @@ OBJMOC2	= $(MAKETO)moc_zgui.o\
           $(MAKETO)dlg/moc_ZAboutDlg.o\
           $(MAKETO)dlg/moc_ZEye.o\
           $(MAKETO)dlg/moc_ZSettings.o\
-          $(MAKETO)dlg/moc_MessageDlg.o\
           $(MAKETO)dlg/moc_ZAddProfile.o\
           $(MAKETO)dlg/moc_ZHistoruView.o\
           $(MAKETO)moc_zXMPP.o\
@@ -573,10 +565,6 @@ dlg/moc_ZEye.cpp: ./dlg/ZEye.h
 dlg/moc_ZSettings.o: dlg/moc_ZSettings.cpp ./dlg/ZSettings.h
 dlg/moc_ZSettings.cpp: ./dlg/ZSettings.h
 	$(MOC) ./dlg/ZSettings.h -o dlg/moc_ZSettings.cpp
-
-dlg/moc_MessageDlg.o: dlg/moc_MessageDlg.cpp ./dlg/MessageDlg.h
-dlg/moc_MessageDlg.cpp: ./dlg/MessageDlg.h
-	$(MOC) ./dlg/MessageDlg.h -o dlg/moc_MessageDlg.cpp
 
 dlg/moc_ZAddProfile.o: dlg/moc_ZAddProfile.cpp ./dlg/ZAddProfile.h
 dlg/moc_ZAddProfile.cpp: ./dlg/ZAddProfile.h

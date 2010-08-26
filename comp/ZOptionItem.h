@@ -27,6 +27,7 @@ public:
 	enum EDIT_TYPE
 	{
 		EDIT_TEXT,
+		EDIT_TEXT_NUM,		
 		EDIT_BOOL_YESNO,
 		EDIT_BOOL_ONOFF,		
 		EDIT_NUM,

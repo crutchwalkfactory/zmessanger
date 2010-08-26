@@ -46,7 +46,6 @@
 #include "ZAboutDlg.h"
 #include "ZEye.h"
 #include "ZSettings.h"
-#include "MessageDlg.h"
 
 #include <ZSingleCaptureDlg.h>
 #include <ZSingleSelectDlg.h>
@@ -62,6 +61,10 @@
 #define MENU_MY_STATUS_ID 2
 #define MENU_MY_XSTATUS_ID 3
 #define MENU_MY_PSTATUS_ID 4
+
+#ifdef CUTED_PLATFORM
+#define insertItem(a,b,c,d,e,f) insertItem(QString("   ")+a,b,c,d,e,f)
+#endif
 
 static NAPILink *napi_link;
 
@@ -92,15 +95,24 @@ void ZGui::siganalReceived( const QCString &msg, const QByteArray & data )
 		openChat((ZContactItem *)item);
 		return;
 	} else
-	if ( msg == "showError(str,str)" )
+	if ( msg == "showError(str,str,int)" )
 	{
 		QDataStream s( data, IO_ReadOnly ); 
 		QString title, mes;
+		int ico;
 		s >> title;
 		s >> mes;
-		MessageDlg *dlg;
-		dlg = new MessageDlg (0, title, mes);
+		s >> ico;
+		ZMessageDlg * dlg = new ZMessageDlg(title, mes, ZMessageDlg::TypeOK, 0, myWidget);
+		switch ( ico )
+		{
+			case 1:
+				dlg->setMsgIcon(ICON_DLG_ERROR);
+				break;
+		}
 		dlg->exec();
+		delete dlg;
+		dlg = NULL;
 		return;
 	} else
 	if ( msg == "onConnectChange(int,bool)" )
@@ -223,6 +235,7 @@ ZGui::~ZGui()
 	#ifdef _XMPP
 	delete xmpp;
 	#endif
+	delete myWidget;
 }
 
 void ZGui::CreateWindow ( QWidget* )
@@ -290,7 +303,10 @@ void ZGui::CreateWindow ( QWidget* )
 
 	#ifdef _MainMenuFix
 	connect( menu, SIGNAL( canceled() ), this, SLOT( slotFixMenuBag() ) );
-	connect( menu, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );
+	connect( menu, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );		
+	connect( menuCL, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );	
+	connect( menuPrivatStatus, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );	
+	connect( menustatus, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );		
 	#endif
 
 	softKey->setOptMenu ( ZSoftKey::LEFT, menu );
@@ -353,6 +369,7 @@ void ZGui::CreateWindow ( QWidget* )
 	icq->noAutoMsgRequest = cfg.readBoolEntry(QString("Message"), QString("noAutoMsgRequest"), true);
 	cfg_alertVibr = cfg.readBoolEntry(QString("Alert"), QString("Vibrate"), true);
 	cfg_alertRing = cfg.readBoolEntry(QString("Alert"), QString("Ring"), false);
+	cfg_alertRingVol = cfg.readBoolEntry(QString("Alert"), QString("Volume"), 2);
 	cfg_alertPath = cfg.readEntry(QString("Alert"), QString("Path"), "");
 	cfg_dontShowOffLine = cfg.readBoolEntry(QString("ContactList"), QString("dontShowOffLine"), true);
 	cfg_dontShowGroup = cfg.readBoolEntry(QString("ContactList"), QString("dontShowGroup"), false);
@@ -363,6 +380,7 @@ void ZGui::CreateWindow ( QWidget* )
 	cfg_maxNumLines = cfg.readNumEntry(QString("Chat"), QString("maxNumLines"), 40);
 	cfg_notSendTypeMes = cfg.readBoolEntry(QString("Chat"), QString("notSendTypeMes"), false);
 	cfg_sendByCenter = cfg.readBoolEntry(QString("Chat"), QString("sendByCenter"), false);
+	cfg_noShowStatusBarInChat = cfg.readBoolEntry(QString("Chat"), QString("noShowStatusBarInChat"), false);
 	icq->enabledEye = cfg.readBoolEntry(QString("Othe"), QString("enabledEye"), true);
 	#ifdef _SupportZPlayer
 	cfg_nowPlaying = cfg.readEntry(QString("Status"), QString("nowPlaying"), "%artist% - %title%");
@@ -379,9 +397,12 @@ void ZGui::CreateWindow ( QWidget* )
 	dlgChat = NULL;
 	dlgStat = NULL;
 	
-	codec = QTextCodec::codecForName( codePage );
-	if (codec == 0)
+	codec = NULL;
+	if ( !codePage.isEmpty() )
+		codec = QTextCodec::codecForName( codePage );
+	if ( !codec )
 		codec = QTextCodec::codecForName( "CP1251" );
+	
 	isShown = true;
 
 	lbContact->setShowGroup(!cfg_dontShowGroup);
@@ -690,7 +711,7 @@ void ZGui::alert()
 {
 	if (cfg_alertRing)
 	{
-		system( QFile::encodeName( "/usr/SYSqtapp/phone/alertprocess -playMode 1 -playvol 2 -playfile '"+cfg_alertPath+"' &" ) );
+		system( QFile::encodeName( "/usr/SYSqtapp/phone/alertprocess -playMode 1 -playvol "+QString::number(cfg_alertRingVol)+" -playfile '"+cfg_alertPath+"' &" ) );
 	}
 	if (cfg_alertVibr)
 	{
@@ -705,7 +726,7 @@ void * slot_onClickMenu( void * status)
 	QPixmap* pm  = new QPixmap();
 	
 	QString ico;
-	int st = 0;
+	uint st = 0;
 	switch( (int) status)
 	{
 		case 0:
@@ -876,7 +897,7 @@ void ZGui::showProfileList()
 			logMes_2("showProfileList: "+uin);
 			listitem->setNick( uin );
 			listitem->setProtocol( PROT_ICQ );
-			lbContact->insertItem ( listitem,-1,true );
+			lbContact->insertItemInList ( listitem,-1,true );
 			listitem->setReservedData ( i );
 			if ( i == checkId )
 				lbContact->checkItem(listitem,true);
@@ -1058,7 +1079,11 @@ void ZGui::slot_onAuthRequest(string from, string text)
 
 void ZGui::slot_onContactListChanged(void)
 {
-	printContact(true);
+	clearList();
+	printContact();
+	#ifdef _XMPP
+	printContactXMPP();
+	#endif
 }
 
 void ZGui::slot_onSingOff(uint16_t err_code, string err_url)
@@ -1082,7 +1107,7 @@ void ZGui::slot_onSingOff(uint16_t err_code, string err_url)
 		error = error+"\n"+LNG_URLDESCRIPTION+"\n"+QString::fromLocal8Bit(err_url.c_str());
 	}
 
-	showMesDlg(LNG_ERRORCONNECT,error);
+	showMesDlg(LNG_ERRORCONNECT, error, 1);
 }
 
 void ZGui::slot_onWasAdded(string from)
@@ -1184,7 +1209,7 @@ void ZGui::menu_profile_add()
 		#endif
 		
 		listitem->setReservedData ( id );
-		lbContact->insertItem ( listitem,-1,true );
+		lbContact->insertItemInList( listitem,-1,true );
 	}
 	
 	qApp->installEventFilter( this );
@@ -1471,7 +1496,11 @@ void ZGui::addContactToList(QString uin)
 			case 1: strGender=LNG_GANDER1; break;
 			case 2: strGender=LNG_GANDER2; break;
     	}
-		if (showMesDlg(LNG_ADDCONTACT_TITLE,"UIN:" + strtoqstr(uinfo.Uin) + "\n"+LNG_NICK + strtoqstr(uinfo.Nickname) + "\n:"+LNG_NAME + strtoqstr(uinfo.Firstname) + "\n:"+LNG_LASTNAME+strtoqstr(uinfo.Lastname)+"\n:"+LNG_GANDER+strGender, false) )
+    	
+    	ZMessageDlg* dlg = new ZMessageDlg( LNG_ADDCONTACT_TITLE,"UIN:" + strtoqstr(uinfo.Uin) + "\n"+LNG_NICK + strtoqstr(uinfo.Nickname) + "\n"+LNG_NAME + strtoqstr(uinfo.Firstname) + "\n"+LNG_LASTNAME+strtoqstr(uinfo.Lastname)+"\n"+LNG_GANDER+strGender, ZMessageDlg::TypeChoose, 0, myWidget);
+    	dlg->setMsgIcon(ICON_DLG_QUESTION);
+    	
+		if ( dlg->exec() )
 		{
 			ZSingleSelectDlg * selgroup = new ZSingleSelectDlg(LNG_SELECTGROUP, LNG_ADDTOGROUP, myWidget);
 			for (int i=0; i<icq->getCountGroup(); ++i)
@@ -1490,8 +1519,11 @@ void ZGui::addContactToList(QString uin)
 					icq->addContact(uin.latin1(), uin.latin1(),icq->getGroupName(selgroup->getCheckedItemIndex()) );
 				}
 			}
-			delete selgroup;				
+			delete selgroup;
+			selgroup = NULL;	
 		}
+		delete dlg;
+		dlg = NULL;
 	}
 }
 
@@ -1506,7 +1538,7 @@ void ZGui::menu_addContact()
 	flist1.append( ZKB_INPUT_NUMERIC );
 	setInputMethods((QWidget*)zle, ZKB_INPUT_NUMERIC, flist1);
 	
-	if (zscd->exec() == 1)
+	if ( zscd->exec() == 1 )
 	{
 		QString uin = zle->text().stripWhiteSpace();
 		addContactToList(uin);
@@ -1533,10 +1565,16 @@ void ZGui::menu_removeContact()
 	int n = icq->findContact(suin);
 	nick = strtoqstr( icq->getNick(n).c_str() );
 
-	if (showMesDlg(LNG_REMOVECONTACT_QUESTION,"UIN:"+strtoqstr(suin)+"\n"+LNG_NICK+nick, false))
+	ZMessageDlg * dlg = new ZMessageDlg(LNG_REMOVECONTACT_QUESTION, "UIN:"+strtoqstr(suin)+"\n"+LNG_NICK+nick, ZMessageDlg::TypeChoose, 0, myWidget);
+	dlg->setMsgIcon(ICON_DLG_QUESTION);
+	
+	if ( dlg->exec() )
 	{
 		icq->removeContact(suin);
 	}
+	
+	delete dlg;
+	dlg = NULL;
 	
 	qApp->installEventFilter( this );	
 }
@@ -1564,13 +1602,23 @@ void ZGui::menu_removeGroup()
 {
 	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
 	
-	if ( !listitem->isGroup() || listitem->getProtocol() != PROT_ICQ )
+	if ( !listitem->isGroup()  || listitem->isNoCL() || listitem->getProtocol() != PROT_ICQ )
 		return;
 
-	if (showMesDlg(LNG_REMOVEGROUP_QUESTION,LNG_GROUPNAME+strtoqstr( icq->getGroupName(listitem->getGroupId()).c_str() ), false))
+	qApp->removeEventFilter( this );
+
+	ZMessageDlg * dlg = new ZMessageDlg(LNG_REMOVEGROUP_QUESTION,LNG_GROUPNAME+strtoqstr( icq->getGroupName( listitem->getReservedData() ).c_str() ), ZMessageDlg::TypeChoose, 0, myWidget);
+	dlg->setMsgIcon(ICON_DLG_QUESTION);
+
+	if ( dlg->exec() )
 	{
-		icq->removeGroup(icq->getGroupName(listitem->getGroupId()));
+		icq->removeGroup( icq->getGroupName( listitem->getReservedData() ) );
 	}
+	
+	delete dlg;
+	dlg = NULL;
+	
+	qApp->installEventFilter( this );
 }
 
 void ZGui::menu_showChat()
@@ -1707,6 +1755,7 @@ int ZGui::icqAddUser(QString Name, string uin, int Status, int xStatus, int clie
 	listitem->setClient(clientId);
 	listitem->setReservedData(id);
 	listitem->setGroupId(groupId);
+	listitem->setNoCL(id>=1000);
 	if ( auth )
 		listitem->setWaitAuth( auth );
 	if ( mes )
@@ -1823,6 +1872,7 @@ void ZGui::printContact(bool Clear)
 	listitem->setGroup( true );
 	listitem->setNick ( "No in CL" );
 	listitem->setGroupId( ICQ_NOT_IN_LIST_GROUP );
+	listitem->setNoCL( true );
 	
 	lbContact->groupAdd(listitem, ICQ_NOT_IN_LIST_GROUP );
 	
@@ -1912,25 +1962,26 @@ void ZGui::closeProc()
 	pProgressDialog = NULL;
 }
 
-bool ZGui::showMesDlg(QString title, QString mes, bool /*ok*/)
+bool ZGui::showMesDlg(QString title, QString mes, int ico)
 {
 	QByteArray data;
 	QDataStream s( data, IO_WriteOnly ); 
 	s << title;
 	s << mes;
-	return QCopChannel::send( ZMESSANGER_CHENEL, "showError(str,str)", data );
+	s << ico;
+	return QCopChannel::send( ZMESSANGER_CHENEL, "showError(str,str,int)", data );
 }
 
 void ZGui::slot_onErrorConnectICQ(QString mes)
 {
-	showMesDlg(LNG_ERRORCONNECT,mes);
+	showMesDlg(LNG_ERRORCONNECT, mes, 1);
 	onConnectChange(PROT_ICQ, false);
 }
 
 #ifdef _XMPP
 void ZGui::slot_onErrorConnectXMPP(QString mes)
 {
-	showMesDlg(LNG_ERRORCONNECT,mes);
+	showMesDlg(LNG_ERRORCONNECT, mes, 1);
 	onConnectChange(PROT_JABBER, false);
 }
 #endif
@@ -2276,7 +2327,6 @@ void ZGui::lbContactSel( int i)
 		QDataStream s( data, IO_WriteOnly ); 
 		s << (int)listitem;
 		QCopChannel::send( ZMESSANGER_CHENEL, "openChat(ZContactItem*)", data );
-		//openChat( listitem );
 	}
 	
 	logMes_3("lbContactSel: end");

@@ -29,6 +29,7 @@ QString ProgDir;
 QString cfg_inetProfile;
 bool cfg_alertVibr;
 bool cfg_alertRing;
+int cfg_alertRingVol;
 QString cfg_alertPath;
 int cfg_timeKeepConnect;
 int cfg_maxNumLines;
@@ -41,6 +42,7 @@ bool cfg_InetOnUSB;
 int cfg_chatFontSize;
 int cfg_mesFontSize;
 bool cfg_sendByCenter; 
+bool cfg_noShowStatusBarInChat; 
 QString oldMes;//For save old typed text
 int oldSmile;//For save old smile position    
 

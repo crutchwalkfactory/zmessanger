@@ -168,7 +168,7 @@ void ZContactItem::setStatus(int n, bool update)
 			case STATUS_INVISIBLE  : ico = "invisible.png"; break;
 			default: 
 			{
-				ico = "invisible.png";
+				ico = "online.png";
 				logMes("Error Status "+QString::number(status)+" not found!!!");
 			}
 		}

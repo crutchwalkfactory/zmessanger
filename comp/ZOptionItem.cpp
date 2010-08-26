@@ -17,6 +17,11 @@
 #include <ZSingleSelectDlg.h>
 #include <ZSingleCaptureDlg.h>
 
+#ifndef WITHOUT_EDIT_TEXT_NUM
+#include <ZApplication.h>
+#include <ZIMethod.h>
+#endif
+
 #ifndef WITHOUT_EDIT_INTERNET_PROFILE
 #include <napi.h>
 #endif
@@ -46,6 +51,8 @@ ZOptionItem::ZOptionItem( ZListBox* _container, EDIT_TYPE _type ):
 ZOptionItem::~ZOptionItem()
 {
 	disconnect( listBox(), SIGNAL(selected(ZSettingItem*)), this, SLOT(selected(ZSettingItem*)));
+	if ( list != NULL )
+		delete list;
 }
 
 void ZOptionItem::selected(ZSettingItem* item)
@@ -56,10 +63,15 @@ void ZOptionItem::selected(ZSettingItem* item)
 	switch ( type )
 	{
 		case EDIT_TEXT:
+		case EDIT_TEXT_NUM:
 		case EDIT_FILE:
 			{
 			ZSingleCaptureDlg* zscd = new ZSingleCaptureDlg(title, "", ZSingleCaptureDlg::TypeLineEdit, this, "", true, 0, 0);
 			ZLineEdit* zle = (ZLineEdit*)zscd->getLineEdit();
+			#ifndef WITHOUT_EDIT_TEXT_NUM
+			if ( type==EDIT_TEXT_NUM )
+				((ZApplication*)qApp)->setInputMethod(zle, ZKB_INPUT_NUMERIC, ZKbInputField::FIELD_TYPE_NUMERIC, ""); 
+			#endif
 			zle->setText(text);
 			if ( zscd->exec() == QDialog::Accepted )
 				setText(zle->text());

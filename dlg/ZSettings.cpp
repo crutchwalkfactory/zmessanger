@@ -15,7 +15,6 @@
 #include <qlabel.h>
 #include <ZApplication.h>
 #include <ZSoftKey.h>
-#include <qtextcodec.h>
 #include "config.h"
 
 #include "const_strings.h"
@@ -52,17 +51,17 @@ ZSettingsDlg::ZSettingsDlg()
 	optICQServer->setTitle(LNG_ICQSERV);
 	net->insertItem(optICQServer);
 	
-	optICQPort = new ZOptionItem(net, ZOptionItem::EDIT_TEXT);
+	optICQPort = new ZOptionItem(net, ZOptionItem::EDIT_TEXT_NUM);
 	optICQPort->setText( cfg.readEntry(QString("Inet"), QString("Port"), "5190") );
 	optICQPort->setTitle(LNG_PORT);
 	net->insertItem(optICQPort);
 	
-	optICQKeepTime = new ZOptionItem(net, ZOptionItem::EDIT_TEXT);
+	optICQKeepTime = new ZOptionItem(net, ZOptionItem::EDIT_TEXT_NUM);
 	optICQKeepTime->setText( cfg.readEntry(QString("Inet"), QString("TimeKeepConnect"), "500") );
 	optICQKeepTime->setTitle(LNG_KEEPCONNECTTIME);
 	net->insertItem(optICQKeepTime);
 	
-	optICQdelayReadSnec = new ZOptionItem(net, ZOptionItem::EDIT_TEXT);
+	optICQdelayReadSnec = new ZOptionItem(net, ZOptionItem::EDIT_TEXT_NUM);
 	optICQdelayReadSnec->setText( cfg.readEntry(QString("Inet"), QString("delayReadSnec"), "2000") );
 	optICQdelayReadSnec->setTitle(LNG_DELAYNEWSOCKREAD);
 	net->insertItem(optICQdelayReadSnec);
@@ -89,6 +88,12 @@ ZSettingsDlg::ZSettingsDlg()
 	optTone->setNum( cfg.readBoolEntry("Alert", "Ring", false) );
 	alert->insertItem(optTone);
 	
+	optToneVol = new ZOptionItem(alert, ZOptionItem::EDIT_NUM);
+	optToneVol->setTitle( LNG_RINGTONEVOL );
+	optToneVol->setNum( cfg.readNumEntry("Alert", "Volume", 2) );
+	optToneVol->setMaxMin(10, 0);
+	alert->insertItem(optToneVol);	
+	
 	optTonePath = new ZOptionItem(alert, ZOptionItem::EDIT_FILE);
 	optTonePath->setText( cfg.readEntry(QString("Alert"), QString("Path"), "") );
 	optTonePath->setTitle( LNG_RINGTONEPATH );
@@ -114,14 +119,14 @@ ZSettingsDlg::ZSettingsDlg()
 	optRigthXStatus->setNum( cfg.readBoolEntry(QString("ContactList"), QString("rigthAlignXStatus"), true) );
 	CL->insertItem(optRigthXStatus);
 	
-	QStringList modes;
-	modes.append(LNG_NO_SORTCONTACT);
-	modes.append(LNG_STATUS_SORTCONTACT);
-	modes.append(LNG_STATUS_NICK_SORTCONTACT);
+	QStringList * modes = new QStringList();
+	modes->append(LNG_NO_SORTCONTACT);
+	modes->append(LNG_STATUS_SORTCONTACT);
+	modes->append(LNG_STATUS_NICK_SORTCONTACT);
 	
 	optSortType = new ZOptionItem(CL, ZOptionItem::EDIT_ONE_OF_LIST);
 	optSortType->setTitle(LNG_SORTCONTACT);
-	optSortType->setList( &modes );
+	optSortType->setList( modes );
 	optSortType->setNum( cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2) );
 	CL->insertItem(optSortType);
 
@@ -148,6 +153,11 @@ ZSettingsDlg::ZSettingsDlg()
 	optMaxNumLine->setTitle( LNG_MAXNUMLINESCHAT );
 	Chat->insertItem(optMaxNumLine);	
 	
+	optNoShowStatusBarInChat = new ZOptionItem(Chat, ZOptionItem::EDIT_BOOL_ONOFF);
+	optNoShowStatusBarInChat->setTitle( LNG_NO_SHOW_STATUS_BAR_IN_CHAT );
+	optNoShowStatusBarInChat->setNum( !cfg.readBoolEntry(QString("Chat"), QString("noShowStatusBarInChat"), false) );
+	Chat->insertItem(optNoShowStatusBarInChat);	
+	
 	optSendByCenter = new ZOptionItem(Chat, ZOptionItem::EDIT_BOOL_YESNO);
 	optSendByCenter->setTitle( LNG_SEND_BY_CENTER );
 	optSendByCenter->setNum( cfg.readBoolEntry(QString("Chat"), QString("sendByCenter"), false) );
@@ -163,9 +173,48 @@ ZSettingsDlg::ZSettingsDlg()
 	pm.load( ProgDir+ "/image/tab_othe.png");
 	tabWidget->addTab(othe, QIconSet(pm), "");
 	//#####################################################################################
-	optCodePage = new ZOptionItem(othe, ZOptionItem::EDIT_TEXT);
-	optCodePage->setText( cfg.readEntry(QString("Message"), QString("CodePage"), "CP1251") );
-	optCodePage->setTitle( LNG_DEFCP );
+	
+	codec = new QStringList();
+	codec->append( "KOI8-R" );
+	codec->append( "KOI8-U" );
+	codec->append( "ISO8859-2" );
+	codec->append( "ISO8859-3" );
+	codec->append( "ISO8859-4" );
+	codec->append( "ISO8859-5" );
+	codec->append( "ISO8859-6-I" );
+	codec->append( "ISO8859-7" );
+	codec->append( "ISO8859-8-I" );
+	codec->append( "ISO8859-9" );
+	codec->append( "ISO8859-10" );
+	codec->append( "ISO8859-11" );		
+	codec->append( "ISO8859-13" );
+	codec->append( "ISO8859-14" );
+	codec->append( "ISO8859-15" );
+	codec->append( "PT154" );
+	codec->append( "CP874" );
+	codec->append( "CP1250" );
+	codec->append( "CP1251" );
+	codec->append( "CP1252" );
+	codec->append( "CP1253" );
+	codec->append( "CP1254" );
+	codec->append( "CP1255" );
+	codec->append( "CP1256" );	
+	codec->append( "CP1257" );	
+	codec->append( "CP1258" );
+
+	int sel=0, i=0;
+	QString text = cfg.readEntry(QString("Message"), QString("CodePage"), "CP1251");
+	for ( QStringList::Iterator it = codec->begin(); it != codec->end(); ++it )
+		if ( *it == text )
+		{
+			sel=i;
+			break;
+		} else
+			i++;
+	optCodePage = new ZOptionItem(othe, ZOptionItem::EDIT_ONE_OF_LIST);
+	optCodePage->setTitle( LNG_DEFCP );	
+	optCodePage->setList( codec );
+	optCodePage->setNum( sel );
 	othe->insertItem(optCodePage);
 	
 	optXTrazRequest = new ZOptionItem(othe, ZOptionItem::EDIT_BOOL_YESNO);
@@ -219,6 +268,7 @@ void ZSettingsDlg::saveSetting()
 	
 	cfg.writeEntry("Alert", "Vibrate", optVibrate->getNum());
 	cfg.writeEntry("Alert", "Ring", optTone->getNum());
+	cfg.writeEntry("Alert", "Volume", optToneVol->getNum() );
 	cfg.writeEntry(QString("Alert"), QString("Path"), optTonePath->getText());
 	
 	cfg.writeEntry(QString("ContactList"), QString("sortType"), optSortType->getNum());
@@ -230,12 +280,14 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry(QString("Chat"), QString("writeMesFontSize"), optMesFontSize->getNum());
 	cfg.writeEntry(QString("Chat"), QString("maxNumLines"), optMaxNumLine->getNum());
 
-	cfg.writeEntry(QString("Message"), QString("CodePage"), optCodePage->getText());
+	cfg.writeEntry(QString("Message"), QString("CodePage"), *(codec->at(optCodePage->getNum())));
 	cfg.writeEntry(QString("Message"), QString("noAutoXTrazRequest"),!optXTrazRequest->getNum());
 	cfg.writeEntry(QString("Message"), QString("noAutoMsgRequest"), !optAutoMsgRequest->getNum());
 	cfg.writeEntry(QString("Othe"), QString("enabledEye"), optEye->getNum());
 	cfg.writeEntry(QString("Chat"), QString("notSendTypeMes"), !optSendTypeMes->getNum());
 	cfg.writeEntry(QString("Chat"), QString("sendByCenter"), optSendByCenter->getNum());
+	cfg.writeEntry(QString("Chat"), QString("noShowStatusBarInChat"), !optNoShowStatusBarInChat->getNum());
+	
 
 	cfg.writeEntry(QString("Status"), QString("saveStausCanDisconect"), optSaveStusWithExit->getNum());
 	cfg.flush();
@@ -254,6 +306,8 @@ void ZSettingsDlg::saveSetting()
 	
 	cfg_alertVibr = optVibrate->getNum();
 	cfg_alertRing = optTone->getNum();
+	cfg_alertRingVol = optToneVol->getNum();
+	
 	cfg_dontShowGroup = !optShowGroup->getNum();
 	cfg_rigthAlignXStatus = optRigthXStatus->getNum();
 	cfg_notSendTypeMes = !optSendTypeMes->getNum();
@@ -264,8 +318,9 @@ void ZSettingsDlg::saveSetting()
 	cfg_maxNumLines = optMaxNumLine->getNum();
 	cfg_mesFontSize = optMesFontSize->getNum();
 	cfg_chatFontSize = optChatFontSize->getNum();
+	cfg_noShowStatusBarInChat = !optNoShowStatusBarInChat->getNum();
 
-	zgui->codec = QTextCodec::codecForName( optCodePage->getText() );
+	zgui->codec = QTextCodec::codecForName( *(codec->at(optCodePage->getNum())) );
 	if ( zgui->codec == 0 )
 		zgui->codec = QTextCodec::codecForName( "CP1251" );
 	

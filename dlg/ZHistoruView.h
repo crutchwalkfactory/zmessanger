@@ -23,14 +23,17 @@
 
 class ZHistoryView : public MyBaseDlg 
 {
-  Q_OBJECT
+	Q_OBJECT
 
-  public:
-    ZHistoryView( std::string uin ); 
-    ~ZHistoryView(){};
+	public:
+		ZHistoryView( std::string uin ); 
+		~ZHistoryView();
 
-   private:
-    xTextView * zmleHistory;
+	protected:
+		bool eventFilter(QObject* o, QEvent* pEvent);
+
+	private:
+		xTextView * zmleHistory;
 };
 
 #endif

@@ -93,7 +93,7 @@ class zChatForm : public MyBaseDlg
   	ZLabel * labClient;
 	ZLabel * labLng;
 	ZLabel * labInputMode;
-  	ZScrollPanel * m_pScrollPanel3;
+  	ZScrollPanel * spInfo;
 	
 	#ifndef NEW_PLATFORM
 	KbEditContext  * kbInput;
@@ -108,7 +108,6 @@ class zChatForm : public MyBaseDlg
 	bool startTyped;
 
 	ZOptionsMenu* menu;
-	bool notSendTypeMes;
 
 	mutable QMutex mutexOnAddMes;
 	mutable QMutex mutexOnType;

@@ -46,6 +46,14 @@ void zICQ::Disconnect()
 	emit onConnected(false);
 }
 
+void zICQ::breakNetworkOperation()
+{
+	network_break_flag=true;
+	connected = false;
+	doDisconnect();
+	emit onConnected(false);		
+}
+
 int zICQ::findNoCLUIN(string uin)
 {
 	for (size_t i=0; i<NoContactListUins.size(); ++i)
@@ -73,35 +81,40 @@ int zICQ::addContactToNoCLList(QString uin, QString nick)
 bool zICQ::Connect()
 {
 	logMes_1("zICQ: Connect()");
+	network_break_flag=false;
 	now_connect=true;
 	if ( !doConnect() )
 	{
-		doDisconnect();
-		connected = false;
+		connected = false;		
 		
-		QString error = "Cannot connect to ICQ service!\nConnection error: ";
-		switch(connect_error_code)
+		if ( !network_break_flag )
 		{
-			case CONN_ERR_BAD_LOGIN :
-				error = error+"CONN_ERR_BAD_LOGIN";
-				break;
-			case CONN_ERR_BAD_PASSWORD :
-				error = error+"CONN_ERR_BAD_PASSWORD";
-				break;
-			case CONN_ERR_RATE_LIMIT :
-				error = error+"CONN_ERR_RATE_LIMIT";
-				break;
-			default :
-				error = error+"UNKNOWN";
-				break;
+			doDisconnect();
+			
+			QString error = "Cannot connect to ICQ service!\nConnection error: ";
+			switch(connect_error_code)
+			{
+				case CONN_ERR_BAD_LOGIN :
+					error = error+"CONN_ERR_BAD_LOGIN";
+					break;
+				case CONN_ERR_BAD_PASSWORD :
+					error = error+"CONN_ERR_BAD_PASSWORD";
+					break;
+				case CONN_ERR_RATE_LIMIT :
+					error = error+"CONN_ERR_RATE_LIMIT";
+					break;
+				default :
+					error = error+"UNKNOWN";
+					break;
+			}
+			error = error+"\nDescription url:\n"+QString::fromLocal8Bit(connect_error_url.c_str())+"\nStep: "+QString::number( stepConnect );
+			
+			logMes("zICQ: Error - "+error);
+			
+			logMes_2("zICQ: onErrorConnect(error)");
+			emit onErrorConnect(error);
 		}
-		error = error+"\nDescription url:\n"+QString::fromLocal8Bit(connect_error_url.c_str())+"\nStep: "+QString::number( stepConnect );
 		
-		logMes("zICQ: Error - "+error);
-		
-		logMes_2("zICQ: onErrorConnect(error)");
-		emit onErrorConnect(error);
-
 		return false;
 	} else
 	{

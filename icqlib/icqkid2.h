@@ -406,7 +406,7 @@ class ICQKid2 : public QObject
   inline int getConnectPercentage(void) const { return connect_phase_percentage; }
   inline void setNetworkTimeout(int tm) { network_timeout=tm; }
   inline int getNetworkTimeout(void) const { return network_timeout; }
-  inline void breakNetworkOperation(void) { network_break_flag=true; }
+
 
   bool getOfflineMessages(void);
   int pollIncomingEvents(SNACData & snd);

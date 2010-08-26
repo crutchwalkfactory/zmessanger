@@ -238,7 +238,7 @@ void ZUserInfo::showInfo(ICQKidFullUserInfo uinfo)
 	detailItem->enableStructureDataParse(false);
 	spMain->addItem(detailItem);
 	
-    detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_NICK+zgui->strtoqstr(uinfo.Firstname), QChar());
+    detailItem = new ZDetailItem(ZDetailItem::ItemTypeE, LNG_NAME+zgui->strtoqstr(uinfo.Firstname), QChar());
 	detailItem->enableStructureDataParse(false);
 	spMain->addItem(detailItem);	
 	

@@ -74,7 +74,7 @@ protected:
 	#endif
 	bool IsGroup;
 	bool IsNoCL;
-	int group;
+	int  group;
 	char protocol;
 	
 	bool typeIn;

@@ -56,9 +56,11 @@ class ZMyListBox : public ZListBox
     
     void showHideGroup(int idGroup);
     
-    void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
-    void insertItem( const ZListItem * item, const ZListItem *after, bool autoHighlighted = TRUE);
-    void changeItem( const ZListItem * item, int index );
+    void insertItemInList( const ZContactItem * item, int index=-1, bool autoHighlighted = TRUE )
+    {
+		insertItem( item, index, autoHighlighted );
+	}
+    
     void takeItem( const ZListItem * item);
     void moveItem(int from, int to);
     void UpdateList();
@@ -68,6 +70,11 @@ class ZMyListBox : public ZListBox
 
 	// this function is bad
 	void dellAllContactWithProtocol( int prot, bool lock = true );
+	
+  private:
+    void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
+    void insertItem( const ZListItem * item, const ZListItem *after, bool autoHighlighted = TRUE);
+    void changeItem( const ZListItem * item, int index );
 
   private slots: 
     virtual void viewportPaintEvent( QPaintEvent * pe);

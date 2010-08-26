@@ -29,7 +29,7 @@ class ZXStatusText : public MyBaseDlg {
   Q_OBJECT
 
   public:
-    ZXStatusText(int idStatus1); 
+    ZXStatusText(int _idStatus, bool _addHotStatus=false); 
     ~ZXStatusText(){};
 
     int idStatus;
@@ -45,6 +45,7 @@ class ZXStatusText : public MyBaseDlg {
     #endif
     ZMultiLineEdit * statDesc;
     ZScrollPanel * sv;
+    bool addHotStatus;
 };
 
 #endif

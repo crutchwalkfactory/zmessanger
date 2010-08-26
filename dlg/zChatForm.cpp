@@ -30,6 +30,10 @@
 #include "zgui.h"
 #include "zDefs.h"
 
+#ifdef CUTED_PLATFORM
+#define insertItem(a,b,c,d,e,f) insertItem(QString("   ")+a,b,c,d,e,f)
+#endif
+
 zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _conference)
     :MyBaseDlg()
 {
@@ -38,8 +42,8 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	uin = _uin;
 	protocol = _protocol;
 
-	notSendTypeMes = cfg_notSendTypeMes;
-
+	setFullScreenMode(cfg_noShowStatusBarInChat, false);
+	
 	if (nick != "")
 	{
 		setMainWidgetTitle ( nick );
@@ -63,9 +67,9 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	eeChat->setFixedWidth(SCREEN_WIDTH);
 	
 	#ifdef SCREEN_GORIZONTAL
-	eeChat->setFixedHeight( 165-headerSize().height()-1 );
+	eeChat->setFixedHeight( 165-(cfg_noShowStatusBarInChat?10:headerSize().height())-1 );
 	#else
-	eeChat->setFixedHeight( 235-headerSize().height()-2 );
+	eeChat->setFixedHeight( 235-(cfg_noShowStatusBarInChat?10:headerSize().height()) );
 	#endif
 
 	eeChat->setFontSize( cfg_chatFontSize );
@@ -73,22 +77,15 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	myVBoxLayout->addWidget(eeChat,0);
 
 	logMes_3("zChatForm: create ZScrollPanel");
-	ZScrollPanel * m_pScrollPanel2 = new ZScrollPanel ( PERENT, NULL, 0, ZSkinService::clsZScrollPanel);
-	m_pScrollPanel3 = new ZScrollPanel ( PERENT, NULL, 0, ZSkinService::clsZScrollPanel);
+	spInfo = new ZScrollPanel ( PERENT, NULL, 0, ZSkinService::clsZScrollPanel);
+	spInfo->setFixedWidth(SCREEN_WIDTH);
+	spInfo->setFixedHeight(15);
 	
-	m_pScrollPanel2->setFixedWidth(SCREEN_WIDTH);
-	m_pScrollPanel2->setFixedHeight(70);
-
-	m_pScrollPanel3->setFixedWidth(SCREEN_WIDTH);
-	m_pScrollPanel3->setFixedHeight(15);
-	
-	myVBoxLayout->addWidget(m_pScrollPanel3,1);
-
 	logMes_3("zChatForm: create label");
-	labTyping = new ZLabel(m_pScrollPanel3, "");
-	labClient = new ZLabel(m_pScrollPanel3, "");
-	labLng = new ZLabel(m_pScrollPanel3, "");
-	labInputMode = new ZLabel(m_pScrollPanel3, "");
+	labTyping = new ZLabel(spInfo, "");
+	labClient = new ZLabel(spInfo, "");
+	labLng = new ZLabel(spInfo, "");
+	labInputMode = new ZLabel(spInfo, "");
 	 
 	QFont font ( qApp->font() ); 
 	font.setPointSize ( 12 );
@@ -98,49 +95,40 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	labInputMode->setFont( font ); 
 	labInputMode->setFixedWidth(40);
 	labTyping->setFontColor( QColor(0,0,255) );
-	labTyping->setText("");
-	labClient->setText("");
-	labLng->setText("");
-	labInputMode->setText("");
 
-	#ifndef EZX_ZN5
-	labClient->setAutoResize(true);
-	labTyping->setAutoResize(true);
-	#else
 	labClient->setFixedWidth(80);
 	labTyping->setFixedWidth(120);
-	#endif
 	labInputMode->setFixedWidth(20);
 	labLng->setFixedWidth(20);
 
-	m_pScrollPanel3->addChild(labLng, SCREEN_WIDTH - 17, 1);//220
-	m_pScrollPanel3->addChild(labTyping, ((int)(SCREEN_WIDTH / 2))-25, 1);//90
-	m_pScrollPanel3->addChild(labClient, 5, 1);
-	m_pScrollPanel3->addChild(labInputMode, SCREEN_WIDTH - 42, 1);//180
-
-	myVBoxLayout->addWidget(m_pScrollPanel2,2);
+	spInfo->addChild(labLng, SCREEN_WIDTH - 17, 1);
+	spInfo->addChild(labTyping, ((int)(SCREEN_WIDTH / 2))-25, 1);
+	spInfo->addChild(labClient, 5, 1);
+	spInfo->addChild(labInputMode, SCREEN_WIDTH - 42, 1);
+	
+	myVBoxLayout->addWidget(spInfo,1);
 	
 	logMes_3("zChatForm: create ZMultiLineEdit");
-	mleMes = new ZMultiLineEdit( m_pScrollPanel2->viewport(), false );
+	mleMes = new ZMultiLineEdit( PERENT, false );
 	mleMes->setUnderline( false );
 	mleMes->setSizePolicy( QSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 	mleMes->setInsertionMethod ( ZMultiLineEdit::atPosNoSelected );
 	mleMes->setFixedWidth( SCREEN_WIDTH );
 	
 	#ifdef SCREEN_GORIZONTAL
-	mleMes->setFixedHeight( 40 );
+	mleMes->setFixedHeight( 40+(cfg_noShowStatusBarInChat?10:0) );
 	#else
-	mleMes->setFixedHeight( 70 );
+	mleMes->setFixedHeight( 70+(cfg_noShowStatusBarInChat?10:0) );
 	#endif
 
 	mleMes->setFontPercent( (float)cfg_mesFontSize/(float)22 );
 	mleMes->setText(oldMes);
 	
-	m_pScrollPanel2->addChild(mleMes, 0, 0);	
+	myVBoxLayout->addWidget(mleMes,2);
 
 	mleMes->setFocus();
 
-	if ( !notSendTypeMes && protocol==PROT_ICQ )
+	if ( !cfg_notSendTypeMes && protocol==PROT_ICQ )
 		connect( mleMes, SIGNAL( textChanged() ), this, SLOT( mesTextChanged() ) );
 	
 	logMes_3("zChatForm: create menu");
@@ -194,7 +182,7 @@ zChatForm::~zChatForm()
 	this->removeEventFilter( this );
 	mleMes->removeEventFilter( this );
 	oldMes = mleMes->text();
-	if (!notSendTypeMes && protocol==PROT_ICQ )
+	if (!cfg_notSendTypeMes && protocol==PROT_ICQ )
 		stopTimerTyped();
 	zSmile->clearCash();
 }
@@ -476,7 +464,7 @@ void zChatForm::mesTextChanged()
 
 void zChatForm::mesTyped( bool tuped )
 {
-	if (notSendTypeMes && protocol==PROT_ICQ )
+	if (cfg_notSendTypeMes && protocol==PROT_ICQ )
 		return;
 	if ( !zgui->icq->connected )
 		return;
@@ -545,7 +533,7 @@ void zChatForm::sendClick()
 	{
 		if (mleMes->text() != "")
 		{	
-			if ( !notSendTypeMes && protocol==PROT_ICQ )
+			if ( !cfg_notSendTypeMes && protocol==PROT_ICQ )
 			{
 				stopTimerTyped();
 			}
@@ -561,8 +549,6 @@ void zChatForm::sendClick()
 		}
 	}
 }
-
-#include <ZKbInputField.h>
 
 void zChatForm::kbChange()
 {
@@ -625,7 +611,6 @@ void zChatForm::kbChangeByKey()
 
 	QString n;
 
-	#ifndef NEW_PLATFORM
 	switch (nKbState)
 	{
 		case 0:  n="iTap"; break;
@@ -634,16 +619,6 @@ void zChatForm::kbChangeByKey()
 		case 3:  n="#*)";  break;
 		default: n="?";	
 	}
-	#else
-	switch (nKbState)
-	{
-		case 0:  n="#*)"; break;
-		case 1:  n="iTap";  break;
-		case 2:  n="Tap";  break;
-		case 3:  
-		default: n="123";  break;
-	}	
-	#endif
 
 	labInputMode->setText(n);
 }
@@ -664,21 +639,16 @@ void zChatForm::changeSelect()
 
 bool zChatForm::eventFilter(QObject* o, QEvent* pEvent)
 {
-	#ifndef NEW_PLATFORM
-	if ( o == mleMes )
+
+	if ( QEvent::FocusIn == pEvent->type() && o == mleMes )
 	{
-		// In old platform it need for show language
-		if (QEvent::FocusIn == pEvent->type())
-		{
-			kbChange();
-		}
-	}
-	#endif
+		kbChange();
+	} else
 	if (  QEvent::KeyPress == pEvent->type())
 	{
 		switch ( ((QKeyEvent*)pEvent)->key() )
 		{
-			case Z6KEY_POUND:       kbChangeByKey();													  break;
+			case Z6KEY_POUND:       if (!((QKeyEvent*)pEvent)->isAutoRepeat()) kbChangeByKey();	          break;
 			case Z6KEY_SIDE_UP:     eeChat->pageUp();   									return true;  break;
 			case Z6KEY_SIDE_DOWN:   eeChat->pageDown(); 									return true;  break;
 			case Z6KEY_SIDE_SELECT: changeSelect();     									return true;  break;

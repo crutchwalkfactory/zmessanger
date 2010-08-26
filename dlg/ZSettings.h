@@ -18,6 +18,8 @@
 #include <ZConfig.h>
 #include <ZNavTabWidget.h>
 
+#include <qtextcodec.h>
+
 #include "ZOptionItem.h"
 
 class ZSettingsDlg : public MyBaseDlg
@@ -41,6 +43,7 @@ private:
 
     ZOptionItem * optVibrate;
     ZOptionItem * optTone;
+    ZOptionItem * optToneVol;
 
     ZOptionItem * optShowOffLine;
     ZOptionItem * optShowGroup;
@@ -61,7 +64,7 @@ private:
     ZOptionItem * optChatFontSize;
     ZOptionItem * optMesFontSize;
     ZOptionItem * optMaxNumLine;
-
+	ZOptionItem * optNoShowStatusBarInChat;
     ZOptionItem * optSortType;
     
     ZWidget *myWidget;
@@ -71,6 +74,8 @@ private:
     ZListBox *CL;
     ZListBox *Chat;
     ZListBox *othe;
+    
+    QStringList * codec;
 
 public slots:
     void saveSetting();

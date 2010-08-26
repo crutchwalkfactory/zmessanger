@@ -12,7 +12,7 @@
 #ifndef ZGUI_H
 #define ZGUI_H
 
-#include "zICQ.h"
+#include "GUI_Define.h"
 
 //C/C++
 #include <unistd.h>
@@ -25,6 +25,7 @@
 #include <ZSoftKey.h>
 #include <ZOptionsMenu.h>
 #include <ZProgressDlg.h>
+#include <ZMessageDlg.h>
 
 //QT
 #include <qobject.h>
@@ -53,10 +54,11 @@
 #include "zIMType.h"
 
 //Protocol
+#include "zICQ.h"
 #ifdef _XMPP
 #include "zXMPP.h"
 #endif
-#include "icqkid2.h"
+
 
 
 class ZGui :public ZKbMainWidget
@@ -80,7 +82,7 @@ class ZGui :public ZKbMainWidget
     void setOperat(QString text, int max);
     void setProc(int i);
     void closeProc();
-    bool showMesDlg(QString title, QString mes, bool ok = true);
+    bool showMesDlg(QString title, QString mes, int ico = 0);
     void newMes(QString uin,QString title, QString mes, QDateTime time, int type);
     void addContactToList(QString uin);
 

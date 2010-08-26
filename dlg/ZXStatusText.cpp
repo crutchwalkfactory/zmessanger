@@ -25,12 +25,13 @@
 #include "./../icqlib/icqkid2.h"
 #include "./../icqlib/const_strings.h"
 
-ZXStatusText::ZXStatusText(int idStatus1)
+ZXStatusText::ZXStatusText(int _idStatus, bool _addHotStatus)
     :MyBaseDlg()
 {
  	setMainWidgetTitle ( "xStatus" );
  	
- 	idStatus = idStatus1;
+ 	idStatus = _idStatus;
+ 	addHotStatus = _addHotStatus;
 
 	ZFormContainer *sv = new ZFormContainer(this, 0, ZSkinService::clsZFormContainer);
 	
@@ -70,19 +71,38 @@ ZXStatusText::ZXStatusText(int idStatus1)
 
 void ZXStatusText::menu_setStat()
 {
-	#ifdef _SupportZPlayer
-	if ( statDesc->text() == "%nowPlaying%" )
+	if ( !addHotStatus )
 	{
-		zgui->icq->setXStatus(idStatus, statTitle->text(), "" );
-		zgui->startPlayerChenel();
-	}
-	else
-	{
+		#ifdef _SupportZPlayer
+		if ( statDesc->text() == "%nowPlaying%" )
+		{
+			zgui->icq->setXStatus(idStatus, statTitle->text(), "" );
+			zgui->startPlayerChenel();
+		}
+		else
+		{
+			zgui->icq->setXStatus(idStatus, statTitle->text(), statDesc->text());
+			zgui->stopPlayerChenel();
+		}
+		#else
 		zgui->icq->setXStatus(idStatus, statTitle->text(), statDesc->text());
-		zgui->stopPlayerChenel();
+		#endif
+	} else
+	{
+			ZConfig cfg(ProgDir+"/QuickXStatus.cfg");
+			int nst;
+			for (int i=1;i<20;i++)
+			{
+				nst = cfg.readNumEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), -1);
+				if (nst < 0)
+				{
+					cfg.writeEntry(QString("QuickXStatus"), QString("Status"+QString::number(i)), idStatus);
+					cfg.writeEntry(QString("QuickXStatus"), QString("Text"+QString::number(i)), statTitle->text());
+					cfg.writeEntry(QString("QuickXStatus"), QString("Desc"+QString::number(i)), statDesc->text());
+					cfg.flush();
+					break;
+				}
+			}		
 	}
-	#else
-	zgui->icq->setXStatus(idStatus, statTitle->text(), statDesc->text());
-	#endif
 	accept();
 }
