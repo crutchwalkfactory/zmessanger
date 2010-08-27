@@ -29,6 +29,11 @@
 #include "zEmoticon.h"
 #include "zDefs.h"
 
+#ifndef NO_ANI_SMILE
+#include "UTIL_GifPlayer.h"
+#define MAX_SMILE_ON_SCREEN 16
+#endif
+
 class Position
 {
 public:
@@ -91,6 +96,11 @@ class xTextView : public ZScrollView
 		void insertText(QString str, int insertTo);
 		
 		bool autoScrollByKey;
+		
+		#ifndef NO_ANI_SMILE
+		UTIL_GifPlayer * aniSmilwCash[MAX_SMILE_ON_SCREEN];
+		int countAniSmile;
+		#endif
 };
 #endif
 

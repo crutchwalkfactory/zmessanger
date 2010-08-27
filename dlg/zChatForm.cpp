@@ -542,12 +542,20 @@ void zChatForm::sendClick()
 		}
 	} else
 	{
+		
 		if ( mleMes->text() != "" )
 		{
+			#ifndef _VersionTest
 			eeChat->addText("[*MES*] $1%$Server#\nNot connect to server...");
-			mleMes->setText("");			
+			mleMes->setText("");		
+			#else
+			eeChat->addText("[*MES*] $1%$TestMes#\n"+mleMes->text());
+			eeChat->toEnd();
+			mleMes->setText("");					
+			#endif
 		}
 	}
+	
 }
 
 void zChatForm::kbChange()

@@ -27,6 +27,12 @@ xTextView::xTextView(QWidget* parent, zEmotIcons * smile)
 	colLines = 0;
 	smileIcon = smile;
 	
+	#ifndef NO_ANI_SMILE
+	countAniSmile = 0;
+	for ( int i=0; i<MAX_SMILE_ON_SCREEN; i++ )
+		aniSmilwCash[i]=NULL;
+	#endif
+	
 	setFocusPolicy( StrongFocus );
 	
 	setHScrollBarMode( QScrollView::AlwaysOff );
@@ -425,9 +431,27 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 {
 	if ( stopRepaint )
 		return;
+	
+	logMes("xTextView::PaintEvent");
+	
 	stopRepaint = true;
 	QPixmap pixmap(viewport()->width(), viewport()->height()); 
 	QPainter p(&pixmap, viewport()); 
+
+	#ifndef NO_ANI_SMILE
+	if ( countAniSmile>0 )
+	{
+		for ( int i=0; i<countAniSmile; i++ )
+		{
+			if ( aniSmilwCash[i] == NULL )
+				continue;
+			removeChild( aniSmilwCash[i] );
+			delete aniSmilwCash[i];
+			aniSmilwCash[i]=NULL;
+		}
+		countAniSmile=0;			
+	}
+	#endif	
 
 	// Set bg
 	p.setPen(QColor(255,255,255));
@@ -473,7 +497,21 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 					left+=drawText(&p, left, posY, text[i].mid(lefPos,std::max(it.key()-lefPos, 0)));
 				}
 				lefPos=it.key()+it.data().len;
-				p.drawPixmap( left+1, posY-maxHeigth, smileIcon->getEmotIcon(it.data().num) ); 
+				#ifndef NO_ANI_SMILE
+				if ( (smileIcon->isAniSmile( it.data().num )) && (countAniSmile<MAX_SMILE_ON_SCREEN) )
+				{
+					aniSmilwCash[countAniSmile] = new UTIL_GifPlayer( smileIcon->getSmilePath(it.data().num), viewport() );
+					aniSmilwCash[countAniSmile]->setBackgroundColor(viewport()->backgroundColor());
+					aniSmilwCash[countAniSmile]->setFixedHeight ( smileIcon->getSmileHeigth(it.data().num) );
+					aniSmilwCash[countAniSmile]->setFixedWidth ( smileIcon->getSmileWidth(it.data().num)+1 );
+					addChild( aniSmilwCash[countAniSmile], left+1, contentsY() + posY-maxHeigth );
+					aniSmilwCash[countAniSmile]->start(smileIcon->getSmilePath(it.data().num),true);
+					aniSmilwCash[countAniSmile]->startshow();
+					aniSmilwCash[countAniSmile]->show();	
+					countAniSmile++;					
+				}else
+				#endif	
+					p.drawPixmap( left+1, posY-maxHeigth, smileIcon->getEmotIcon(it.data().num) );		
 				left+=smileIcon->getSmileWidth(it.data().num)+2;
 			}
 			drawText(&p, left, posY, text[i].mid(lefPos,text[i].length()-lefPos));

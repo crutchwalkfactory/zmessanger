@@ -135,6 +135,27 @@ ZSettingsDlg::ZSettingsDlg()
 	pm.load( ProgDir+ "/image/tab_chat.png");
 	tabWidget->addTab(Chat, QIconSet(pm), "");
 	//#####################################################################################
+	
+	optSmilePack = new ZOptionItem(Chat, ZOptionItem::EDIT_ONE_OF_LIST);
+	optSmilePack->setTitle( LNG_SMILE_PACK );
+	
+	smileList = zSmile->getSmilePackList();
+	
+	optSmilePack->setList( smileList );
+	
+	int sel=0, i=0;
+	QString text = cfg.readEntry(QString("Chat"), QString("smilePack"), "kolobok");
+	for ( QStringList::Iterator it = smileList->begin(); it != smileList->end(); ++it )
+		if ( *it == text )
+		{
+			sel=i;
+			break;
+		} else
+			i++;	
+	
+	optSmilePack->setNum( sel );
+	Chat->insertItem(optSmilePack);	
+	
 	optChatFontSize = new ZOptionItem(Chat, ZOptionItem::EDIT_NUM);
 	optChatFontSize->setMaxMin(35, 2);
 	optChatFontSize->setNum( cfg.readNumEntry(QString("Chat"), QString("chatFontSize"), 11) );
@@ -166,7 +187,7 @@ ZSettingsDlg::ZSettingsDlg()
 	optSendTypeMes = new ZOptionItem(Chat, ZOptionItem::EDIT_BOOL_YESNO);
 	optSendTypeMes->setTitle( LNG_SENDTYPEMES );
 	optSendTypeMes->setNum( !cfg.readBoolEntry(QString("Chat"), QString("notSendTypeMes"), false) );
-	Chat->insertItem(optSendTypeMes);	
+	Chat->insertItem(optSendTypeMes);
 	
 	//#####################################  5  ###########################################
 	othe = new ZListBox( tabWidget );
@@ -202,8 +223,8 @@ ZSettingsDlg::ZSettingsDlg()
 	codec->append( "CP1257" );	
 	codec->append( "CP1258" );
 
-	int sel=0, i=0;
-	QString text = cfg.readEntry(QString("Message"), QString("CodePage"), "CP1251");
+	sel=0, i=0;
+	text = cfg.readEntry(QString("Message"), QString("CodePage"), "CP1251");
 	for ( QStringList::Iterator it = codec->begin(); it != codec->end(); ++it )
 		if ( *it == text )
 		{
@@ -279,6 +300,7 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry(QString("Chat"), QString("chatFontSize"), optChatFontSize->getNum());
 	cfg.writeEntry(QString("Chat"), QString("writeMesFontSize"), optMesFontSize->getNum());
 	cfg.writeEntry(QString("Chat"), QString("maxNumLines"), optMaxNumLine->getNum());
+	cfg.writeEntry(QString("Chat"), QString("smilePack"), *(smileList->at(optSmilePack->getNum())));
 
 	cfg.writeEntry(QString("Message"), QString("CodePage"), *(codec->at(optCodePage->getNum())));
 	cfg.writeEntry(QString("Message"), QString("noAutoXTrazRequest"),!optXTrazRequest->getNum());
@@ -323,6 +345,8 @@ void ZSettingsDlg::saveSetting()
 	zgui->codec = QTextCodec::codecForName( *(codec->at(optCodePage->getNum())) );
 	if ( zgui->codec == 0 )
 		zgui->codec = QTextCodec::codecForName( "CP1251" );
+	
+	zSmile->setSmilePack(*(smileList->at(optSmilePack->getNum())));
 	
 	accept();
 }

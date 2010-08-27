@@ -16,12 +16,16 @@
 #include "config.h"
 #include "zDefs.h"
 
+#define update() if(!IsHide&&(lbParent->itemVisible(this))) lbParent->UpdateList()
+
 using namespace std;
 
 ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 	ZSettingItem(_container, CONVERT_TYPE(_type) )
 {
 	type = _type;
+	lbParent = _container;
+	
 	IsGroup = false;
 	group = -1;
 	protocol = PROT_ICQ;
@@ -31,13 +35,17 @@ ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 	xStatus = -1;
 	clientId = 255;
 	uid = "";
-	IsHide = false;
+	IsHide = true;
+	
+	appendSubItem ( GET_NUM_NICK(type), " ", true );
 
-	// for dont jump image in list
 	switch ( type )
 	{
 		case ITEM_CONACT:
+			// for dont jump image in list
 			setPixmap ( GET_NUM_FAKE(type), QPixmap(ProgDir + "/CL/fake.png") );
+			
+			//connect( this, SIGNAL(needUpdate()), lbParent, SLOT(UpdateList()));	
 			break;
 		case ITEM_SPLITER:
 			setSelectable(false);
@@ -48,12 +56,12 @@ ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 
 ZContactItem::~ZContactItem()
 {
+
 }
 
 void ZContactItem::setNick( QString nick )
 {
-	appendSubItem ( GET_NUM_NICK(type), nick , true );
-	//setSubItem( GET_NUM_NICK(type), 0, nick , true );
+	setSubItem( GET_NUM_NICK(type), 0, nick , true );
 }
 
 QString ZContactItem::getNick()
@@ -123,7 +131,7 @@ void ZContactItem::setProtocol(int n)
 		setStatus ( XMPP_OFFLINE, true );
 	else
 	#endif
-		setStatus ( STATUS_ONLINE, true );	
+		setStatus ( STATUS_OFFLINE, true );	
 }
 
 string ZContactItem::getUID()
@@ -193,6 +201,8 @@ void ZContactItem::setStatus(int n, bool update)
 	#endif
 	
 	setPixmap ( GET_NUM_STATUS(type), pm );
+	
+	update();
 }
 
 void ZContactItem::setStatusX(int _xStatus)
@@ -221,6 +231,8 @@ void ZContactItem::setStatusX(int _xStatus)
 			setPixmap ( GET_NUM_FAKE(type), pm );
 		}
 	}
+	
+	update();
 }
 
 void ZContactItem::setClient(int n)
@@ -256,6 +268,8 @@ void ZContactItem::setType(bool b)
 	{
 		setStatus( status, true );
 	}
+
+	update();
 }
 
 void ZContactItem::setNewMes(bool b)
@@ -273,6 +287,8 @@ void ZContactItem::setNewMes(bool b)
 	{
 		setStatus( status, true );
 	}
+	
+	update();
 }
 
 void ZContactItem::setWaitAuth(bool b)

@@ -354,6 +354,7 @@ void ZGui::CreateWindow ( QWidget* )
 
 	showProfileList();
 
+	zSmile = new zEmotIcons(ProgDir);
 
 	logMes_3("CreateWindow: Read config");
 	ZConfig cfg(ProgDir+"/zMessanger.cfg");
@@ -381,6 +382,7 @@ void ZGui::CreateWindow ( QWidget* )
 	cfg_notSendTypeMes = cfg.readBoolEntry(QString("Chat"), QString("notSendTypeMes"), false);
 	cfg_sendByCenter = cfg.readBoolEntry(QString("Chat"), QString("sendByCenter"), false);
 	cfg_noShowStatusBarInChat = cfg.readBoolEntry(QString("Chat"), QString("noShowStatusBarInChat"), false);
+	zSmile->setSmilePack(cfg.readEntry(QString("Chat"), QString("smilePack"), "kolobok"));
 	icq->enabledEye = cfg.readBoolEntry(QString("Othe"), QString("enabledEye"), true);
 	#ifdef _SupportZPlayer
 	cfg_nowPlaying = cfg.readEntry(QString("Status"), QString("nowPlaying"), "%artist% - %title%");
@@ -391,8 +393,6 @@ void ZGui::CreateWindow ( QWidget* )
 	#else
 	cfg_InetOnUSB = false;	
 	#endif
-
-	zSmile = new zEmotIcons(ProgDir);
 	
 	dlgChat = NULL;
 	dlgStat = NULL;
@@ -897,10 +897,11 @@ void ZGui::showProfileList()
 			logMes_2("showProfileList: "+uin);
 			listitem->setNick( uin );
 			listitem->setProtocol( PROT_ICQ );
-			lbContact->insertItemInList ( listitem,-1,true );
+			listitem->setStatus( STATUS_ONLINE );
 			listitem->setReservedData ( i );
 			if ( i == checkId )
 				lbContact->checkItem(listitem,true);
+			lbContact->insertItemInList ( listitem, -1, true );	
 			icqCount++;
 		} else
 		{
@@ -1328,6 +1329,8 @@ void ZGui::slotFixMenuBag()
 
 void ZGui::menu_connect()
 {	
+	logMes_2("menu_connect");
+	
 	#ifdef _XMPP
 	xmppSet = false;
 	#endif
@@ -1339,6 +1342,8 @@ void ZGui::menu_connect()
 	#endif
 					)
 	{
+		logMes_2("menu_connect 2");
+		
 		ZConfig cfg(ProgDir+"/zMessanger.cfg");
 
 		bool inetConnec = false;
@@ -1363,6 +1368,8 @@ void ZGui::menu_connect()
 			system("route del default; route add default gw 192.168.16.1");
 		}
 
+		logMes_2("menu_connect 3");
+
 		string MyUin;
 		string MyPassword;
 		QString MyJID;
@@ -1373,11 +1380,14 @@ void ZGui::menu_connect()
 		for (int i=0;i<lbContact->count();i++)
 			if ( lbContact->itemChecked(i) )
 			{
+				logMes_2("menu_connect 4");
 				listitem = lbContact->item( i );
 				
 				id  = listitem->getReservedData();
 				if ( !icqSet && listitem->getProtocol() == PROT_ICQ )
 				{
+					logMes_2("menu_connect 5");
+					
 					MyUin = cfg.readEntry(QString("Login"), QString("UIN")+QString::number(id), "123").latin1() ;
 					MyPassword = cfg.readEntry(QString("Login"), 	QString("PAS")+QString::number(id), "123").latin1();
 					icq->setUIN(MyUin);

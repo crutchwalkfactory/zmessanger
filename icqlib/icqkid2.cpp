@@ -120,8 +120,8 @@ extern "C" void __napi_bindsocket2link(int fd);
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 ICQKid2::ICQKid2()
 		: sock ( -1 ), flap_seq_number ( 1 ), snac_seq_number ( 1 ), network_timeout ( -1 ), \
-		network_break_flag ( false ), connect_phase_percentage ( 0 ), \
-		/*icons_service(NULL),*/ online_status ( STATUS_OFFLINE ), xStatus ( X_STATUS_NONE ), \
+		connect_phase_percentage ( 0 ), \
+		online_status ( STATUS_OFFLINE ), xStatus ( X_STATUS_NONE ), \
 		myPrivSrvStatus ( PRIV_ALL_CAN_SEE ), myPrivSrvStatus_item_id ( 0 )
 {
 	snac_cache = new SnacCache;
@@ -130,6 +130,7 @@ ICQKid2::ICQKid2()
 	last_keepalive_timestamp=time ( NULL );
 	tzset();
 //
+	network_break_flag = false;
 	noAutoXTrazRequest = false;
 	noAutoMsgRequest = false;
 	enabledEye = false;

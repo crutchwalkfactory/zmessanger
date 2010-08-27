@@ -14,10 +14,11 @@
 
 #include <qstring.h>
 #include <qpixmap.h>
+#include <qstringlist.h>
 
 #define MAX_EMOTICON_COUNT  100
 #define MAX_EMOTICONT  emoticCount
-#define NO_SMILE  3
+#define NO_SMILE  4
 
 typedef struct
 {
@@ -44,8 +45,15 @@ public:
     
     uint getSmileCount();
     
+    QStringList * getSmilePackList();
+    void setSmilePack( QString name );
+    
+    bool isAniSmile( int k );
+    
 private:
 	QString ProgDir;
 	uint emoticCount;
+	QString smilePack;
+	bool ani;
 };
 #endif

@@ -54,6 +54,7 @@ private:
     ZOptionItem * optEye;
     ZOptionItem * optSendTypeMes;
     ZOptionItem * optSendByCenter;
+    
 
     #ifndef _NoUSBNetOption
     ZOptionItem *optUSBNet;
@@ -61,6 +62,7 @@ private:
     
     ZOptionItem * optSaveStusWithExit;
 
+    ZOptionItem * optSmilePack;
     ZOptionItem * optChatFontSize;
     ZOptionItem * optMesFontSize;
     ZOptionItem * optMaxNumLine;
@@ -76,6 +78,7 @@ private:
     ZListBox *othe;
     
     QStringList * codec;
+    QStringList* smileList;
 
 public slots:
     void saveSetting();

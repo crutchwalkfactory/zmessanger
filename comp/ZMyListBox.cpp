@@ -100,6 +100,7 @@ void ZMyListBox::contactAdd( ZContactItem * item )
 		insertAt = index(itemAt)+1;
 			
 	insertItem( item, insertAt);
+	item->setHide(false);
 	
 	UpdateList();
 }
@@ -123,13 +124,17 @@ void ZMyListBox::groupAdd( ZContactItem * item, string idGroup )
 	}
 	
 	if ( showGroup )
+	{
 		insertItem( item, insertAt);	
+		item->setHide(false);
+	}
 }
 
 void ZMyListBox::protAdd( ZContactItem * item )
 {
 	listProt[item->getProtocol()] = item;
-	insertItem( item, -1);	
+	insertItem( item, -1);
+	item->setHide(false);	
 }
 
 void ZMyListBox::showHideGroup(int idGroup)

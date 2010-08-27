@@ -114,6 +114,7 @@
 #define LNG_SEND_BY_CENTER QString::fromUtf8("Отправлять по нажатию центра джойстика")
 #define LNG_SAVE_STATUS_WITH_EXIT QString::fromUtf8("Сохранять статусы при выходе")
 #define LNG_NO_SHOW_STATUS_BAR_IN_CHAT QString::fromUtf8("Заголовок в окне чата")
+#define LNG_SMILE_PACK QString::fromUtf8("Набор смайликов")
 
 //ZStatusInfo
 #define LNG_STATUS QString::fromUtf8("Статус")

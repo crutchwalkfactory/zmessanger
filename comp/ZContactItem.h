@@ -13,6 +13,7 @@
 #define ZCONTCTITEM_H
 
 #include <string>
+#include <qobject.h>
 
 #ifdef OLD_SDK
 #include <ZListBox.h>
@@ -25,7 +26,7 @@
 class ZMyListBox;
 
 class Q_EXPORT ZContactItem : public ZSettingItem
-{   
+{  
 public: 
 	ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type );
 	~ZContactItem();
@@ -88,6 +89,8 @@ protected:
 	bool IsHide;
 	
 	CONTACT_TYPE type;
+	
+	ZMyListBox * lbParent;
 };
 
 #endif

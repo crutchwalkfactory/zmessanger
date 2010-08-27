@@ -33,66 +33,65 @@ typedef QMap<int, ZContactItem*> List2Map;
 
 class ZMyListBox : public ZListBox
 {
-  Q_OBJECT
-  
-  public:
-    ZMyListBox( QWidget* parent = 0, WFlags f = 0);
-    ZMyListBox( QString type, QWidget* parent = 0, WFlags f = 0);
-    ~ZMyListBox();
-    
-    void clear();
-    
-    void contactAdd( ZContactItem * item );
-    void contactRemove( string idContact );
-    ZContactItem * getConact(string id);
-    
-    void groupAdd( ZContactItem * item, string idGroup );
-    void groupAdd( ZContactItem * item, int idGroup )
-    {
-		groupAdd( item, QString::number(idGroup).latin1() );
-	};
-    
-    void protAdd( ZContactItem * item );
-    
-    void showHideGroup(int idGroup);
-    
-    void insertItemInList( const ZContactItem * item, int index=-1, bool autoHighlighted = TRUE )
-    {
-		insertItem( item, index, autoHighlighted );
-	}
-    
-    void takeItem( const ZListItem * item);
-    void moveItem(int from, int to);
-    void UpdateList();
+Q_OBJECT
+
+public:
+	ZMyListBox( QWidget* parent = 0, WFlags f = 0);
+	ZMyListBox( QString type, QWidget* parent = 0, WFlags f = 0);
+	~ZMyListBox();
+
+	void clear();
+
+	void contactAdd( ZContactItem * item );
+	void contactRemove( string idContact );
+	ZContactItem * getConact(string id);
+
+	void groupAdd( ZContactItem * item, string idGroup );
+	void groupAdd( ZContactItem * item, int idGroup )
+		{	groupAdd( item, QString::number(idGroup).latin1() );	};
+
+	void protAdd( ZContactItem * item );
+
+	void showHideGroup(int idGroup);
+
+	void insertItemInList( const ZContactItem * item, int index=-1, bool autoHighlighted = TRUE )
+		{	insertItem( item, index, autoHighlighted );		};
+
+	void takeItem( const ZListItem * item);
+	void moveItem(int from, int to);
+
 	ZContactItem * item( int index );
-	
+
 	void setShowGroup( bool show );
 
 	// this function is bad
 	void dellAllContactWithProtocol( int prot, bool lock = true );
-	
-  private:
-    void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
-    void insertItem( const ZListItem * item, const ZListItem *after, bool autoHighlighted = TRUE);
-    void changeItem( const ZListItem * item, int index );
 
-  private slots: 
-    virtual void viewportPaintEvent( QPaintEvent * pe);
-    virtual void keyReleaseEvent(QKeyEvent* e);
+//public slots:
+	void UpdateList();  
 
-  private:
-    mutable QMutex mutexOnRepaint;
-    mutable QMutex mutexPaintEvent;
-    mutable QMutex mutexAction;    
-    bool showGroup;
+private:
+	void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
+	void insertItem( const ZListItem * item, const ZListItem *after, bool autoHighlighted = TRUE);
+	void changeItem( const ZListItem * item, int index );
 
-  signals:
+private slots: 
+	virtual void viewportPaintEvent( QPaintEvent * pe);
+	virtual void keyReleaseEvent(QKeyEvent* e);
+
+private:
+	mutable QMutex mutexOnRepaint;
+	mutable QMutex mutexPaintEvent;
+	mutable QMutex mutexAction;    
+	bool showGroup;
+
+signals:
 	void onDialButtonPress();
 	void onLeftButtonPress();
 	void onRigtButtonhPress();
 	void onRedButtonPress();
-	
-  protected:
+
+protected:
 	ListMap listContact;
 	ListMap   listGroup;
 	List2Map   listProt;

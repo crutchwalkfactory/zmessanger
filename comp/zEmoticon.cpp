@@ -12,13 +12,17 @@
 #include "zEmoticon.h"
 #include <stdio.h>
 
+#include "qdir.h"
+
 #include "zDefs.h"
 
     TYPE_SMILE 	masEMOTICON [MAX_EMOTICON_COUNT] =
 	{
 	    16, 16,  "[*MES*]"      , ""     , "onmes.png" ,       NULL,
+	    16, 16,  "[*MES_MY*]"   , ""     , "onmes.png" ,       NULL,   
 	    16, 16,  "[*WADD*]"     , ""     , "wasadd.png",       NULL,
 	    16, 16,  "[*AUTH*]"     , ""     , "authok.png",       NULL,
+	    
 	};
 
 zEmotIcons::zEmotIcons(QString dir)
@@ -26,40 +30,8 @@ zEmotIcons::zEmotIcons(QString dir)
 	logMes("zEmotIcons: read smile config");
 	emoticCount = 3;
 	ProgDir = dir;
-	
-	FILE * smiles = fopen(ProgDir+"smile/list.cfg","rt");
-	if ( smiles != NULL )
-	{
-		char smile1[255], smile2[255], fileName[255];
-		int width, height;
-		smile1[0]=0;
-		smile2[0]=0;
-		fileName[0]=0;
-		int ret=0;
-		ret = fscanf(smiles,"%d %d %s %s %s\n", &height, &width, &smile1, &smile2, &fileName);
-		char * c = NULL;
-		while ( !feof(smiles) && (ret>=5) )
-		{
-			if ( emoticCount >= MAX_EMOTICON_COUNT )
-				break;
-			c = strchr(smile1, '_');
-			if ( c!=NULL ) *c = ' '; 
-			c = strchr(smile2, '_');
-			if ( c!=NULL ) *c = ' '; 
-			masEMOTICON[emoticCount].height = height;
-			masEMOTICON[emoticCount].width = width;
-			masEMOTICON[emoticCount].emoticonstr1 = (QString(smile1)!="-")?QString(smile1):"";
-			masEMOTICON[emoticCount].emoticonstr2 = (QString(smile2)!="-")?QString(smile2):"";
-			masEMOTICON[emoticCount].iconname =  QString(fileName);
-			masEMOTICON[emoticCount].emoticonPixmap =  NULL;
-			emoticCount++;
-			ret = fscanf(smiles,"%d %d %s %s %s\n", &height, &width, &smile1, &smile2, &fileName);
-		}
-		fclose(smiles);
-	}else
-	{
-		logMes("zEmotIcons: file not found");
-	}
+	ani = false;
+
 	logMes("zEmotIcons: all smile added");
 }
 
@@ -91,7 +63,7 @@ const QPixmap & zEmotIcons::getEmotIcon(uint k)
 			masEMOTICON[k].emoticonPixmap = new  QPixmap(ProgDir + "/CL/" + masEMOTICON[k].iconname);
 		} else
 		{
-			masEMOTICON[k].emoticonPixmap = new  QPixmap(ProgDir + "/smile/" + masEMOTICON[k].iconname);
+			masEMOTICON[k].emoticonPixmap = new  QPixmap(ProgDir + "/smile/" + smilePack + "/" + masEMOTICON[k].iconname);
 		}
 	}
 	return *(masEMOTICON[k].emoticonPixmap);
@@ -123,10 +95,74 @@ int zEmotIcons::getSmileHeigth(int k)
 
 QString zEmotIcons::getSmilePath(int k)
 {
-	return ProgDir + "/smile/" + masEMOTICON[k].iconname;
+	return ProgDir + "/smile/" + smilePack + "/" + masEMOTICON[k].iconname;
 }
 
 uint zEmotIcons::getSmileCount()
 {
 	return emoticCount;
+}
+
+QStringList * zEmotIcons::getSmilePackList()
+{
+	QStringList * list = new QStringList();
+	
+	QDir dir ( ProgDir+"smile/", "", QDir::Name | QDir::DirsFirst | QDir::IgnoreCase );
+	#ifdef OLD_SDK
+	dir.setMatchAllDirs ( true );
+	#endif
+	dir.setFilter ( QDir::Dirs );
+	if ( !dir.isReadable() )
+		return list;
+		
+	QStringList entries = dir.entryList();
+	for ( QStringList::ConstIterator it = entries.begin(); it != entries.end(); it++ )
+		if ( (*it)[0] != "."  )
+			list->append(*it);
+	
+	return list;
+}
+
+void zEmotIcons::setSmilePack( QString name )
+{
+	emoticCount = 3;
+	smilePack = name;
+	FILE * smiles = fopen(ProgDir+"smile/"+name+"/list.cfg","rt");
+	if ( smiles != NULL )
+	{
+		char smile1[255], smile2[255], fileName[255];
+		int width, height;
+		smile1[0]=0;
+		smile2[0]=0;
+		fileName[0]=0;
+		int ret=0;
+		ret = fscanf(smiles,"%d\n", &ani );
+		ret = fscanf(smiles,"%d %d %s %s %s\n", &width, &height, &smile1, &smile2, &fileName);
+		char * c = NULL;
+		while ( !feof(smiles) && (ret>=5) )
+		{
+			if ( emoticCount >= MAX_EMOTICON_COUNT )
+				break;
+			c = strchr(smile1, '#');
+			if ( c!=NULL ) *c = ' '; 
+			c = strchr(smile2, '#');
+			if ( c!=NULL ) *c = ' '; 
+			masEMOTICON[emoticCount].height = height;
+			masEMOTICON[emoticCount].width = width;
+			masEMOTICON[emoticCount].emoticonstr1 = (QString(smile1)!="-")?QString(smile1):"";
+			masEMOTICON[emoticCount].emoticonstr2 = (QString(smile2)!="-")?QString(smile2):"";
+			masEMOTICON[emoticCount].iconname =  QString(fileName);
+			masEMOTICON[emoticCount].emoticonPixmap =  NULL;
+			emoticCount++;
+			ret = fscanf(smiles,"%d %d %s %s %s\n", &width, &height, &smile1, &smile2, &fileName);
+		}
+		fclose(smiles);
+	}	
+}
+
+bool zEmotIcons::isAniSmile( int k )
+{
+	if ( k < NO_SMILE )
+		return false;
+	return ani;
 }
