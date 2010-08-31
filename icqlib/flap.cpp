@@ -38,53 +38,25 @@ FlapPacket::~FlapPacket()
 {
 }
 
+// ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool FlapPacket::recv_from(int sock, int timeout)
 {
-	vector<uint8_t> tmp_buf(6);
-
-	if (( t_network_error = t_recv(sock, &tmp_buf[0], 6, MSG_NOSIGNAL, timeout, true) ) != 6 ) return false;
-	
-	if (tmp_buf[0] != '*') return false;
-
-	frame_type = tmp_buf[1];
-	
-	uint16_t seq_number_tmp;
-	memcpy(&seq_number_tmp, &tmp_buf[2], sizeof(seq_number_tmp));
-	seq_number=ntohs(seq_number_tmp);
-
-	uint16_t payload_length_tmp;
-	memcpy(&payload_length_tmp, &tmp_buf[4], sizeof(payload_length_tmp));
-	uint16_t payload_length;
-	payload_length=ntohs(payload_length_tmp);
-	
-	payload.resize(payload_length);
-	if ((t_network_error=t_recv(sock, &payload[0], payload_length, MSG_NOSIGNAL, 10000, true))!=payload_length) return false;
-
-	return true;
+ vector<uint8_t> tmp_buf(6);
+ if ((t_network_error=t_recv(sock, &tmp_buf[0], 6, MSG_NOSIGNAL, timeout, true))!=6) return false;
+ if (tmp_buf[0]!='*') return false;
+ frame_type = tmp_buf[1];
+ memcpy(&seq_number, &tmp_buf[2], sizeof(seq_number));
+ seq_number=ntohs(seq_number);
+ uint16_t payload_length;
+ memcpy(&payload_length, &tmp_buf[4], sizeof(payload_length));
+ payload_length=ntohs(payload_length);
+ 
+ payload.resize(payload_length);
+ if ((t_network_error=t_recv(sock, &payload[0], payload_length, MSG_NOSIGNAL, 10000, true))!=payload_length) return false;
+ 
+ return true;
 }
 
-/*
-bool FlapPacket::recv_from(int sock, int timeout)
-{
-	vector<uint8_t> tmp_buf(6);
-
-	if (( t_network_error = t_recv(sock, &tmp_buf[0], 6, MSG_NOSIGNAL, timeout, true) ) != 6 ) return false;
-	
-	if (tmp_buf[0]!='*') return false;
-
-	frame_type = tmp_buf[1];
-
-	memcpy(&seq_number, &tmp_buf[2], sizeof(seq_number));
-	seq_number=ntohs(seq_number);
-	uint16_t payload_length;
-	memcpy(&payload_length, &tmp_buf[4], sizeof(payload_length));
-	payload_length=ntohs(payload_length);
-	
-	payload.resize(payload_length);
-	if ((t_network_error=t_recv(sock, &payload[0], payload_length, MSG_NOSIGNAL, 10000, true))!=payload_length) return false;
-	return true;
-}
-*/
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool FlapPacket::send_to(int sock, int timeout)
 {
@@ -161,7 +133,6 @@ TLVField::~TLVField()
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool TLVField::getAsInt16(uint16_t & i)
 {
- logMes_4("TLVField::getAsInt16");
  uint16_t tmp_i16;
  if (sizeof(tmp_i16)>data.size()) return false;
  memcpy(&tmp_i16, &data[0], sizeof(tmp_i16));
@@ -172,7 +143,6 @@ bool TLVField::getAsInt16(uint16_t & i)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 void TLVField::putInt16(uint16_t i)
 {
- logMes_4("TLVField::putInt16");
  uint16_t tmp_i16 = htons(i);
  data.resize(sizeof(tmp_i16));
  memcpy(&data[0], &tmp_i16, sizeof(tmp_i16));
@@ -181,7 +151,6 @@ void TLVField::putInt16(uint16_t i)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool TLVField::getAsInt32(uint32_t & i)
 {
- logMes_4("TLVField::getAsInt32");
  uint32_t tmp_i32;
  if (sizeof(tmp_i32)>data.size()) return false;
  memcpy(&tmp_i32, &data[0], sizeof(tmp_i32));
@@ -192,7 +161,6 @@ bool TLVField::getAsInt32(uint32_t & i)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 void TLVField::putInt32(uint32_t i)
 {
- logMes_4("TLVField::putInt32");
  uint32_t tmp_i32 = htonl(i);
  data.resize(sizeof(tmp_i32));
  memcpy(&data[0], &tmp_i32, sizeof(tmp_i32));
@@ -201,7 +169,6 @@ void TLVField::putInt32(uint32_t i)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool TLVField::getAsString(string & s)
 {
- logMes_4("TLVField::getAsString");
  s.assign(reinterpret_cast<const char *>(&data[0]), data.size());
  return true;
 }
@@ -209,14 +176,12 @@ bool TLVField::getAsString(string & s)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 void TLVField::putString(string s)
 {
- logMes_4("TLVField::putString");
  data.assign(s.begin(), s.end());
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool TLVField::decode_from(vector<uint8_t> & v, size_t start_ind)
 {
- logMes_4("TLVField::decode_from");
  if (v.size()<(start_ind+4)) return false;
  uint16_t tmp_i, length;
  memcpy(&tmp_i, &v[start_ind], sizeof(tmp_i));
@@ -231,7 +196,6 @@ bool TLVField::decode_from(vector<uint8_t> & v, size_t start_ind)
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 void TLVField::encode_to(vector<uint8_t> & v, size_t start_ind)
 {
- logMes_4("TLVField::encode_to");
  if (v.size()<(start_ind+4+data.size())) v.resize(start_ind+4+data.size());
  uint16_t tmp_type = htons(type);
  uint16_t tmp_length = htons(data.size());

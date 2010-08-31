@@ -29,9 +29,11 @@
 #include "zEmoticon.h"
 #include "zDefs.h"
 
+#include <qmutex.h>
+
 #ifndef NO_ANI_SMILE
 #include "UTIL_GifPlayer.h"
-#define MAX_SMILE_ON_SCREEN 16
+#define MAX_SMILE_ON_SCREEN 10
 #endif
 
 class Position
@@ -86,7 +88,6 @@ class xTextView : public ZScrollView
 		int colLines;
 		int posLines;
 		int lineOnPage;
-		bool stopRepaint;
 		bool notEndColor;
 		int maxLineHeigth;
 		zEmotIcons * smileIcon;
@@ -97,8 +98,13 @@ class xTextView : public ZScrollView
 		
 		bool autoScrollByKey;
 		
+		mutable QMutex mutexPaintEvent;
+		mutable QMutex mutexInsertText;		
+		
 		#ifndef NO_ANI_SMILE
-		UTIL_GifPlayer * aniSmilwCash[MAX_SMILE_ON_SCREEN];
+		UTIL_GifPlayer * aniSmileCash[MAX_SMILE_ON_SCREEN];
+		int aniSmileNum[MAX_SMILE_ON_SCREEN];
+		bool aniSmileUse[MAX_SMILE_ON_SCREEN];
 		int countAniSmile;
 		#endif
 };

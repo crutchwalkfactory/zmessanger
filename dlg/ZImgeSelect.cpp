@@ -64,6 +64,8 @@ ZImgeSelect::ZImgeSelect(bool _smile, bool _addHotStatus)
 		connect ( iconView, SIGNAL ( returnPressed(ZIconViewItem*) ), this, SLOT ( lbSmileSel(ZIconViewItem*) ) );
 
 		setContentWidget ( iconView );
+
+		softKey->setText ( ZSoftKey::RIGHT, LNG_CANCEL, ( ZSoftKey::TEXT_PRIORITY )0 );
 	} else
 	{
 		setMainWidgetTitle("xStatus");

@@ -435,7 +435,7 @@ bool ICQKid2::doConnect_phase2 ( uint32_t astat, string boss_host, int boss_port
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::setStatus ( uint32_t astat )
 {
-	logMes_4 ( "ICQKid2::setStatus" );
+	logMes_4 ( "ICQKid2::setStatus - "+QString::number(astat) );
 	if ( !sendStatus ( astat ) ) return false;
 	if ( !getSelfInfo ( 0 ) ) return false;
 	online_status=astat;
@@ -2158,6 +2158,7 @@ bool ICQKid2::sendLocationInfo ( void )
 		0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0,   /* XtraZ */
 		0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* AIM_ICQGATE */		
 		0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* tZers */
+		0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* NEW CAPS */		
 		
 		//Client ID string
 		#if defined(EZX_Z6)
@@ -2244,12 +2245,12 @@ bool ICQKid2::getICBMParams ( uint32_t sync_id )
 bool ICQKid2::sendICBMParams ( void )
 {
 	logMes_4 ( "ICQKid2::sendICBMParams" );
-// I set my own ICBM parameters for each of channels
+	// I set my own ICBM parameters for each of channels
 	ICBMParameters icbm_par;
 	icbm_par.channel=0x0001;
-	icbm_par.msg_flags=0x0000000b; // bit1: messages allowed for specified channel
-	// bit2: missed calls notifications enabled for specified channel
-	// bit4: client supports typing notifications
+	icbm_par.msg_flags=0x0000000b;	// bit1: messages allowed for specified channel
+									// bit2: missed calls notifications enabled for specified channel
+									// bit4: client supports typing notifications
 	icbm_par.max_snac_size=0x1f40; // 8000 bytes
 	icbm_par.max_send_warn_lev=0x03e7; // 999
 	icbm_par.max_recv_warn_lev=0x03e7; // 999
@@ -2462,7 +2463,7 @@ bool ICQKid2::getSSICopy ( uint32_t sync_id )
 			default :
 			{
 				// We need to store unknown items for correct work getUnusedItemID()
-				//unknown_item_ids.insert(cl.items[i].item_id);
+				unknown_item_ids.insert(cl.items[i].item_id);
 			}
 		}
 	}
@@ -2495,18 +2496,18 @@ bool ICQKid2::sendStatus ( uint32_t astat, bool ext )
 
 	uint8_t dc_info[] =
 	{
-		0x00, 0x00, 0x00, 0x00,  /* Internal IP address */
-		0x00, 0x00, 0x00, 0x00,  /* Internal TCP port */
-		0x04,  					/* DC type - DC not possible */
-		0x00, 0x09,				/* DC protocol version - ICQ Lite (9) */
-		0x0a, 0x0b, 0x33, 0x45,  /* DC Auth cookie */
-		0x00, 0x00, 0x0b, 0xf5,  /* Web Front Port */
-		0x00, 0x00, 0x00, 0x01,  /* Client futures */
-		0x00, 0x00, 0x00, 0x00,  /* Last Info Update */
-		0x00, 0x00, 0x00, 0x00,  /* Last Extended Info Update (i.e. icqphone status) */
-		0x00, 0x00, 0x00, 0x00,  /* Last Extended Status Update (i.e. phonebook) */
+		0x00, 0x00, 0x00, 0x00,  // Internal IP address
+		0x00, 0x00, 0x00, 0x00,  // Internal TCP port 
+		0x04,  					// DC type - DC not possible 
+		0x00, 0x09,				// DC protocol version - ICQ Lite (9) 
+		0x0a, 0x0b, 0x33, 0x45,  // DC Auth cookie 
+		0x00, 0x00, 0x0b, 0xf5,  // Web Front Port 
+		0x00, 0x00, 0x00, 0x01,  // Client futures 
+		0x00, 0x00, 0x00, 0x00,  // Last Info Update 
+		0x00, 0x00, 0x00, 0x00,  // Last Extended Info Update (i.e. icqphone status) 
+		0x00, 0x00, 0x00, 0x00,  // Last Extended Status Update (i.e. phonebook) 
 		0x00, 0x00
-	}; /* Unknown */
+	};  //Unknown 
 	tlvp.data.push_back ( TLVField ( dc_info, sizeof ( dc_info ), 0x000c ) ); // DC Info
 
 	if ( ext ) tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x001f ) ); // Unknown
@@ -2709,7 +2710,7 @@ bool ICQKid2::sendMD5authorize ( uint32_t * snac_sync, vector<uint8_t> & md5_sal
 	calculate_md5 ( ( const char* ) ( &auth_sum[0] ), auth_sum.size(), ( char * ) md5_hash );
 
 	tlv_pack.data.push_back ( TLVField ( md5_hash, 16, 0x0025 ) ); // MD5 hash of salt+password+AOL_SALT_STR
-	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_NUM_ID ) ); // Client ID number
+	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x010a, TLV_CLI_NUM_ID ) ); // Client ID number
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_MAJOR ) ); // Client major version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_MINOR ) ); // Client minor version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_LESSER ) ); // Client lesser version
@@ -4389,6 +4390,14 @@ uint16_t ICQKid2::getUnusedItemID ( void )
 			}
 		if ( has_collis ) continue;
 
+		for (set<uint16_t>::iterator iter=unknown_item_ids.begin(); iter!=unknown_item_ids.end(); ++iter)
+			if (*iter==i)
+			{
+				has_collis=true;
+				break;
+			}
+		if (has_collis) continue;
+
 		return i;
 	}
 
@@ -4589,7 +4598,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 		if ( !parseIncomingMsg ( msg, snd.data ) ) return TNETWORK_TIMEOUT;
 		logMes_4 ( "emit onIncomingMsg(msg)" );
 		emit onIncomingMsg ( msg );
-		//return 1;
 	}
 	else
 		if ( snd.service_id==0x0004 && snd.subtype_id==0x000b ) // Incoming client autoresponse, may be autostatus message
@@ -4609,7 +4617,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 				{
 					logMes_4 ( "emit onXstatusChanged(from, x_status, x_title, x_descr)" );
 					emit onXstatusChanged ( from, x_status, x_title, x_descr );
-					return 1;
 				}
 				else if ( ( ContactListUins[uen_ind].xStatus!=x_status && x_status != 0 ) || ContactListUins[uen_ind].xStatusTitle!=x_title || ContactListUins[uen_ind].xStatusDescription!=x_descr )
 				{
@@ -4623,7 +4630,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 
 					logMes_4 ( "emit onXstatusChanged(from, x_status, x_title, x_descr)" );
 					emit onXstatusChanged ( from, ContactListUins[uen_ind].xStatus, x_title, x_descr );
-					return 1;
 				}
 			}
 			else
@@ -4687,7 +4693,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 				if ( !parseAuthRequest ( from, text, snd.data ) ) return TNETWORK_TIMEOUT;
 				logMes_4 ( "emit onAuthRequest(from, text)" );
 				emit onAuthRequest ( from, text );
-				//return 1;
 			}
 			else
 				if ( snd.service_id==0x0013 && snd.subtype_id==0x001b ) // Authorize reply
@@ -4697,7 +4702,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 					if ( !parseAuthReply ( from, text, aflag, snd.data ) ) return TNETWORK_TIMEOUT;
 					logMes_4 ( "emit onAuthReply(from, text, aflag)" );
 					emit onAuthReply ( from, text, aflag );
-					//return 1;
 				}
 				else
 					if ( snd.service_id==0x0003 && snd.subtype_id==0x000b ) // Online notification
@@ -4749,7 +4753,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 							}
 							logMes_4 ( "emit onUserNotify(from, stat1, stat2, invis_flag)" );
 							emit onUserNotify ( from, stat1, stat2, invis_flag );
-							//return 1;
 						}
 					}
 					else if ( snd.service_id==0x0003 && snd.subtype_id==0x000c ) // Offline notification
@@ -4761,7 +4764,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 						{
 							logMes_4 ( "emit onUserNotify(from, 0, STATUS_OFFLINE, false)" );
 							emit onUserNotify ( from, 0, STATUS_OFFLINE, false );
-							//return 1;
 						}
 						else
 							if ( ContactListUins[uen_ind].status_modifiers!=0 || ContactListUins[uen_ind].online_status!=STATUS_OFFLINE || ContactListUins[uen_ind].invisible!=false )
@@ -4773,7 +4775,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 								ContactListUins[uen_ind].unicode_cap=false;
 								logMes_4 ( "emit onUserNotify(from, 0, STATUS_OFFLINE, false)" );
 								emit onUserNotify ( from, 0, STATUS_OFFLINE, false );
-								//return 1;
 							}
 					}
 					else if ( snd.service_id==0x0013 && snd.subtype_id==0x0008 ) // SSI add item notification
@@ -4788,7 +4789,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 							if ( !parseSSIUpdateNotify ( snd.data ) ) return TNETWORK_TIMEOUT;
 							logMes_4 ( "emit onContactListChanged()" );
 							emit onContactListChanged();
-							//return 1;
 						}
 						else
 							if ( snd.service_id==0x0013 && snd.subtype_id==0x000a ) // SSI delete item notification
@@ -4796,7 +4796,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 								if ( !parseSSIDeleteNotify ( snd.data ) ) return TNETWORK_TIMEOUT;
 								logMes_4 ( "emit onContactListChanged()" );
 								emit onContactListChanged();
-								//return 1;
 							}
 							else
 								if ( snd.service_id==0x0013 && snd.subtype_id==0x001c ) // You were added notification
@@ -4805,7 +4804,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 									if ( !parseWasAdded ( from, snd.data ) ) return TNETWORK_TIMEOUT;
 									logMes_4 ( "emit onWasAdded(from)" );
 									emit onWasAdded ( from );
-									//return 1;
 								}
 								else
 									if ( snd.service_id==0x0004 && snd.subtype_id==0x0014 ) // Incoming MTN
@@ -4815,7 +4813,6 @@ int ICQKid2::pollIncomingEvents ( SNACData & snd )
 										if ( !parseIncomingMTN ( from, type, snd.data ) ) return TNETWORK_TIMEOUT;
 										logMes_4 ( "emit onIncomingMTN(from, type)" );
 										emit onIncomingMTN ( from, type );
-
 									}
 									else
 									{

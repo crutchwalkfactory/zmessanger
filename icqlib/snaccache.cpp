@@ -41,7 +41,6 @@ SnacCache::~SnacCache()
 void SnacCache::addEntry(SNACData & snd)
 {
 	QMutexLocker locker(&mutex);
-	//cache[time(NULL)]=snd;
 	cache.append( new SNAC(time(NULL),snd) );
 	//cache.push_back(pair<SNACData, time_t>(snd, time(NULL)));
 }
@@ -51,13 +50,12 @@ bool SnacCache::findEntry(SNACData & snd)
 	QMutexLocker locker(&mutex);
 	for (int i=0; i<cache.count(); ++i)
 	{
-		if ((cache.at(i)->data().service_id==cache.at(i)->data().service_id || cache.at(i)->data().service_id==0) && \
+		if ((cache.at(i)->data().service_id==snd.service_id || cache.at(i)->data().service_id==0) && \
 		(cache.at(i)->data().subtype_id==snd.subtype_id || snd.subtype_id==0) && \
 		(cache.at(i)->data().req_id==snd.req_id || snd.req_id==0) )
 		{
 			snd=cache.at(i)->data();
 			cache.remove(i);
-		
 			return true;
 		}
 	}
@@ -87,11 +85,9 @@ bool SnacCache::findEntryFromTime(SNACData & snd, time_t tTime)
 	QMutexLocker locker(&mutex);	
 	for (int i=0; i<cache.count(); ++i)
 	{
-		if ( (tTime-cache.at(i)->time())>10 )
-		{
+		if ( (tTime-cache.at(i)->time())>0 ) // >10
 			continue;
-		}
-		if ((cache.at(i)->data().service_id==cache.at(i)->data().service_id || cache.at(i)->data().service_id==0) && \
+		if ((cache.at(i)->data().service_id==snd.service_id || cache.at(i)->data().service_id==0) && \
 		(cache.at(i)->data().subtype_id==snd.subtype_id || snd.subtype_id==0) && \
 		(cache.at(i)->data().req_id==snd.req_id || snd.req_id==0) )
 		{

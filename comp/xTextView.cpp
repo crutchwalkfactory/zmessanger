@@ -18,11 +18,12 @@ xTextView::xTextView(QWidget* parent, zEmotIcons * smile)
 	:ZScrollView(parent, "xTextView", WRepaintNoErase)
 { 
 	setMargins(0,0,0,0);
+	setFrameShape(QFrame::NoFrame);
+	
 	font = QFont ( qApp->font() );
 	maxLineHeigth = font.pixelSize();
 	isEnd = true;	
 	lineOnPage = (height()-20) / maxLineHeigth;
-	stopRepaint = false;
 	posLines = 0;
 	colLines = 0;
 	smileIcon = smile;
@@ -30,7 +31,11 @@ xTextView::xTextView(QWidget* parent, zEmotIcons * smile)
 	#ifndef NO_ANI_SMILE
 	countAniSmile = 0;
 	for ( int i=0; i<MAX_SMILE_ON_SCREEN; i++ )
-		aniSmilwCash[i]=NULL;
+	{
+		aniSmileCash[i]=NULL;
+		aniSmileNum[i]=0;
+		aniSmileUse[i]=false;
+	}
 	#endif
 	
 	setFocusPolicy( StrongFocus );
@@ -97,14 +102,11 @@ iconList xTextView::smile(QString * s)
 }
 
 void xTextView::insertText(QString str, int insertTo)
-{
-	if ( stopRepaint )
-		return;
-		
+{	
+	QMutexLocker locker ( &mutexInsertText );
+	
 	if ( insertTo == 0)
 		maxLineHeigth = font.pixelSize();
-	
-	stopRepaint = true;
 	
 	QFontMetrics fm( font );
 	
@@ -184,7 +186,7 @@ void xTextView::insertText(QString str, int insertTo)
 	if ( insertTo == 0)
 		posLines = 0;
 	colLines = line;
-	stopRepaint = false;
+
 	lineOnPage = (height()-20)/ maxLineHeigth;
 }
 
@@ -193,16 +195,20 @@ void xTextView::setText(QString str, bool repait)
 	insertText(str, 0);
 	isEnd = false;
 	if (repait)	
-		viewport()->repaint ( false );
+		viewport()->update();
 }
 
 void xTextView::addText(QString str, bool repait)
 {
 	insertText(str, colLines);
-	resizeContents(width(), std::max((colLines+1)*font.pixelSize(),height()) );
+	#ifndef NEW_PLATFORM
+	resizeContents(width(), std::max((colLines+1)*(font.pixelSize()+1),height()) );
+	#else
+	resizeContents(width(), std::max((colLines+1)*font.pixelSize(),height()-20) );
+	#endif
 	isEnd = false;
 	if (repait)
-		viewport()->repaint ( false );
+		viewport()->update();
 }
 
 void xTextView::nextLine()
@@ -213,7 +219,7 @@ void xTextView::nextLine()
 	{
 		posLines++;	
 		scrollBy(0, +font.pixelSize());
-		viewport()->repaint ( false );
+		viewport()->update();
 		isEnd = false;
 	}
 }
@@ -223,10 +229,8 @@ void xTextView::prevLine()
 	if ( posLines > 0 )
 	{
 		posLines--;
-		//#ifndef _QScrollView
 		scrollBy(0, -font.pixelSize());
-		//#endif
-		viewport()->repaint ( false );
+		viewport()->update();
 		isEnd = false;
 	}
 }
@@ -236,17 +240,13 @@ void xTextView::pageUp()
 	if ( posLines > lineOnPage )
 	{
 		posLines = std::max(0,posLines-lineOnPage);
-		//#ifndef _QScrollView
 		scrollBy(0, -(font.pixelSize()*lineOnPage));
-		//#endif
 	} else
 	{
-		posLines = 0;
-		//#ifndef _QScrollView		
+		posLines = 0;	
 		setContentsPos(0, 0);
-		//#endif
 	}
-	viewport()->repaint ( false );
+	viewport()->update();
 	isEnd = false;
 }
 
@@ -256,7 +256,7 @@ void xTextView::pageDown()
 	{
 		posLines = std::min(posLines+lineOnPage, colLines) ;	
 		scrollBy(0, +(font.pixelSize()*lineOnPage));
-		viewport()->repaint ( false );
+		viewport()->update();
 		isEnd = false;
 	} else
 	{
@@ -302,7 +302,7 @@ void xTextView::toEnd()
 	else
 		posLines = colLines - line;
 	setContentsPos(0, contentsHeight() );
-	viewport()->repaint ( false );
+	viewport()->update();
 	isEnd = true;
 }
 
@@ -331,7 +331,6 @@ int xTextView::drawText(QPainter * p, int x, int y, QString paintText)
 {
 	QRegExp rx( "$[1-9][@%^&]$[ ]*" );
 	QFontMetrics fm( font );
-	//int pos = paintText.findRev(rx);
 	int pos = paintText.find(rx);
 	int ret=0;
 	if ( pos == -1 ) //No text change element
@@ -429,28 +428,22 @@ int xTextView::drawText(QPainter * p, int x, int y, QString paintText)
 
 void xTextView::viewportPaintEvent(QPaintEvent * pe) 
 {
-	if ( stopRepaint )
+	if ( mutexPaintEvent.locked() )
 		return;
+		
+	QMutexLocker locker( &mutexPaintEvent );
 	
 	logMes("xTextView::PaintEvent");
 	
-	stopRepaint = true;
 	QPixmap pixmap(viewport()->width(), viewport()->height()); 
 	QPainter p(&pixmap, viewport()); 
 
 	#ifndef NO_ANI_SMILE
-	if ( countAniSmile>0 )
+	for ( int i=0; i<MAX_SMILE_ON_SCREEN; i++ )
 	{
-		for ( int i=0; i<countAniSmile; i++ )
-		{
-			if ( aniSmilwCash[i] == NULL )
-				continue;
-			removeChild( aniSmilwCash[i] );
-			delete aniSmilwCash[i];
-			aniSmilwCash[i]=NULL;
-		}
-		countAniSmile=0;			
+		aniSmileUse[i] = false;
 	}
+	countAniSmile=0;
 	#endif	
 
 	// Set bg
@@ -500,14 +493,41 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 				#ifndef NO_ANI_SMILE
 				if ( (smileIcon->isAniSmile( it.data().num )) && (countAniSmile<MAX_SMILE_ON_SCREEN) )
 				{
-					aniSmilwCash[countAniSmile] = new UTIL_GifPlayer( smileIcon->getSmilePath(it.data().num), viewport() );
-					aniSmilwCash[countAniSmile]->setBackgroundColor(viewport()->backgroundColor());
-					aniSmilwCash[countAniSmile]->setFixedHeight ( smileIcon->getSmileHeigth(it.data().num) );
-					aniSmilwCash[countAniSmile]->setFixedWidth ( smileIcon->getSmileWidth(it.data().num)+1 );
-					addChild( aniSmilwCash[countAniSmile], left+1, contentsY() + posY-maxHeigth );
-					aniSmilwCash[countAniSmile]->start(smileIcon->getSmilePath(it.data().num),true);
-					aniSmilwCash[countAniSmile]->startshow();
-					aniSmilwCash[countAniSmile]->show();	
+					bool noFind=true;
+					int i;
+					// find exist smile on screen
+					for ( i=0; i<MAX_SMILE_ON_SCREEN; i++ )
+						if ( !aniSmileUse[i] && aniSmileNum[i] == it.data().num && aniSmileCash[i] )
+						{
+							moveChild(aniSmileCash[i], left+1, contentsY() + posY-maxHeigth);
+
+							aniSmileUse[i]=true;
+							noFind=false;
+						}		
+					if (noFind)
+					{
+						for ( i=0; i<MAX_SMILE_ON_SCREEN; i++ )
+							if ( !aniSmileUse[i] )
+							 break;	
+						if ( aniSmileCash[i] )
+						{
+							removeChild( aniSmileCash[i] );
+							delete aniSmileCash[i];
+							aniSmileCash[i]=NULL;
+						}
+						aniSmileNum[i]=it.data().num;
+						aniSmileUse[i]=true;
+												
+						aniSmileCash[i] = new UTIL_GifPlayer( smileIcon->getSmilePath(aniSmileNum[i]), viewport() );
+						aniSmileCash[i]->setMemoryLimit( 0 ); //for minimal use memory
+						aniSmileCash[i]->setBackgroundColor( viewport()->backgroundColor() );
+						aniSmileCash[i]->setFixedHeight ( smileIcon->getSmileHeigth(aniSmileNum[i]) );
+						aniSmileCash[i]->setFixedWidth ( smileIcon->getSmileWidth(aniSmileNum[i])+1 );
+						addChild( aniSmileCash[i], left+1, contentsY() + posY-maxHeigth );
+						aniSmileCash[i]->show();
+						aniSmileCash[i]->startshow();
+					}
+						
 					countAniSmile++;					
 				}else
 				#endif	
@@ -520,17 +540,30 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 		if ( posY > viewport()->height() )
 			break;
 	}
+	#ifndef NO_ANI_SMILE
+	for ( int i=0; i<MAX_SMILE_ON_SCREEN; i++ )
+		if ( !aniSmileUse[i] && aniSmileCash[i] )
+		{
+			removeChild( aniSmileCash[i] );
+			delete aniSmileCash[i];
+			aniSmileCash[i]=NULL;
+		}
+	#endif		
 	bitBlt(viewport(), 0, 0, &pixmap); 
-	stopRepaint = false;
 	ZScrollView::viewportPaintEvent(pe); 
+	
+	logMes("xTextView::PaintEvent end");
 }
 
 void xTextView::resizeEvent( QResizeEvent* event )
 {
 	ZScrollView::resizeEvent(event); 
 	lineOnPage = (height()-20) / maxLineHeigth;
-	resizeContents(width(), std::max((colLines+1)*(font.pixelSize()-1),height()) );
-
+	#ifndef NEW_PLATFORM
+	resizeContents(width(), std::max((colLines+1)*(font.pixelSize()+1),height()) );
+	#else
+	resizeContents(width(), std::max((colLines+1)*font.pixelSize(),height()-10) );
+	#endif
 	setContentsPos(0, posLines*font.pixelSize() );
 }
 

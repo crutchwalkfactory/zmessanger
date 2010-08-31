@@ -26,11 +26,9 @@
 #include <ZOptionsMenu.h>
 
 #ifndef NEW_PLATFORM
-	#include "KbInputFieldAdapter.h"
-	#include <KbEditContext.h>
-#else
-	#include <ZKbConfig.h>
+#include "KbInputFieldAdapter.h"
 #endif
+#include <KbEditContext.h>
 
 using namespace std;
 
@@ -95,7 +93,7 @@ class zChatForm : public MyBaseDlg
 	ZLabel * labInputMode;
   	ZScrollPanel * spInfo;
 	
-	#ifndef NEW_PLATFORM
+	#ifndef CUTED_PLATFORM
 	KbEditContext  * kbInput;
 	#endif
 	int nKbState;

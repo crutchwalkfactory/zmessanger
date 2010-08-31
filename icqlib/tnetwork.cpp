@@ -293,7 +293,7 @@ int t_send(int s, const void *msg, size_t len, int flags, int * timeout)
   curr_timeout-=((t2.time-t1.time)*1000+t2.millitm-t1.millitm);
   }
  *timeout-=curr_timeout;
- trafOUT+=len;
+ trafOUT+=len;//Add by Ant-ON
  return (len-curr_len);
 }
 
@@ -363,6 +363,6 @@ int t_recv(int s, void *buf, size_t len, int flags, int * timeout, bool waitall)
   if (!waitall) break;
   }
  *timeout-=curr_timeout;
- trafIN+=(len-curr_len);
+ trafIN+=(len-curr_len);//Add by Ant-ON
  return (len-curr_len);
 }

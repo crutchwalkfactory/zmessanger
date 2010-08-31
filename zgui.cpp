@@ -312,7 +312,7 @@ void ZGui::CreateWindow ( QWidget* )
 	softKey->setOptMenu ( ZSoftKey::LEFT, menu );
 	softKey->setText ( ZSoftKey::LEFT, LNG_MENU );
 	softKey->setTextForOptMenuHide( LNG_MENU );
-	setSoftKey(softKey);
+	setSoftKey( softKey );
 	
 	createMenuDisconected();	
 

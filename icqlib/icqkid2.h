@@ -587,7 +587,8 @@ class ICQKid2 : public QObject
   bool removeVisInvisIgnor(vector<SSIUINEntry> & cont, uint16_t it_type, string uin);
   
   SnacCache * snac_cache;
-  
+  set<uint16_t> unknown_item_ids;
+    
   int waitSNAC(SNACData * snd);
   int sendSNAC(uint16_t service_id, uint16_t subtype_id, uint32_t * req_id=NULL, vector<uint8_t> * data_ptr=NULL);
   

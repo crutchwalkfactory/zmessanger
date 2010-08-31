@@ -31,8 +31,10 @@
 #include "zDefs.h"
 
 #ifdef CUTED_PLATFORM
+#include "ZKbConfig.h"
 #define insertItem(a,b,c,d,e,f) insertItem(QString("   ")+a,b,c,d,e,f)
 #endif
+
 
 zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _conference)
     :MyBaseDlg()
@@ -73,6 +75,7 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	#endif
 
 	eeChat->setFontSize( cfg_chatFontSize );
+	eeChat->setFocusPolicy( QWidget::NoFocus );
 
 	myVBoxLayout->addWidget(eeChat,0);
 
@@ -126,6 +129,7 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	
 	myVBoxLayout->addWidget(mleMes,2);
 
+	mleMes->setFocusPolicy( QWidget::StrongFocus );
 	mleMes->setFocus();
 
 	if ( !cfg_notSendTypeMes && protocol==PROT_ICQ )
@@ -151,8 +155,10 @@ zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _confer
 	}
 
 	#ifndef NEW_PLATFORM
-	ZInputFieldAdapter *adapter = app->getInputFieldAdapter();
-	kbInput = adapter->getEditContext();
+	kbInput = app->getInputFieldAdapter()->getEditContext();
+	#elif !defined( CUTED_PLATFORM )
+	logMes_3("zChatForm: get edit context");
+	kbInput = KbEditContext::instance();
 	#endif
 	nKbState = 0;
 	
@@ -561,10 +567,11 @@ void zChatForm::sendClick()
 void zChatForm::kbChange()
 {
 	logMes_3("zChatForm->kbChange: start");
-	#ifndef NEW_PLATFORM
+	#ifndef CUTED_PLATFORM
 	QUuid inputMode = kbInput->getFieldInputMode(0);
 	#else
-	QUuid inputMode = mleMes->getInputField()->getTextEntryMode();
+	QUuid inputMode;
+	ZKbConfig::getFieldInputMode(0, inputMode);
 	#endif
 	logMes_3("zChatForm->kbChange: mode - "+inputMode);
 
@@ -599,8 +606,12 @@ void zChatForm::kbChange()
 		default: n="?";	
 	}
 	
-	#ifndef NEW_PLATFORM
+	#ifndef CUTED_PLATFORM
 	labLng->setText(QString(kbInput->getFieldInputLang(0).at(0))+QString(kbInput->getFieldInputLang(0).at(1)));
+	#else
+	QString lng;
+	ZKbConfig::getFieldInputLang(0, lng);
+	labLng->setText(QString(lng.at(0))+QString(lng.at(1)));
 	#endif
 	labInputMode->setText(n);
 	
