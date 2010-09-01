@@ -20,6 +20,7 @@ ZMyListBox::ZMyListBox( QWidget* parent, WFlags f)
  : ZListBox ( parent, f )
 {
 	showGroup=true;
+	sortType=0;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -32,7 +33,8 @@ ZMyListBox::ZMyListBox( QWidget* parent, WFlags f)
 ZMyListBox::ZMyListBox( QString type, QWidget* parent, WFlags f)
  : ZListBox ( type, parent, f )
 {
-	showGroup=true;	
+	showGroup=true;
+	sortType=0;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -50,6 +52,8 @@ void ZMyListBox::dellAllContactWithProtocol( int prot, bool lock )
 {
 	if ( lock )
 		QMutexLocker locker ( &mutexAction );
+	
+	logMes_3("ZMyListBox::dellAllContactWithProtocol");
 	
 	for ( ListMap::Iterator it = listContact.begin( ); it != listContact.end( ); it++) 
 	{
@@ -72,6 +76,8 @@ void ZMyListBox::dellAllContactWithProtocol( int prot, bool lock )
 
 void ZMyListBox::contactRemove( string idContact )
 {
+	logMes_3("ZMyListBox::contactRemove");
+	
 	ListMap::Iterator it = listContact.find(idContact);
 	
 	if ( it == listContact.end() )
@@ -86,6 +92,8 @@ void ZMyListBox::contactRemove( string idContact )
 
 void ZMyListBox::contactAdd( ZContactItem * item )
 {
+	logMes_3("ZMyListBox::contactAdd");
+	
 	listContact[item->getUID()] = item;
 	
 	int insertAt = -1;	
@@ -112,6 +120,8 @@ ZContactItem * ZMyListBox::getConact(string id)
 
 void ZMyListBox::groupAdd( ZContactItem * item, string idGroup )
 {
+	logMes_3("ZMyListBox::groupAdd");
+	
 	listGroup[idGroup] = item;
 	
 	int insertAt = -1;
@@ -132,16 +142,25 @@ void ZMyListBox::groupAdd( ZContactItem * item, string idGroup )
 
 void ZMyListBox::protAdd( ZContactItem * item )
 {
+	logMes_3("ZMyListBox::protAdd");
+	
 	listProt[item->getProtocol()] = item;
-	insertItem( item, -1);
+	insertItem( item, -1 );
 	item->setHide(false);	
 }
 
-void ZMyListBox::showHideGroup(int idGroup)
+void ZMyListBox::showHideGroup(int idGroup, bool lock)
 {
-	if ( mutexAction.locked() )
-		return;
-	QMutexLocker locker ( &mutexAction );
+	logMes_3("ZMyListBox::showHideGroup 1");	
+	
+	if ( lock )
+	{
+		if ( mutexAction.locked() )
+			return;
+		QMutexLocker locker ( &mutexAction );
+	}
+	
+	logMes_3("ZMyListBox::showHideGroup 2");
 	
 	ZContactItem * itemAt = listGroup[QString::number(idGroup).latin1()];
 	
@@ -159,8 +178,11 @@ void ZMyListBox::showHideGroup(int idGroup)
 			takeItem( itemC );
 			itemC->setHide(true);
 		}
+		itemAt->setHide(true);
 	} else
 	{
+		itemAt->setHide(false);
+
 		for ( ListMap::Iterator it = listContact.begin( ); it != listContact.end( ); it++) 
 			if ( it.data() && it.data()->getGroupId()==idGroup )
 			{
@@ -168,10 +190,10 @@ void ZMyListBox::showHideGroup(int idGroup)
 					continue;
 				insertItem( it.data(), index(itemAt)+1);	
 				it.data()->setHide(false);
-			}	
+			}
+
+		sortContact( idGroup, false );
 	}
-	
-	itemAt->setHide(!itemAt->isHide());
 }
 
 void ZMyListBox::keyReleaseEvent ( QKeyEvent* e )
@@ -202,15 +224,11 @@ void ZMyListBox::keyReleaseEvent ( QKeyEvent* e )
 			if (t > (vLines - 1))
 			{
 				this->setCurrentItem( t - vLines, true );
-				#ifndef CUTED_PLATFORM
 				this->setCurrentItem( t + vLines );
-				#endif
 			} else
 			{
 				this->setCurrentItem( 0, true );
-				#ifndef CUTED_PLATFORM
 				this->setCurrentItem( t + vLines );
-				#endif
 			}
 			break; 
 		}
@@ -229,15 +247,11 @@ void ZMyListBox::keyReleaseEvent ( QKeyEvent* e )
 			{
 				this->setBottomItem( t + vLines );
 				this->setCurrentItem( t + vLines, true );
-				#ifndef CUTED_PLATFORM
 				this->setCurrentItem( t + vLines );
-				#endif
 			} else
 			{
 				this->setCurrentItem( count() - 1, true );
-				#ifndef CUTED_PLATFORM
 				this->setCurrentItem( t + vLines );
-				#endif
 			}
 			break; 
 		}
@@ -249,7 +263,11 @@ void ZMyListBox::keyReleaseEvent ( QKeyEvent* e )
 
 void ZMyListBox::setShowGroup(bool show)
 {
+	logMes_3("ZMyListBox::setShowGroup 1");	
+	
 	QMutexLocker locker ( &mutexAction );
+	
+	logMes_3("ZMyListBox::setShowGroup 2");
 	
 	if ( showGroup == show )
 		return;
@@ -280,10 +298,149 @@ void ZMyListBox::setShowGroup(bool show)
 
 			insertItem( it.data(), insertAt);
 			it.data()->setHide( !it.data()->isHide() );
-			showHideGroup( it.data()->getGroupId() );
+			showHideGroup( it.data()->getGroupId(), false );
 		}
 		
 	}
+}
+
+int ZMyListBox::cmpContact( ZContactItem * item1, ZContactItem * item2 )
+{
+    if ( !item1 || !item2 )
+		return 0;
+
+	qDebug("cmp Contact");
+
+	if ( item1->intStat() > item2->intStat() )
+		return 1;
+	else
+	if ( item1->intStat() < item2->intStat() )	
+		return -1;
+	else
+	if ( sortType == SORT_STATUS )
+		return 0;
+	else
+	if ( item1->getNick() > item2->getNick() )
+		return 1;
+	else
+	if ( item1->getNick() < item2->getNick() )	
+		return -1;	
+	
+	return 0;
+}
+
+void ZMyListBox::sortContact( int idGroup, bool lock )
+{
+	qDebug("sortContact: 0");
+	
+	if ( lock )
+	{
+		if ( mutexAction.locked() )
+			return;
+			
+		QMutexLocker locker ( &mutexAction );
+	}
+	qDebug("sortContact: 1");
+	
+	ZContactItem * group = listGroup[QString::number(idGroup).latin1()];
+	
+	if ( group==NULL || (group->isHide() && showGroup ) )
+		return;
+	
+	int i;
+	
+	ZContactItem * item1;
+	ZContactItem * item2;
+	
+	int s=(showGroup?index(group):0)+1;
+	int e=(showGroup?0:count())-1;
+
+	if ( showGroup )
+	{
+		for (i = s; i<count(); i++ )
+			if ( item(i)->isGroup() )
+			{
+				e = i-1;
+				break;
+			}
+	}
+
+	qDebug("Sort %d - %d",s,e);
+	
+	if ( s==-1 || e==-1 || e-s<2 ) return;
+
+	while (e > s)
+	{
+		qDebug("while (%d > %d)",s,e);
+		for (i=s; i<e; i++)
+		{
+			item1 = item( i );
+			item2 = item( i+1 );
+			if ( cmpContact( item1, item2 ) == 1 )
+				moveItem(i+1,i);
+		}
+		for (i=e; i>s; i--)
+		{
+			item1 = item( i );
+			item2 = item( i-1 );
+			if ( cmpContact( item1, item2 ) == -1 )
+				moveItem(i-1,i);
+		}
+		s++;
+		e--;
+	}
+}
+
+void ZMyListBox::sortContactAll()
+{
+	logMes_3("ZMyListBox::sortContactAll");
+	
+	if ( sortType == NO_SORT  || count()<4 )
+		return;
+	
+	for ( ListMap::Iterator it = listGroup.begin( ); it != listGroup.end( ); it++) 
+		if ( it.data() )
+			sortContact( it.data()->getGroupId() );	
+}
+
+void ZMyListBox::setSortType( int type )
+{
+	logMes_3("ZMyListBox::setSortType");
+	
+	if ( sortType == type )
+		return;
+		
+	sortType = type;
+	
+	sortContactAll();
+}
+
+void ZMyListBox::setNewMes( ZContactItem * item )
+{
+	if ( !item )
+		return;
+	
+	logMes_3("ZMyListBox::setNewMes");
+	
+	item->setNewMes( true );
+	if ( item->isHide() )
+	{
+		ZContactItem * group = listGroup[ item->getGroupIdStr() ];
+		if ( group )
+			group->setNewMes( true );
+	} else
+		sortContact( item->getGroupId() );		
+}
+
+void ZMyListBox::changeStatus( ZContactItem * item, int n )
+{
+	if ( !item )
+		return;
+	
+	logMes_3("ZMyListBox::changeStatus");
+	
+	item->setStatus( n );
+	sortContact( item->getGroupId() );
 }
 
 //+++++++++++++++++++++ Fix std function for multithred ++++++++++++++++++++++++++
@@ -346,8 +503,6 @@ void ZMyListBox::UpdateList()
 {
 	if ( mutexOnRepaint.locked() || mutexPaintEvent.locked() )
 		return;
-	//eventFilter( this, (QEvent *)&QKeyEvent(QEvent::KeyPress,Z6KEY_POUND,0,1));
-	//eventFilter( this, (QEvent *)&QKeyEvent(QEvent::KeyRelease,Z6KEY_POUND,0,0));
 	mutexPaintEvent.lock();
 	ZListBox::update();
 	mutexPaintEvent.unlock();	

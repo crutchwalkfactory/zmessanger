@@ -30,7 +30,7 @@ ZAboutDialog::ZAboutDialog()
 	ZScrollPanel * sv = new ZScrollPanel(this);
 	
 	ZImage *img = new ZImage( this );
-	img->setPixmap ( QPixmap( ProgDir + "/zMessanger2_usr.png" ) );
+	img->setPixmap ( QPixmap( ProgDir + "/zMessanger_usr.png" ) );
 	sv->addChild(img, 10,20);
 
 	QString model;

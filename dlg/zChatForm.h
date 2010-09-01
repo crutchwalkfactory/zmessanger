@@ -73,7 +73,8 @@ class zChatForm : public MyBaseDlg
 	void slotAddContact();
 	void slotAuthAcepted();
 	void slotAuthDeclined();
-	void slotClearMes();	
+	void slotClearMes();
+	void slotClearChat();
 	void slotTranslit();
 	void copyText();
 	void pastText();

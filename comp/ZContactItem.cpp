@@ -288,6 +288,11 @@ void ZContactItem::setNewMes(bool b)
 		setStatus( status, true );
 	}
 	
+	if ( IsHide )
+	{
+		
+	}
+	
 	update();
 }
 
@@ -355,6 +360,8 @@ void ZContactItem::setHide(bool hide)
 	IsHide = hide;
 	if ( IsGroup )
 	{
+		newMes = false;
+			
 		QPixmap pm;	
 		if ( IsHide )
 			pm.load( ProgDir + "/CL/group.png");

@@ -83,7 +83,7 @@ class ZGui :public ZKbMainWidget
     void setProc(int i);
     void closeProc();
     bool showMesDlg(QString title, QString mes, int ico = 0);
-    void newMes(QString uin,QString title, QString mes, QDateTime time, int type);
+    void newMes(QString uin,QString title, QString mes, QDateTime time, TYPE_BDMES type);
     void addContactToList(QString uin);
 
     tHistory messageList;
@@ -138,6 +138,8 @@ class ZGui :public ZKbMainWidget
     void onConnectChange (int protocol, bool online);
     
     void activSlot( bool con );
+
+    void saveHistory( bool all = true, int uin = 0 ); 
 
   signals:
 	void clickOnStatusMenu( int i);
@@ -211,8 +213,6 @@ class ZGui :public ZKbMainWidget
   private:
     void CreateWindow(QWidget* parent);
     void updateMyIcon();  
-    void saveHistory();  
-  
   
     ZProgressDlg *pProgressDialog;
     QTimer *timer;

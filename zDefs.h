@@ -63,7 +63,6 @@ extern int cfg_alertRingVol;
 extern QString cfg_alertPath;
 extern int cfg_timeKeepConnect;
 extern int cfg_maxNumLines;
-extern int cfg_sortType;
 extern bool cfg_dontShowOffLine;
 extern bool cfg_dontShowGroup;
 extern bool cfg_rigthAlignXStatus;

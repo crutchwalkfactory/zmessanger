@@ -336,7 +336,7 @@ void ZSettingsDlg::saveSetting()
 	cfg_sendByCenter = optSendByCenter->getNum();
 
 	cfg_alertPath = optTonePath->getText();
-	cfg_sortType = optSortType->getNum();
+	zgui->lbContact->setSortType( optSortType->getNum() );
 	cfg_maxNumLines = optMaxNumLine->getNum();
 	cfg_mesFontSize = optMesFontSize->getNum();
 	cfg_chatFontSize = optChatFontSize->getNum();

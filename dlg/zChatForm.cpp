@@ -287,14 +287,18 @@ void zChatForm::buildMenu()
 	menu->connectItem ( 9, this, SLOT ( pastText() ) );
 	menu->insertSeparator(10, 10); 
 	
+	pm->load(ProgDir+ "/menu/clear_chat.png");	
+	menu->insertItem ( LNG_CLEAR_CHAT, NULL, pm, true, 11, 11 );
+	menu->connectItem ( 11, this, SLOT ( slotClearChat() ) );	
 	pm  = new QPixmap();
-	menu->insertItem ( LNG_CLEAR , NULL, pm, true, 11, 11 );
-	menu->connectItem ( 11, this, SLOT ( slotClearMes() ) );
-	menu->insertItem ( LNG_HISTORU , NULL, pm, true, 12, 12 );
-	menu->connectItem ( 12, this, SLOT ( slotViewHistory() ) );	
+	menu->insertItem ( LNG_CLEAR , NULL, pm, true, 12, 12 );
+	menu->connectItem ( 12, this, SLOT ( slotClearMes() ) );
+	pm->load(ProgDir+ "/menu/history.png");	
+	menu->insertItem ( LNG_HISTORU , NULL, pm, true, 13, 13 );
+	menu->connectItem ( 13, this, SLOT ( slotViewHistory() ) );	
 	pm->load(ProgDir+ "/menu/translit.png");
-	menu->insertItem ( LNG_TRANSLIT , NULL, pm, true, 13, 13 );	
-	menu->connectItem ( 13, this, SLOT ( slotTranslit() ) );
+	menu->insertItem ( LNG_TRANSLIT , NULL, pm, true, 14, 14 );	
+	menu->connectItem ( 14, this, SLOT ( slotTranslit() ) );
 	
 	logMes_3("zChatForm->buildMenu: end");
 }
@@ -400,6 +404,12 @@ void zChatForm::slotAddContact()
 void zChatForm::slotClearMes()
 {
 	mleMes->setText("");
+}
+
+void zChatForm::slotClearChat()
+{
+	zgui->saveHistory( false, atoi(uin.c_str()) );
+	eeChat->setText("");
 }
 
 void zChatForm::slotViewHistory()

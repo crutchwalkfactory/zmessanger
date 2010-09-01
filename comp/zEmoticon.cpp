@@ -18,8 +18,8 @@
 
     TYPE_SMILE 	masEMOTICON [MAX_EMOTICON_COUNT] =
 	{
-	    16, 16,  "[*MES*]"      , ""     , "onmes.png" ,       NULL,
-	    16, 16,  "[*MES_MY*]"   , ""     , "onmes.png" ,       NULL,   
+	    16, 13,  "[*MES*]"      , ""     , "mes.png" ,         NULL,
+	    16, 13,  "[*MES_MY*]"   , ""     , "mes_my.png" ,      NULL,   
 	    16, 16,  "[*WADD*]"     , ""     , "wasadd.png",       NULL,
 	    16, 16,  "[*AUTH*]"     , ""     , "authok.png",       NULL,
 	    

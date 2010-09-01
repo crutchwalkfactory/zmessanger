@@ -37,6 +37,7 @@
 	//#define _AllLogInFile
 	#define LOG_LAVEL 3
 	#define DEBUG_ICQKID2
+	//#define NO_ANI_SMILE
 
 //########################
 

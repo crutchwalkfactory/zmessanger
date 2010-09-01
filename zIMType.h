@@ -20,35 +20,38 @@
 
 #include "config.h"
 
-#define TYPE_MY_MESSAGE 0
-#define TYPE_MESSAGE 1
-#define TYPE_AUTH_REQUEST 2
-#define TYPE_AUTH_ACCEPTED 3
-#define TYPE_AUTH_DECLINED 4
-#define TYPE_WAY_ADDED 5
+enum TYPE_BDMES
+{
+	TYPE_MY_MESSAGE,
+	TYPE_MESSAGE,
+	TYPE_AUTH_REQUEST,
+	TYPE_AUTH_ACCEPTED,
+	TYPE_AUTH_DECLINED,
+	TYPE_WAY_ADDED,
+};
 
 class BDMes
 {
 public:
 	BDMes() {}
-	BDMes(const QString title, const QString mes, QDateTime time,	const int type)
+	BDMes(const QString title, const QString mes, QDateTime time, TYPE_BDMES type)
 	{ title_=title; mes_=mes; time_=time; type_=type; }
 	~BDMes(){}
 
 	QString title() const { return title_; }
 	QString mes() const { return mes_; }
 	QDateTime time() const { return time_; }
-	int type() const { return type_; }
-	void setTitle( QString salary ) { title_ = salary; }
-	void setMessage( QString salary ) { mes_ = salary; }
-	void setTimr( QDateTime salary ) { time_ = salary; }
-	void setType( int salary = TYPE_MESSAGE ) { type_ = salary; }
+	TYPE_BDMES type() const { return type_; }
+	void setTitle( QString s ) { title_ = s; }
+	void setMessage( QString s ) { mes_ = s; }
+	void setTimr( QDateTime s ) { time_ = s; }
+	void setType( TYPE_BDMES s = TYPE_MESSAGE ) { type_ = s; }
 
 private:
 	QString mes_;
 	QString title_;
 	QDateTime time_;
-	char type_;//Message - 1 QuestionAutorize - 2  AskAutorize - 3 � ��
+	TYPE_BDMES type_;//Message - 1 QuestionAutorize - 2  AskAutorize - 3 � ��
 };
 
 typedef QValueList<BDMes> mesList;

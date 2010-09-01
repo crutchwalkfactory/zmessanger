@@ -375,7 +375,7 @@ void ZGui::CreateWindow ( QWidget* )
 	cfg_dontShowOffLine = cfg.readBoolEntry(QString("ContactList"), QString("dontShowOffLine"), true);
 	cfg_dontShowGroup = cfg.readBoolEntry(QString("ContactList"), QString("dontShowGroup"), false);
 	cfg_rigthAlignXStatus = cfg.readBoolEntry(QString("ContactList"), QString("rigthAlignXStatus"), true);
-	cfg_sortType = cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2);
+	lbContact->setSortType( cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2) );
 	cfg_chatFontSize = cfg.readNumEntry(QString("Chat"), QString("chatFontSize"), 11);
 	cfg_mesFontSize = cfg.readNumEntry(QString("Chat"), QString("writeMesFontSize"), 11);
 	cfg_maxNumLines = cfg.readNumEntry(QString("Chat"), QString("maxNumLines"), 40);
@@ -820,14 +820,14 @@ void ZGui::slot_onUserNotify(string uin, uint32_t stat1, uint32_t stat2, bool in
 	logMes_3("ZGui::slot_onUserNotify");
 	if ( stat2 == STATUS_OFFLINE && cfg_dontShowOffLine )
 	{
-		logMes_3("delete contact");
+		logMes_3("slot_onUserNotify: delete contact");
 		lbContact->contactRemove(uin);
 	} else
 	{	
 		ZContactItem * contact = getICQContact(uin);
 		if (contact != NULL)
 		{
-			contact->setStatus(invis_flag?STATUS_INVISIBLE:stat2);
+			lbContact->changeStatus( contact, invis_flag?STATUS_INVISIBLE:stat2 );
 			if ( STATUS_BIRTHDAY & stat1 )
 				contact->setBirthday(true);
 		}
@@ -935,9 +935,13 @@ void ZGui::showProfileList()
 	logMes_2("showProfileList: end");
 }
 
-void ZGui::saveHistory()
+void ZGui::saveHistory(bool all, int uin)
 {
 	logMes_3("saveHistory: start");
+	
+	if ( !all && (messageList.find(uin)==messageList.end()) )
+		return;
+	
 	//Save history to file
 	QDir dirHist;
 	QString histPath = ProgDir+"history/";
@@ -953,7 +957,8 @@ void ZGui::saveHistory()
 	logMes_3("saveHistory: Print history");
 	mesList messanges;
 	QString str;
-	for ( tHistory::Iterator it = messageList.begin( ); it != messageList.end( ); it++) 
+	tHistory::Iterator it;
+	for ( it = (all?(messageList.begin()):(messageList.find(uin))); (all?(it != messageList.end()):(it == messageList.find(uin))); it++) 
 	{ 
 		logMes_3("saveHistory: save to - "+histPath+QString::number(it.key())+".txt");
 		QFile file( histPath+QString::number(it.key())+".txt" );
@@ -966,13 +971,14 @@ void ZGui::saveHistory()
 			logMes_3("saveHistory: print message");
 			for ( uint n = 0; n < messanges.count(); n++ )
 			{	
-				str = bdMesToText(  *messanges.at(n) , true  );
+				str = bdMesToText(  *messanges.at(n), true  );
 				if (str != "")
 					stream << str << "\n";
 			}
 			logMes_3("saveHistory: end print");
 		}
 		file.close();
+		it.data().clear();
 	}
 	logMes_3("saveHistory: end");
 }
@@ -1860,8 +1866,8 @@ void ZGui::printContact(bool Clear)
 {
 	logMes_3("printContact: start");
 	
-	if (Clear)
-		lbContact->dellAllContactWithProtocol(PROT_ICQ);
+	//if (Clear)
+	//	lbContact->dellAllContactWithProtocol(PROT_ICQ);
 
 	logMes_1("Group in list: "+QString::number(icq->getCountGroup()));
 	logMes_1("Contact in list: "+QString::number(icq->getCountCL()));
@@ -1871,7 +1877,6 @@ void ZGui::printContact(bool Clear)
 	for (int j=0; j<icq->getCountCL(); ++j)
 		if ( !cfg_dontShowOffLine || (cfg_dontShowOffLine &&  icq->getStatus(j) != STATUS_OFFLINE) || icq->isMesIcon(j) )
 			icqAddUser(strtoqstr( icq->getNick(j).c_str() ), icq->getUIN(j), icq->getStatus(j), icq->getXStatus(j), icq->getClientId(j), j, icq->getGroupId(j),  icq->isWaitAuth(j), icq->isMesIcon(j) );
-
 
 	// Insert split
 	QPixmap pm;
@@ -1890,6 +1895,7 @@ void ZGui::printContact(bool Clear)
 	for (uint j=1000; j<1000+icq->NoContactListUins.size(); ++j)
 		icqAddUser(strtoqstr( icq->getNick(j).c_str() ), icq->getUIN(j), icq->getStatus(j), icq->getXStatus(j), icq->getClientId(j), j, icq->getGroupId(j),  icq->isWaitAuth(j), icq->isMesIcon(j));
 
+	lbContact->sortContactAll();
 	lbContact->UpdateList();
 }
 
@@ -2012,7 +2018,7 @@ void ZGui::slot_onClientChange( string uin, size_t clientId )
 	}
 }
 
-void ZGui::newMes(QString uin, QString title, QString mes, QDateTime time, int type)
+void ZGui::newMes(QString uin, QString title, QString mes, QDateTime time, TYPE_BDMES type)
 {
 	logMes_2("newMes: "+uin);
 	messageList[uin.toUInt()].append( BDMes(title, mes, time, type) );
@@ -2030,10 +2036,7 @@ void ZGui::newMes(QString uin, QString title, QString mes, QDateTime time, int t
 	if ( !isShown )
 		return;
 
-	ZContactItem * contact = getICQContact(uin.latin1());
-	if (contact == NULL)
-		return;
-	contact->setNewMes(true);
+	lbContact->setNewMes( getICQContact(uin.latin1()) );
 }
 
 #ifdef _XMPP
@@ -2060,12 +2063,9 @@ void ZGui::xmppNewMes(string jid, QString title, QString mes, QDateTime time, in
 	ZHeader::changeStatus(ZHeader::IM, 4);
 
 	if ( !isShown )
-		return;	
-
-	ZContactItem * contact = getXMPPContact(jid);
-	if (contact == NULL)
 		return;
-	contact->setNewMes(true);
+	
+	lbContact->setNewMes( getXMPPContact(jid) );
 }
 #endif
 
@@ -2087,8 +2087,10 @@ QString ZGui::bdMesToText(BDMes mesFild, bool forHistory)
 		switch ( mesFild.type() )
 		{
 			case TYPE_MESSAGE:
-			case TYPE_MY_MESSAGE:
 				mes = "[*MES*]";
+				break;			
+			case TYPE_MY_MESSAGE:
+				mes = "[*MES_MY*]";
 				break;
 			case TYPE_WAY_ADDED:
 				mes = "[*WADD*]";
@@ -2111,10 +2113,10 @@ QString ZGui::bdMesToText(BDMes mesFild, bool forHistory)
 	{	
 		if ( mesFild.type() == TYPE_MY_MESSAGE)
 		{
-			return mes+" $3%$"+mesFild.title()+" ["+mesFild.time().time().toString()+"]#\n"+mesFild.mes();//+"\n"	
+			return mes+"$3%$"+mesFild.title()+" ["+mesFild.time().time().toString()+"]#\n"+mesFild.mes();//+"\n"	
 		} else
 		{
-			return mes+" $1%$"+mesFild.title()+" ["+mesFild.time().time().toString()+"]#\n"+mesFild.mes();//+"\n"				
+			return mes+"$1%$"+mesFild.title()+" ["+mesFild.time().time().toString()+"]#\n"+mesFild.mes();//+"\n"				
 		}
 	} else
 	{

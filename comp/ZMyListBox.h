@@ -52,7 +52,8 @@ public:
 
 	void protAdd( ZContactItem * item );
 
-	void showHideGroup(int idGroup);
+	void showHideGroup(int idGroup )
+		{	showHideGroup( idGroup, true ); };
 
 	void insertItemInList( const ZContactItem * item, int index=-1, bool autoHighlighted = TRUE )
 		{	insertItem( item, index, autoHighlighted );		};
@@ -64,16 +65,40 @@ public:
 
 	void setShowGroup( bool show );
 
-	// this function is bad
-	void dellAllContactWithProtocol( int prot, bool lock = true );
 
-//public slots:
+	enum SORT_TYPE
+	{
+		NO_SORT,
+		SORT_STATUS,
+		SORT_STATUS_NICK,
+	};
+	
+	void sortContact( int idGroup )
+		{ sortContact( idGroup, true ); };
+	void setSortType( int type );
+	void sortContactAll();
+
+	// Need for centaral control New Message 
+	// ( if group hide - add new mes icon to group )
+	void setNewMes( ZContactItem * item );
+	// ( for resort on change status )
+	void changeStatus( ZContactItem * item, int n );
+	//
+	
 	void UpdateList();  
 
 private:
 	void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
 	void insertItem( const ZListItem * item, const ZListItem *after, bool autoHighlighted = TRUE);
 	void changeItem( const ZListItem * item, int index );
+	
+	void sortContact( int idGroup, bool lock );
+	void showHideGroup(int idGroup, bool lock );
+	
+	int cmpContact( ZContactItem * item1, ZContactItem * item2 );
+	
+	// this function is bad
+	void dellAllContactWithProtocol( int prot, bool lock = true );	
 
 private slots: 
 	virtual void viewportPaintEvent( QPaintEvent * pe);
@@ -84,6 +109,7 @@ private:
 	mutable QMutex mutexPaintEvent;
 	mutable QMutex mutexAction;    
 	bool showGroup;
+	int sortType;
 
 signals:
 	void onDialButtonPress();

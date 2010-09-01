@@ -33,7 +33,6 @@ int cfg_alertRingVol;
 QString cfg_alertPath;
 int cfg_timeKeepConnect;
 int cfg_maxNumLines;
-int cfg_sortType;
 bool cfg_dontShowOffLine;
 bool cfg_dontShowGroup;
 bool cfg_rigthAlignXStatus;
