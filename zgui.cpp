@@ -371,11 +371,12 @@ void ZGui::CreateWindow ( QWidget* )
 	cfg_alertVibr = cfg.readBoolEntry(QString("Alert"), QString("Vibrate"), true);
 	cfg_alertRing = cfg.readBoolEntry(QString("Alert"), QString("Ring"), false);
 	cfg_alertRingVol = cfg.readBoolEntry(QString("Alert"), QString("Volume"), 2);
-	cfg_alertPath = cfg.readEntry(QString("Alert"), QString("Path"), "");
+	cfg_alertPath = cfg.readEntry(QString("Alert"), QString("Path"), "msn.mp3");
+	lbContact->setJampToNewMes( cfg.readBoolEntry(QString("ContactList"), QString("jampNewMes"), true) );
 	cfg_dontShowOffLine = cfg.readBoolEntry(QString("ContactList"), QString("dontShowOffLine"), true);
 	cfg_dontShowGroup = cfg.readBoolEntry(QString("ContactList"), QString("dontShowGroup"), false);
 	cfg_rigthAlignXStatus = cfg.readBoolEntry(QString("ContactList"), QString("rigthAlignXStatus"), true);
-	lbContact->setSortType( cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2) );
+	lbContact->setSortType( (ZMyListBox::SORT_TYPE)cfg.readNumEntry(QString("ContactList"), QString("sortType"), 2) );
 	cfg_chatFontSize = cfg.readNumEntry(QString("Chat"), QString("chatFontSize"), 11);
 	cfg_mesFontSize = cfg.readNumEntry(QString("Chat"), QString("writeMesFontSize"), 11);
 	cfg_maxNumLines = cfg.readNumEntry(QString("Chat"), QString("maxNumLines"), 40);
@@ -711,7 +712,7 @@ void ZGui::alert()
 {
 	if (cfg_alertRing)
 	{
-		system( QFile::encodeName( "/usr/SYSqtapp/phone/alertprocess -playMode 1 -playvol "+QString::number(cfg_alertRingVol)+" -playfile '"+cfg_alertPath+"' &" ) );
+		system( QFile::encodeName( "/usr/SYSqtapp/phone/alertprocess -playMode 1 -playvol "+QString::number(cfg_alertRingVol)+" -playfile '"+ProgDir+"/alert/"+cfg_alertPath+"' &" ) );
 	}
 	if (cfg_alertVibr)
 	{
@@ -818,20 +819,19 @@ void ZGui::onConnectChange (int protocol, bool online)
 void ZGui::slot_onUserNotify(string uin, uint32_t stat1, uint32_t stat2, bool invis_flag)
 {
 	logMes_3("ZGui::slot_onUserNotify");
-	if ( stat2 == STATUS_OFFLINE && cfg_dontShowOffLine )
+	ZContactItem * contact = getICQContact(uin);
+	if ( stat2 == STATUS_OFFLINE && cfg_dontShowOffLine && !contact->isNewMes() )
 	{
 		logMes_3("slot_onUserNotify: delete contact");
 		lbContact->contactRemove(uin);
 	} else
-	{	
-		ZContactItem * contact = getICQContact(uin);
 		if (contact != NULL)
 		{
 			lbContact->changeStatus( contact, invis_flag?STATUS_INVISIBLE:stat2 );
 			if ( STATUS_BIRTHDAY & stat1 )
 				contact->setBirthday(true);
 		}
-	}
+
 	if (stat2 == STATUS_OFFLINE && dlgChat != NULL)
 	{
 		if ( dlgChat->uin == uin )
@@ -1857,7 +1857,7 @@ ZContactItem * ZGui::getICQContact(string uin)
 		}
 		ZContactItem * listitem = lbContact->getConact(uin);
 		if ( listitem == NULL )
-			return NULL;	
+			return NULL;
 	}
 	return listitem;
 }
@@ -2033,10 +2033,13 @@ void ZGui::newMes(QString uin, QString title, QString mes, QDateTime time, TYPE_
 	trayMes = true;
 	ZHeader::changeStatus(ZHeader::IM, 4);
 
+	ZContactItem * contact = getICQContact(uin.latin1());
+	icq->setMesIcon(contact->getReservedData(), true);
 	if ( !isShown )
 		return;
-
-	lbContact->setNewMes( getICQContact(uin.latin1()) );
+		
+	
+	lbContact->setNewMes( contact );
 }
 
 #ifdef _XMPP

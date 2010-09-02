@@ -64,7 +64,7 @@ public:
 	ZContactItem * item( int index );
 
 	void setShowGroup( bool show );
-
+	void setJampToNewMes( bool jamp );
 
 	enum SORT_TYPE
 	{
@@ -75,7 +75,7 @@ public:
 	
 	void sortContact( int idGroup )
 		{ sortContact( idGroup, true ); };
-	void setSortType( int type );
+	void setSortType( SORT_TYPE type );
 	void sortContactAll();
 
 	// Need for centaral control New Message 
@@ -109,7 +109,8 @@ private:
 	mutable QMutex mutexPaintEvent;
 	mutable QMutex mutexAction;    
 	bool showGroup;
-	int sortType;
+	SORT_TYPE sortType;
+	bool jampToNewMes;
 
 signals:
 	void onDialButtonPress();

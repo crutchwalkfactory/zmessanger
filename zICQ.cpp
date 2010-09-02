@@ -19,7 +19,6 @@
 #include "zDefs.h"
 
 void * startConnect_(void*);
-//void * startMainLoop_(void*);
 
 zICQ::zICQ()
 	: ICQKid2(), now_connect(false), idle_marker(0), idle_deep(0)

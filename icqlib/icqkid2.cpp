@@ -22,9 +22,6 @@
 
 #include "icqkid2.h"
 #include "tnetwork.h"
-#include "httpproxy.h"
-#include "socks4proxy.h"
-#include "socks5proxy.h"
 #include "flap.h"
 #include "snaccache.h"
 #include "md5.h"
@@ -41,12 +38,6 @@
 
 #include <sstream>
 using namespace std;
-
-#define FSTATUS_DND        (uint32_t)0x00000013
-#define FSTATUS_NA         (uint32_t)0x00000005
-#define FSTATUS_OCCUPIED   (uint32_t)0x00000011
-
-
 
 // Clear old SNAC Cache entry after 5 min
 #define SNAC_CACHE_LIFETIME 300
@@ -125,7 +116,6 @@ ICQKid2::ICQKid2()
 		myPrivSrvStatus ( PRIV_ALL_CAN_SEE ), myPrivSrvStatus_item_id ( 0 )
 {
 	snac_cache = new SnacCache;
-	setProxy();
 	setLoginHost();
 	last_keepalive_timestamp=time ( NULL );
 	tzset();
@@ -167,27 +157,9 @@ bool ICQKid2::doConnect ( uint32_t astat )
 
 // PHASE I
 	connect_phase_percentage=0;
-	HttpProxy http_proxy ( proxy_host, proxy_port, proxy_uid, proxy_pwd );
-	SOCKS4Proxy socks4_proxy ( proxy_host, proxy_port, proxy_uid );
-	SOCKS5Proxy socks5_proxy ( proxy_host, proxy_port, proxy_uid, proxy_pwd );
-
-	switch ( proxy_type )
-	{
-		case NONE :
-
-			logMes_4 ( "None Proxy" );
-			sock=directConnect ( loginhost, loginport );
-			break;
-		case HTTP :
-			sock=http_proxy.connectTo ( loginhost, loginport );
-			break;
-		case SOCKS4 :
-			sock=socks4_proxy.connectTo ( loginhost, loginport );
-			break;
-		case SOCKS5 :
-			sock=socks5_proxy.connectTo ( loginhost, loginport );
-			break;
-	}
+	
+	sock=directConnect ( loginhost, loginport );
+	
 	if ( sock<0 ) return false;
 	connect_phase_percentage += 2;
 
@@ -245,25 +217,8 @@ bool ICQKid2::doConnect_phase2 ( uint32_t astat, string boss_host, int boss_port
 	stepConnect++; //8
 
 	connect_phase_percentage=14;
-
-	HttpProxy http_proxy ( proxy_host, proxy_port, proxy_uid, proxy_pwd );
-	SOCKS4Proxy socks4_proxy ( proxy_host, proxy_port, proxy_uid );
-	SOCKS5Proxy socks5_proxy ( proxy_host, proxy_port, proxy_uid, proxy_pwd );
-	switch ( proxy_type )
-	{
-		case NONE :
-			sock=directConnect ( boss_host, boss_port );
-			break;
-		case HTTP :
-			sock=http_proxy.connectTo ( boss_host, boss_port );
-			break;
-		case SOCKS4 :
-			sock=socks4_proxy.connectTo ( boss_host, boss_port );
-			break;
-		case SOCKS5 :
-			sock=socks5_proxy.connectTo ( boss_host, boss_port );
-			break;
-	}
+	
+	sock=directConnect ( boss_host, boss_port );
 
 	logMes_4 ( "sock=%d",sock );
 	if ( sock<0 ) return false;
@@ -1052,6 +1007,7 @@ bool ICQKid2::searchByWhitePages ( ICQKidFullUserInfo & info, vector<ICQKidShort
 	return getSearchAnswer ( result_vec, snac_sync );
 }
 
+/*
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::searchByMail ( string email, vector<ICQKidShortUserInfo> & result_vec )
 {
@@ -1095,6 +1051,7 @@ bool ICQKid2::searchByMail ( string email, vector<ICQKidShortUserInfo> & result_
 
 	return getSearchAnswer ( result_vec, snac_sync );
 }
+*/
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::searchByUIN ( string uin, vector<ICQKidShortUserInfo> & result_vec )
@@ -2158,7 +2115,7 @@ bool ICQKid2::sendLocationInfo ( void )
 		0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0,   /* XtraZ */
 		0x09, 0x46, 0x13, 0x4d, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* AIM_ICQGATE */		
 		0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* tZers */
-		0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* NEW CAPS */		
+		//0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00,   /* NEW CAPS */		
 		
 		//Client ID string
 		#if defined(EZX_Z6)
@@ -2491,8 +2448,11 @@ bool ICQKid2::sendStatus ( uint32_t astat, bool ext )
 	vector<uint8_t> vec;
 	TLVPack tlvp;
 
-	tlvp.data.push_back ( TLVField ( STATUS_DCDISABLED|astat, 0x0006 ) ); // Online status
-	if ( ext ) tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x0008 ) ); // Unknown
+	tlvp.data.push_back ( TLVField ( astat|STATUS_DCDISABLED, 0x0006 ) ); // Online status
+	if ( ext ) 
+	{
+	tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x0008 ) ); // Unknown
+
 
 	uint8_t dc_info[] =
 	{
@@ -2510,7 +2470,10 @@ bool ICQKid2::sendStatus ( uint32_t astat, bool ext )
 	};  //Unknown 
 	tlvp.data.push_back ( TLVField ( dc_info, sizeof ( dc_info ), 0x000c ) ); // DC Info
 
-	if ( ext ) tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x001f ) ); // Unknown
+
+	//if ( ext ) 
+	tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x001f ) ); // Unknown
+	}
 
 	tlvp.encode_to ( vec );
 	if ( sendSNAC ( 0x0001, 0x001e, NULL, &vec ) !=1 ) return false;
@@ -2568,19 +2531,19 @@ int ICQKid2::directConnect(string ahost, int aport)
 {
 	logMes_4 ( "directConnect(%s, %d)",ahost.c_str(),aport );
 
- struct hostent * he;
- sockaddr_in addr;
- int tmp_sock;
- 
- if ((he=gethostbyname(ahost.c_str()))==NULL) return -1;
- if (he->h_addr==NULL) return -1;
+	struct hostent * he;
+	sockaddr_in addr;
+	int tmp_sock;
 
- memset(&addr, 0, sizeof(addr));
- memcpy(&(addr.sin_addr.s_addr), he->h_addr, sizeof(addr.sin_addr.s_addr));
- addr.sin_port=htons(aport);
- addr.sin_family=PF_INET;
- 
- if ((tmp_sock=socket(PF_INET, SOCK_STREAM, 0))==-1) return -1;
+	if ((he=gethostbyname(ahost.c_str()))==NULL) return -1;
+	if (he->h_addr==NULL) return -1;
+
+	memset(&addr, 0, sizeof(addr));
+	memcpy(&(addr.sin_addr.s_addr), he->h_addr, sizeof(addr.sin_addr.s_addr));
+	addr.sin_port=htons(aport);
+	addr.sin_family=PF_INET;
+
+	if ((tmp_sock=socket(PF_INET, SOCK_STREAM, 0))==-1) return -1;
 
 	logMes_4 ( "bind" );
 
@@ -2588,18 +2551,15 @@ int ICQKid2::directConnect(string ahost, int aport)
 
 	logMes_4 ( "Moto connect true" );
 
- int conn_ret;
- while ((conn_ret=t_connect(tmp_sock, (const struct sockaddr *)&addr, (socklen_t)sizeof(addr), 100))!=0)
-  {
-  onIdle();
-  if (conn_ret!=TNETWORK_TIMEOUT)
-   {
-   CLOSE_SOCK(tmp_sock);
-   return -1;
-   }
-  }
+	int conn_ret;
+	while ((conn_ret=t_connect(tmp_sock, (const struct sockaddr *)&addr, (socklen_t)sizeof(addr), 100))!=0)
+		if (conn_ret!=TNETWORK_TIMEOUT)
+		{
+			CLOSE_SOCK(tmp_sock);
+			return -1;
+		}
 
- return tmp_sock;
+	return tmp_sock;
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
@@ -2635,7 +2595,6 @@ bool ICQKid2::sendSignOn0 ( void )
 	while ( i<500 )
 	{
 		i++;
-		emit onIdle();
 		if ( fp.send_to ( sock ) ) return true;
 		if ( fp.t_network_error!=TNETWORK_TIMEOUT ) return false;
 	}
@@ -2716,8 +2675,8 @@ bool ICQKid2::sendMD5authorize ( uint32_t * snac_sync, vector<uint8_t> & md5_sal
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_VER_LESSER ) ); // Client lesser version
 	tlv_pack.data.push_back ( TLVField ( ( uint16_t ) 0x0000, TLV_CLI_NUM_BUILD ) ); // Client build number
 	tlv_pack.data.push_back ( TLVField ( ( uint32_t ) 0x0000043d, TLV_CLI_NUM_DISTR ) ); // Client distribution number
-	tlv_pack.data.push_back ( TLVField ( "en", TLV_CLI_LANG ) ); // Client language
-	tlv_pack.data.push_back ( TLVField ( "us", TLV_CLI_COUNTRY ) ); // Client country
+	tlv_pack.data.push_back ( TLVField ( "ru", TLV_CLI_LANG ) ); // Client language
+	tlv_pack.data.push_back ( TLVField ( "ru", TLV_CLI_COUNTRY ) ); // Client country
 // skip TLV 0x4a - SSI flag: 1 - SSI only, 0 - family 0x03
 // Versions of componets made like icq 5.1, otherwise avatars and xStatus couldn't work
 
@@ -2776,7 +2735,6 @@ bool ICQKid2::sendSignOff ( void )
 	while ( i<300 )
 	{
 		i++;
-		emit onIdle();
 		if ( fp.send_to ( sock ) ) return true;
 		if ( fp.t_network_error!=TNETWORK_TIMEOUT ) return false;
 	}
@@ -2800,69 +2758,11 @@ bool ICQKid2::sendSignOn2 ( vector<uint8_t> & cookie )
 	while ( i<500 )
 	{
 		i++;
-		emit onIdle();
 		if ( fp.send_to ( sock ) ) return true;
 		if ( fp.t_network_error!=TNETWORK_TIMEOUT ) return false;
 	}
 	
 	return false;	
-}
-
-// ----------------=========ooooOOOOOOOOOoooo=========----------------
-ICQKid2 * ICQKid2::getInstanceForService ( uint16_t family )
-{
-	logMes_4 ( "ICQKid2::getInstanceForService" );
-	for ( size_t i=0; i<server_services_list.size(); ++i )
-		if ( server_services_list[i].first==family )
-			return this; // This instance already has needed service
-
-	family=htons ( family );
-	vector<uint8_t> data ( sizeof ( family ) );
-	memcpy ( &data[0], &family, sizeof ( family ) );
-	uint32_t req_id;
-	if ( sendSNAC ( 0x0001, 0x0004, &req_id, &data ) !=1 ) return NULL;
-
-	SNACData snd;
-	snd.service_id=0x0001;
-	snd.subtype_id=0x0005;
-	snd.req_id=req_id;
-	if ( waitSNAC ( &snd ) !=1 ) return NULL;
-
-	TLVPack tp;
-	if ( !tp.decode_from ( snd.data ) ) return NULL;
-	TLVField * tf = tp.findTLV ( 0x0d ); //Snac family
-	if ( tf==NULL ) return NULL;
-	if ( memcmp ( &tf->data[0], &family, sizeof ( family ) ) !=0 ) return NULL;
-
-	tf = tp.findTLV ( 0x05 ); //BOS address
-	if ( tf==NULL ) return NULL;
-	string bos_addr;
-	tf->getAsString ( bos_addr );
-
-	tf = tp.findTLV ( 0x06 ); //Auth cookie
-	if ( tf==NULL ) return NULL;
-
-	ICQKid2 * serv_inst = new ICQKid2;
-	serv_inst->setUIN ( myuin );
-	serv_inst->setPassword ( mypassword );
-	serv_inst->setLoginHost ( loginhost, loginport );
-	serv_inst->setProxy ( proxy_host, proxy_port, proxy_uid, proxy_pwd, proxy_type );
-	serv_inst->setNetworkTimeout ( getNetworkTimeout() );
-
-	if ( !serv_inst->doConnect_phase2 ( STATUS_ONLINE, bos_addr, loginport, tf->data, true ) )
-	{
-		serv_inst->doDisconnect();
-		delete serv_inst;
-		return NULL;
-	}
-
-	for ( size_t i=0; i<serv_inst->server_services_list.size(); ++i )
-		if ( serv_inst->server_services_list[i].first==ntohs ( family ) )
-			return serv_inst;
-
-	serv_inst->doDisconnect();
-	delete serv_inst;
-	return NULL;
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
@@ -3002,7 +2902,6 @@ int ICQKid2::readSNAC()
 			if ( sncd.data.size() >= ( unsigned int ) ( 2+trash_len ) )
 				sncd.data.erase ( sncd.data.begin(), sncd.data.begin() +2+trash_len );
 		}
-
 		if ( stepConnect>39 )
 		{
 			snac_cache->clearOlderThan ( SNAC_CACHE_LIFETIME );
@@ -3147,7 +3046,6 @@ int ICQKid2::sendKeepAlive ( void )
 
 		if ( fixNoEnd > 12 )
 		{
-			qWarning("ICQKid2::sendKeepAlive - not end while!");
 			logMes_4("!!!!!!!!!!!ICQKid2::sendKeepAlive - not end while!!!!!!!!!!!");			
 			last_keepalive_timestamp=time ( NULL );
 			return 1;			
@@ -3223,8 +3121,10 @@ bool ICQKid2::parseIncomingMsg ( ICQKid2Message & msg, vector<uint8_t> & data )
 		if ( !exm.decode_from ( bim.data ) ) return false;
 		msg.uin=bim.uin;
 		msg.text=exm.rv_msg.tlv2711.text;
+		// $$$ I don't send message of auto response. zIM can not set Status Text 
 		if ( exm.rv_msg.tlv2711.msg_type==MSG_TYPE_PLAINTEXT )
 		{
+			/*
 			if ( exm.rv_msg.tlv2711.text_guid=="{0946134E-4C7F-11D1-8222-444553540000}" || \
 			        exm.rv_msg.tlv2711.text_guid=="{0946134e-4c7f-11d1-8222-444553540000}" ) msg.enc_type=ICQKid2Message::UTF8;
 			else msg.enc_type=ICQKid2Message::LOCAL8BIT;
@@ -3233,21 +3133,21 @@ bool ICQKid2::parseIncomingMsg ( ICQKid2Message & msg, vector<uint8_t> & data )
 			memcpy ( msg.bg_color, exm.rv_msg.tlv2711.bg_color, 4 );
 
 			( void ) sendMsgAutoResponse ( bim.uin, bim.msg_cookie, MSG_TYPE_PLAINTEXT ); // Plain text
+			*/
 			return true;
 		}
 		else if ( exm.rv_msg.tlv2711.msg_type==MSG_TYPE_AUTOAWAY || exm.rv_msg.tlv2711.msg_type==MSG_TYPE_AUTOBUSY || \
 		          exm.rv_msg.tlv2711.msg_type==MSG_TYPE_AUTONA || exm.rv_msg.tlv2711.msg_type==MSG_TYPE_AUTODND || \
 		          exm.rv_msg.tlv2711.msg_type==MSG_TYPE_AUTOFFC )
 		{
-			( void ) sendMsgAutoResponse ( bim.uin, bim.msg_cookie, exm.rv_msg.tlv2711.msg_type );
+			//( void ) sendMsgAutoResponse ( bim.uin, bim.msg_cookie, exm.rv_msg.tlv2711.msg_type );
 			return false; // Don't need to use callback onIncomingMsg
-		}
-		else if ( exm.rv_msg.tlv2711.msg_type==MSG_TYPE_PLUGIN ) // Plugin message described by text string
+		} else 
+		if ( exm.rv_msg.tlv2711.msg_type==MSG_TYPE_PLUGIN ) // Plugin message described by text string
 		{
 			// Process XtraZ Script
 			if ( !exm.rv_msg.tlv2711.parseXtrazRequest() ) return false;
 			if ( bim.uin!=exm.rv_msg.tlv2711.xstat_sender_id ) return false;
-			logMes_4 ( "sendXStatusNotifyAutoResponse(bim.uin, bim.msg_cookie)" );
 			sendXStatusNotifyAutoResponse ( bim.uin, bim.msg_cookie );
 			return false; // Don't need to use callback onIncomingMsg
 		}
@@ -3717,6 +3617,7 @@ bool ICQKid2::parseMsgAutoResponse ( ICQKid2Message & msg, uint8_t & type, vecto
 	return true;
 }
 
+/*
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::sendMsgAutoResponse ( string touin, uint8_t * msg_cookie, uint8_t type )
 {
@@ -3730,11 +3631,7 @@ bool ICQKid2::sendMsgAutoResponse ( string touin, uint8_t * msg_cookie, uint8_t 
 		itemEye item;
 		item.uin = touin;
 		if ( uen_ind>=0 )
-		{
-			///mutexCLUser.lock();
 			item.nick = ContactListUins[uen_ind].nick;
-			///mutexCLUser.unlock();
-		}
 		item.type = 2; //Read Status
 		item.time = QTime::currentTime().toString();
 		listEye.push_back ( item );
@@ -3801,6 +3698,7 @@ bool ICQKid2::sendMsgAutoResponse ( string touin, uint8_t * msg_cookie, uint8_t 
 
 	return ( sendSNAC ( 0x0004, 0x000b, NULL, &data ) ==1 );
 }
+*/
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::sengMsgAutoRequest ( string touin, uint8_t type )

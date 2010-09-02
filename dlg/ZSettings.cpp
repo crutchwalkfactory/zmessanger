@@ -23,6 +23,8 @@
 #include "zgui.h"
 #include "zDefs.h"
 
+#include "qdir.h"
+
 ZSettingsDlg::ZSettingsDlg()
     :MyBaseDlg()
 {
@@ -94,9 +96,27 @@ ZSettingsDlg::ZSettingsDlg()
 	optToneVol->setMaxMin(10, 0);
 	alert->insertItem(optToneVol);	
 	
-	optTonePath = new ZOptionItem(alert, ZOptionItem::EDIT_FILE);
-	optTonePath->setText( cfg.readEntry(QString("Alert"), QString("Path"), "") );
+	optTonePath = new ZOptionItem(alert, ZOptionItem::EDIT_ONE_OF_LIST);
 	optTonePath->setTitle( LNG_RINGTONEPATH );
+	
+	QDir dirTone ( ProgDir+"/alert/", QString("*.mp3") );
+	dirTone.setFilter ( QDir::Files | QDir::Hidden );
+	toneList = new QStringList( dirTone.entryList() );
+	toneList->sort();
+
+	int sel=0, i=0;
+	QString text = cfg.readEntry(QString("Alert"), QString("Path"), "msn.mp3");
+	for ( QStringList::Iterator it = toneList->begin(); it != toneList->end(); ++it )
+		if ( *it == text )
+		{
+			sel=i;
+			break;
+		} else
+			i++;
+	
+	optTonePath->setList( toneList );
+	optTonePath->setNum( sel );
+	
 	alert->insertItem(optTonePath);
 
 	//#########################################  3  #######################################
@@ -104,6 +124,11 @@ ZSettingsDlg::ZSettingsDlg()
 	pm.load( ProgDir+ "/image/tab_CL.png");
 	tabWidget->addTab(CL, QIconSet(pm), "");
 	//#####################################################################################
+	optJampNewMes = new ZOptionItem(CL, ZOptionItem::EDIT_BOOL_YESNO);
+	optJampNewMes->setTitle( LNG_AUTO_JAMP_NEW_MESSAGE );
+	optJampNewMes->setNum( cfg.readBoolEntry(QString("ContactList"), QString("jampNewMes"), true) );
+	CL->insertItem(optJampNewMes);	
+	
 	optShowOffLine = new ZOptionItem(CL, ZOptionItem::EDIT_BOOL_YESNO);
 	optShowOffLine->setTitle( LNG_SHOWOFFCONT );
 	optShowOffLine->setNum( !cfg.readBoolEntry(QString("ContactList"), QString("dontShowOffLine"), true) );
@@ -143,8 +168,8 @@ ZSettingsDlg::ZSettingsDlg()
 	
 	optSmilePack->setList( smileList );
 	
-	int sel=0, i=0;
-	QString text = cfg.readEntry(QString("Chat"), QString("smilePack"), "kolobok");
+	sel=0; i=0;
+	text = cfg.readEntry(QString("Chat"), QString("smilePack"), "kolobok");
 	for ( QStringList::Iterator it = smileList->begin(); it != smileList->end(); ++it )
 		if ( *it == text )
 		{
@@ -291,7 +316,8 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry("Alert", "Ring", optTone->getNum());
 	cfg.writeEntry("Alert", "Volume", optToneVol->getNum() );
 	cfg.writeEntry(QString("Alert"), QString("Path"), optTonePath->getText());
-	
+		
+	cfg.writeEntry(QString("ContactList"), QString("jampNewMes"), optJampNewMes->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("sortType"), optSortType->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowOffLine"), !optShowOffLine->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowGroup"), !optShowGroup->getNum());
@@ -330,13 +356,14 @@ void ZSettingsDlg::saveSetting()
 	cfg_alertRing = optTone->getNum();
 	cfg_alertRingVol = optToneVol->getNum();
 	
+	zgui->lbContact->setJampToNewMes( optJampNewMes->getNum() );
 	cfg_dontShowGroup = !optShowGroup->getNum();
 	cfg_rigthAlignXStatus = optRigthXStatus->getNum();
 	cfg_notSendTypeMes = !optSendTypeMes->getNum();
 	cfg_sendByCenter = optSendByCenter->getNum();
 
 	cfg_alertPath = optTonePath->getText();
-	zgui->lbContact->setSortType( optSortType->getNum() );
+	zgui->lbContact->setSortType( (ZMyListBox::SORT_TYPE)optSortType->getNum() );
 	cfg_maxNumLines = optMaxNumLine->getNum();
 	cfg_mesFontSize = optMesFontSize->getNum();
 	cfg_chatFontSize = optChatFontSize->getNum();

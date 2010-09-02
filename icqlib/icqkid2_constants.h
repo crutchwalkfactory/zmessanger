@@ -38,9 +38,9 @@
 #define STATUS_OFFLINE    (uint32_t)0x00001000
 #define STATUS_ONLINE     (uint32_t)0x00000000
 #define STATUS_AWAY       (uint32_t)0x00000001
-#define STATUS_DND        (uint32_t)0x00000002
-#define STATUS_NA         (uint32_t)0x00000004
-#define STATUS_OCCUPIED   (uint32_t)0x00000010
+#define FSTATUS_DND        (uint32_t)0x00000002
+#define FSTATUS_NA         (uint32_t)0x00000004
+#define FSTATUS_OCCUPIED   (uint32_t)0x00000010
 #define STATUS_FREE4CHAT  (uint32_t)0x00000020
 #define STATUS_INVISIBLE  (uint32_t)0x00000100
 #define STATUS_EVIL       (uint32_t)0x00003000
@@ -48,6 +48,10 @@
 #define STATUS_HOME       (uint32_t)0x00005000
 #define STATUS_WORK       (uint32_t)0x00006000
 #define STATUS_LUNCH      (uint32_t)0x00002001
+
+#define STATUS_DND       (uint32_t)0x00000013
+#define STATUS_NA        (uint32_t)0x00000005
+#define STATUS_OCCUPIED  (uint32_t)0x00000011
 
 
 #define AUTH_DECLINED (uint8_t)0x00

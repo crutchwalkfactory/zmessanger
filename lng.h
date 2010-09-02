@@ -116,6 +116,7 @@
 #define LNG_SAVE_STATUS_WITH_EXIT QString::fromUtf8("Сохранять статусы при выходе")
 #define LNG_NO_SHOW_STATUS_BAR_IN_CHAT QString::fromUtf8("Заголовок в окне чата")
 #define LNG_SMILE_PACK QString::fromUtf8("Набор смайликов")
+#define LNG_AUTO_JAMP_NEW_MESSAGE QString::fromUtf8("Прыгать на контакт, приславший новое сообщение")
 
 //ZStatusInfo
 #define LNG_STATUS QString::fromUtf8("Статус")

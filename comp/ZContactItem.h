@@ -61,6 +61,7 @@ public:
 	int  getClient();
 	void setType(bool b);
 	void setNewMes(bool b);
+	bool isNewMes();
 	void setWaitAuth(bool b);
 	void setBirthday(bool b);
 	

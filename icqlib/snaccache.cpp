@@ -50,7 +50,7 @@ bool SnacCache::findEntry(SNACData & snd)
 	QMutexLocker locker(&mutex);
 	for (int i=0; i<cache.count(); ++i)
 	{
-		if ((cache.at(i)->data().service_id==snd.service_id || cache.at(i)->data().service_id==0) && \
+		if ((cache.at(i)->data().service_id==snd.service_id || snd.service_id==0) && \
 		(cache.at(i)->data().subtype_id==snd.subtype_id || snd.subtype_id==0) && \
 		(cache.at(i)->data().req_id==snd.req_id || snd.req_id==0) )
 		{
@@ -87,7 +87,7 @@ bool SnacCache::findEntryFromTime(SNACData & snd, time_t tTime)
 	{
 		if ( (tTime-cache.at(i)->time())>0 ) // >10
 			continue;
-		if ((cache.at(i)->data().service_id==snd.service_id || cache.at(i)->data().service_id==0) && \
+		if ((cache.at(i)->data().service_id==snd.service_id || snd.service_id==0) && \
 		(cache.at(i)->data().subtype_id==snd.subtype_id || snd.subtype_id==0) && \
 		(cache.at(i)->data().req_id==snd.req_id || snd.req_id==0) )
 		{

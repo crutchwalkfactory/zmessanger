@@ -293,15 +293,7 @@ class SNACData;
 class ICQKid2 : public QObject
 {
 	Q_OBJECT
- public:
-  typedef enum
-   {
-   NONE,
-   HTTP,
-   SOCKS4,
-   SOCKS5
-   } ProxyType;
-               
+ public:           
   ICQKid2();
   virtual ~ICQKid2();
   
@@ -310,15 +302,7 @@ class ICQKid2 : public QObject
   inline void setLoginHost(string ahost="64.12.161.153", int aport=5190) { loginhost=ahost; loginport=aport; }
   inline string getHost() { return loginhost; }
   inline void setHost(string ahost="64.12.161.153") { loginhost=ahost; }
-  inline void setProxy(string ahost="", int aport=0, string auid="", string apwd="", ProxyType apr_type=NONE)
-   {
-   proxy_host=ahost;
-   proxy_port=aport;
-   proxy_uid=auid;
-   proxy_pwd=apwd;
-   proxy_type=apr_type;
-   }
-  
+
   bool doConnect(uint32_t astat=STATUS_ONLINE);
   void doDisconnect(void);
   bool setStatus(uint32_t astat);
@@ -333,7 +317,7 @@ class ICQKid2 : public QObject
   bool getFullUserInfo(string uin, ICQKidFullUserInfo & info, bool force_update=false);  
   bool publicMyInfo(ICQKidFullUserInfo & info);
   
-  bool searchByMail(string email, vector<ICQKidShortUserInfo> & result_vec);
+  //bool searchByMail(string email, vector<ICQKidShortUserInfo> & result_vec); $$$ No need ???
   bool searchByUIN(string uin, vector<ICQKidShortUserInfo> & result_vec);
   bool searchByWhitePages(ICQKidFullUserInfo & info, vector<ICQKidShortUserInfo> & result_vec);
   
@@ -397,11 +381,11 @@ class ICQKid2 : public QObject
   vector<SSIUINEntry> InvisibleList;
   vector<SSIUINEntry> IgnoreList;
   
-  string AutoAwayMessageText;
-  string AutoBusyMessageText;
-  string AutoNotAvailableMessageText;
-  string AutoDoNotDisturbMessageText;
-  string AutoFreeForChatMessageText;
+  //string AutoAwayMessageText;
+  //string AutoBusyMessageText;
+  //string AutoNotAvailableMessageText;
+  //string AutoDoNotDisturbMessageText;
+  //string AutoFreeForChatMessageText;
   
   inline int getConnectPercentage(void) const { return connect_phase_percentage; }
   inline void setNetworkTimeout(int tm) { network_timeout=tm; }
@@ -435,7 +419,6 @@ class ICQKid2 : public QObject
   //////////////////////////////////////////////////////////////////
  
  signals:
-  void onIdle();
   void onIncomingMTN(string from, uint16_t atype);
   void onIncomingMsg(ICQKid2Message msg);
   void onAuthRequest(string from, string text);
@@ -453,11 +436,11 @@ class ICQKid2 : public QObject
   vector<SSIUINEntry> ContactListUins;
   vector<SSIGroupEntry> ContactListGroups;
  private:
-  string proxy_host;
-  int proxy_port;
-  string proxy_uid;
-  string proxy_pwd;
-  ProxyType proxy_type;
+  //string proxy_host;
+  //int proxy_port;
+  //string proxy_uid;
+  //string proxy_pwd;
+  //ProxyType proxy_type;
   
   string myuin;
   string mypassword;
@@ -477,7 +460,7 @@ class ICQKid2 : public QObject
   
   int directConnect(string ahost, int aport);
 
-  ICQKid2 * getInstanceForService(uint16_t family);
+  //ICQKid2 * getInstanceForService(uint16_t family); $$$ No need???
   
   bool doConnect_phase2(uint32_t astat, string boss_host, int boss_port, vector<uint8_t> & boss_cookie, bool short_phase=false);
   
@@ -560,7 +543,7 @@ class ICQKid2 : public QObject
   bool parseXtrazResponse(string & from, size_t & x_status, string & x_title, string & x_descr, vector<uint8_t> & data);
   bool parseMsgAutoResponse(ICQKid2Message & msg, uint8_t & type, vector<uint8_t> & data);
   
-  bool sendMsgAutoResponse(string touin, uint8_t * msg_cookie, uint8_t type=MSG_TYPE_PLAINTEXT);
+  //bool sendMsgAutoResponse(string touin, uint8_t * msg_cookie, uint8_t type=MSG_TYPE_PLAINTEXT);
   bool sengMsgAutoRequest(string touin, uint8_t type);
   
   uint16_t getUnusedItemID(void);

@@ -20,7 +20,8 @@ ZMyListBox::ZMyListBox( QWidget* parent, WFlags f)
  : ZListBox ( parent, f )
 {
 	showGroup=true;
-	sortType=0;
+	sortType=NO_SORT;
+	jampToNewMes=true;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -34,7 +35,8 @@ ZMyListBox::ZMyListBox( QString type, QWidget* parent, WFlags f)
  : ZListBox ( type, parent, f )
 {
 	showGroup=true;
-	sortType=0;
+	sortType=NO_SORT;
+	jampToNewMes=true;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -331,6 +333,9 @@ int ZMyListBox::cmpContact( ZContactItem * item1, ZContactItem * item2 )
 
 void ZMyListBox::sortContact( int idGroup, bool lock )
 {
+	if ( sortType == NO_SORT )
+		return;
+	
 	qDebug("sortContact: 0");
 	
 	if ( lock )
@@ -395,15 +400,15 @@ void ZMyListBox::sortContactAll()
 {
 	logMes_3("ZMyListBox::sortContactAll");
 	
-	if ( sortType == NO_SORT  || count()<4 )
+	if ( sortType == NO_SORT || count()<4 )
 		return;
 	
 	for ( ListMap::Iterator it = listGroup.begin( ); it != listGroup.end( ); it++) 
 		if ( it.data() )
-			sortContact( it.data()->getGroupId() );	
+			sortContact( it.data()->getGroupId() );
 }
 
-void ZMyListBox::setSortType( int type )
+void ZMyListBox::setSortType( SORT_TYPE type )
 {
 	logMes_3("ZMyListBox::setSortType");
 	
@@ -413,6 +418,11 @@ void ZMyListBox::setSortType( int type )
 	sortType = type;
 	
 	sortContactAll();
+}
+
+void ZMyListBox::setJampToNewMes( bool jamp )
+{
+	jampToNewMes = jamp;
 }
 
 void ZMyListBox::setNewMes( ZContactItem * item )
@@ -429,7 +439,11 @@ void ZMyListBox::setNewMes( ZContactItem * item )
 		if ( group )
 			group->setNewMes( true );
 	} else
-		sortContact( item->getGroupId() );		
+	{
+		sortContact( item->getGroupId() );	
+		if ( jampToNewMes )
+			setCurrentItem(	item );
+	}
 }
 
 void ZMyListBox::changeStatus( ZContactItem * item, int n )

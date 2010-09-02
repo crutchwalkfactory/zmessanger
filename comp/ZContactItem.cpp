@@ -296,6 +296,11 @@ void ZContactItem::setNewMes(bool b)
 	update();
 }
 
+bool ZContactItem::isNewMes()
+{
+	return newMes;
+}
+
 void ZContactItem::setWaitAuth(bool b)
 {
 	QPixmap pm;

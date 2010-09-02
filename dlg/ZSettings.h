@@ -45,6 +45,7 @@ private:
     ZOptionItem * optTone;
     ZOptionItem * optToneVol;
 
+    ZOptionItem * optJampNewMes;
     ZOptionItem * optShowOffLine;
     ZOptionItem * optShowGroup;
     ZOptionItem * optRigthXStatus;
@@ -79,6 +80,7 @@ private:
     
     QStringList * codec;
     QStringList* smileList;
+    QStringList * toneList;
 
 public slots:
     void saveSetting();

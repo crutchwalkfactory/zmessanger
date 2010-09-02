@@ -122,11 +122,8 @@ HEADERS =   zgui.h\
             comp/ZContactItem.h\
             icqlib/Base64.h\
             icqlib/flap.h\
-            icqlib/httpproxy.h\
             icqlib/md5.h\
             icqlib/snaccache.h\
-            icqlib/socks4proxy.h\
-            icqlib/socks5proxy.h\
             icqlib/tnetwork.h\
             icqlib/icqkid2.h\
             icqlib/const_strings.h\
@@ -161,11 +158,8 @@ SOURCES =   main.cpp\
             comp/ZContactItem.cpp\
             icqlib/Base64.cpp\
             icqlib/flap.cpp\
-            icqlib/httpproxy.cpp\
             icqlib/md5.cpp\
             icqlib/snaccache.cpp\
-            icqlib/socks4proxy.cpp\
-            icqlib/socks5proxy.cpp\
             icqlib/tnetwork.cpp\
             icqlib/icqkid2.cpp\
             icqlib/const_strings.cpp\
@@ -200,11 +194,8 @@ OBJECTS =   main.o\
             comp/ZContactItem.o\
             icqlib/Base64.o\
             icqlib/flap.o\
-            icqlib/httpproxy.o\
             icqlib/md5.o\
             icqlib/snaccache.o\
-            icqlib/socks4proxy.o\
-            icqlib/socks5proxy.o\
             icqlib/tnetwork.o\
             icqlib/icqkid2.o\
             icqlib/const_strings.o\
@@ -239,11 +230,8 @@ OBJECTS2 =  $(MAKETO)main.o\
             $(MAKETO)comp/ZContactItem.o\
             $(MAKETO)icqlib/Base64.o\
             $(MAKETO)icqlib/flap.o\
-            $(MAKETO)icqlib/httpproxy.o\
             $(MAKETO)icqlib/md5.o\
             $(MAKETO)icqlib/snaccache.o\
-            $(MAKETO)icqlib/socks4proxy.o\
-            $(MAKETO)icqlib/socks5proxy.o\
             $(MAKETO)icqlib/tnetwork.o\
             $(MAKETO)icqlib/icqkid2.o\
             $(MAKETO)icqlib/const_strings.o\
@@ -273,11 +261,8 @@ SRCMOC	= moc_zgui.cpp\
           comp/moc_ZContactItem.cpp\
           icqlib/moc_Base64.cpp\
           icqlib/moc_flap.cpp\
-          icqlib/moc_httpproxy.cpp\
           icqlib/moc_md5.cpp\
           icqlib/moc_snaccache.cpp\
-          icqlib/moc_socks4proxy.cpp\
-          icqlib/moc_socks5proxy.cpp\
           icqlib/moc_tnetwork.cpp\
           icqlib/moc_icqkid2.cpp\
           icqlib/moc_const_strings.cpp\
@@ -311,11 +296,8 @@ SRCMOC2	= $(MAKETO)moc_zgui.cpp\
           $(MAKETO)comp/moc_ZContactItem.cpp\
           $(MAKETO)icqlib/moc_Base64.cpp\
           $(MAKETO)icqlib/moc_flap.cpp\
-          $(MAKETO)icqlib/moc_httpproxy.cpp\
           $(MAKETO)icqlib/moc_md5.cpp\
           $(MAKETO)icqlib/moc_snaccache.cpp\
-          $(MAKETO)icqlib/moc_socks4proxy.cpp\
-          $(MAKETO)icqlib/moc_socks5proxy.cpp\
           $(MAKETO)icqlib/moc_tnetwork.cpp\
           $(MAKETO)icqlib/moc_icqkid2.cpp\
           $(MAKETO)icqlib/moc_const_strings.cpp\
@@ -345,11 +327,8 @@ OBJMOC	= moc_zgui.o\
           comp/moc_ZContactItem.o\
           icqlib/moc_Base64.o\
           icqlib/moc_flap.o\
-          icqlib/moc_httpproxy.o\
           icqlib/moc_md5.o\
           icqlib/moc_snaccache.o\
-          icqlib/moc_socks4proxy.o\
-          icqlib/moc_socks5proxy.o\
           icqlib/moc_tnetwork.o\
           icqlib/moc_icqkid2.o\
           icqlib/moc_const_strings.o\
@@ -383,11 +362,8 @@ OBJMOC2	= $(MAKETO)moc_zgui.o\
           $(MAKETO)comp/moc_ZContactItem.o\
           $(MAKETO)icqlib/moc_Base64.o\
           $(MAKETO)icqlib/moc_flap.o\
-          $(MAKETO)icqlib/moc_httpproxy.o\
           $(MAKETO)icqlib/moc_md5.o\
           $(MAKETO)icqlib/moc_snaccache.o\
-          $(MAKETO)icqlib/moc_socks4proxy.o\
-          $(MAKETO)icqlib/moc_socks5proxy.o\
           $(MAKETO)icqlib/moc_tnetwork.o\
           $(MAKETO)icqlib/moc_icqkid2.o\
           $(MAKETO)icqlib/moc_const_strings.o\
@@ -501,10 +477,6 @@ icqlib/moc_Base64.cpp: ./icqlib/Base64.h
 icqlib/moc_flap.o: icqlib/moc_flap.cpp ./icqlib/flap.h
 icqlib/moc_flap.cpp: ./icqlib/flap.h
 	$(MOC) ./icqlib/flap.h -o icqlib/moc_flap.cpp
-
-icqlib/moc_httpproxy.o: icqlib/moc_httpproxy.cpp ./icqlib/httpproxy.h
-icqlib/moc_httpproxy.cpp: ./icqlib/httpproxy.h
-	$(MOC) ./icqlib/httpproxy.h -o icqlib/moc_httpproxy.cpp
 	
 icqlib/moc_md5.o: icqlib/moc_md5.cpp ./icqlib/md5.h
 icqlib/moc_md5.cpp: ./icqlib/md5.h
@@ -513,14 +485,6 @@ icqlib/moc_md5.cpp: ./icqlib/md5.h
 icqlib/moc_snaccache.o: icqlib/moc_snaccache.cpp ./icqlib/snaccache.h
 icqlib/moc_snaccache.cpp: ./icqlib/snaccache.h
 	$(MOC) ./icqlib/snaccache.h -o icqlib/moc_snaccache.cpp
-	
-icqlib/moc_socks4proxy.o: icqlib/moc_socks4proxy.cpp ./icqlib/socks4proxy.h
-icqlib/moc_socks4proxy.cpp: ./icqlib/socks4proxy.h
-	$(MOC) ./icqlib/socks4proxy.h -o icqlib/moc_socks4proxy.cpp
-	
-icqlib/moc_socks5proxy.o: icqlib/moc_socks5proxy.cpp ./icqlib/socks5proxy.h
-icqlib/moc_socks5proxy.cpp: ./icqlib/socks5proxy.h
-	$(MOC) ./icqlib/socks5proxy.h -o icqlib/moc_socks5proxy.cpp
 	
 icqlib/moc_tnetwork.o: icqlib/moc_tnetwork.cpp ./icqlib/tnetwork.h
 icqlib/moc_tnetwork.cpp: ./icqlib/tnetwork.h
