@@ -317,7 +317,7 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry("Alert", "Volume", optToneVol->getNum() );
 	cfg.writeEntry(QString("Alert"), QString("Path"), optTonePath->getText());
 		
-	cfg.writeEntry(QString("ContactList"), QString("jampNewMes"), optJampNewMes->getNum());
+	cfg.writeEntry(QString("ContactList"), QString("jampNewMes"), *(optSortType->at(optJampNewMes->getNum())) );
 	cfg.writeEntry(QString("ContactList"), QString("sortType"), optSortType->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowOffLine"), !optShowOffLine->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowGroup"), !optShowGroup->getNum());
@@ -356,7 +356,7 @@ void ZSettingsDlg::saveSetting()
 	cfg_alertRing = optTone->getNum();
 	cfg_alertRingVol = optToneVol->getNum();
 	
-	zgui->lbContact->setJampToNewMes( optJampNewMes->getNum() );
+	zgui->lbContact->setJampToNewMes( *(optSortType->at(optJampNewMes->getNum())) );
 	cfg_dontShowGroup = !optShowGroup->getNum();
 	cfg_rigthAlignXStatus = optRigthXStatus->getNum();
 	cfg_notSendTypeMes = !optSendTypeMes->getNum();
