@@ -22,6 +22,7 @@ ZMyListBox::ZMyListBox( QWidget* parent, WFlags f)
 	showGroup=true;
 	sortType=NO_SORT;
 	jampToNewMes=true;
+	update=true;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -37,6 +38,7 @@ ZMyListBox::ZMyListBox( QString type, QWidget* parent, WFlags f)
 	showGroup=true;
 	sortType=NO_SORT;
 	jampToNewMes=true;
+	update=true;
 	QFont font ( qApp->font() );
 	font.setPointSize ( 16 );
 	setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
@@ -102,8 +104,11 @@ void ZMyListBox::contactAdd( ZContactItem * item )
 	
 	ZContactItem * itemAt;
 	if ( showGroup )
+	{
 		itemAt = listGroup[item->getGroupIdStr()];
-	else
+		if ( itemAt->isHide() )
+			return;
+	} else
 		itemAt = listProt[PROT_SPLIT2];
 	
 	if ( itemAt )
@@ -225,8 +230,9 @@ void ZMyListBox::keyReleaseEvent ( QKeyEvent* e )
 			int t = currentItem();
 			if (t > (vLines - 1))
 			{
+				this->setTopItem( t - vLines );
 				this->setCurrentItem( t - vLines, true );
-				this->setCurrentItem( t + vLines );
+				this->setCurrentItem( t - vLines );
 			} else
 			{
 				this->setCurrentItem( 0, true );
@@ -457,6 +463,11 @@ void ZMyListBox::changeStatus( ZContactItem * item, int n )
 	sortContact( item->getGroupId() );
 }
 
+void ZMyListBox::setUpdateList( bool _update )
+{
+	update = _update;
+}
+
 //+++++++++++++++++++++ Fix std function for multithred ++++++++++++++++++++++++++
 
 void ZMyListBox::clear()
@@ -506,6 +517,8 @@ void ZMyListBox::moveItem(int from, int to)
 
 void ZMyListBox::viewportPaintEvent( QPaintEvent * event)
 {
+	if ( !update ) return;
+	
 	if ( mutexOnRepaint.locked() )
 		return;
 	mutexPaintEvent.lock();
@@ -515,6 +528,8 @@ void ZMyListBox::viewportPaintEvent( QPaintEvent * event)
 
 void ZMyListBox::UpdateList()
 {
+	if ( !update ) return;
+	
 	if ( mutexOnRepaint.locked() || mutexPaintEvent.locked() )
 		return;
 	mutexPaintEvent.lock();

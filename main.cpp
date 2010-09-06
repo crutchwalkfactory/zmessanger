@@ -16,6 +16,9 @@
 #include "zEmoticon.h"
 #include "config.h"
 
+#include "config.h"
+#include "zDefs.h"
+
 #ifdef _AllLogInFile
 void myMessageOutput( QtMsgType type, const char *msg );
 #endif
@@ -76,6 +79,11 @@ int main ( int argc, char **argv )
 	}
 	#endif
 	
+	logMes( "#############  zIM "+QString::number( VER_MAJOR )+"."+QString::number( VER_MINOR )+"-"+QString::number( VER_STATUS )+"  #############" );
+	logMes( "# Build number: "+QString::number( BUILD_NUMBER ) );
+	logMes( "# Buld date:    "+QString( BUILD_DATE ) );
+	logMes( "#######################################");
+
 	zgui = new ZGui ( NULL, "ZMainWidget" );
 	app->setMainWidget(zgui);
 	zgui->show();

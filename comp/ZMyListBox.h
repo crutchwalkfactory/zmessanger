@@ -85,7 +85,8 @@ public:
 	void changeStatus( ZContactItem * item, int n );
 	//
 	
-	void UpdateList();  
+	void UpdateList();
+	void setUpdateList( bool _update );
 
 private:
 	void insertItem( const ZListItem * item, int index=-1, bool autoHighlighted = TRUE );
@@ -111,6 +112,7 @@ private:
 	bool showGroup;
 	SORT_TYPE sortType;
 	bool jampToNewMes;
+	bool update;
 
 signals:
 	void onDialButtonPress();

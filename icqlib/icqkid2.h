@@ -459,8 +459,6 @@ class ICQKid2 : public QObject
   map<string, ICQKidFullUserInfo> userfullinfo_map;
   
   int directConnect(string ahost, int aport);
-
-  //ICQKid2 * getInstanceForService(uint16_t family); $$$ No need???
   
   bool doConnect_phase2(uint32_t astat, string boss_host, int boss_port, vector<uint8_t> & boss_cookie, bool short_phase=false);
   

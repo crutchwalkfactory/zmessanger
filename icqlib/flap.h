@@ -49,6 +49,7 @@ using namespace std;
 #define TLV_CLI_NUM_BUILD  0x1a
 #define TLV_CLI_LANG       0x0f
 #define TLV_CLI_COUNTRY    0x0e
+#define TLV_SSL_FLAG       0x4a
 
 class FlapPacket{
  public:

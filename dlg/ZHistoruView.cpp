@@ -81,7 +81,7 @@ ZHistoryView::~ZHistoryView()
 	zmleHistory->removeEventFilter( this );	
 }
 
-bool ZHistoryView::eventFilter(QObject* o, QEvent* pEvent)
+bool ZHistoryView::eventFilter(QObject* , QEvent* pEvent)
 {
 	if (  QEvent::KeyPress == pEvent->type())
 	{

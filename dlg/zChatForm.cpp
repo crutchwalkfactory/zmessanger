@@ -36,7 +36,7 @@
 #endif
 
 
-zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool _conference)
+zChatForm::zChatForm(std::string _uin, QString nick, int _protocol, bool /*_conference*/)
     :MyBaseDlg()
 {
 	logMes_2("zChatForm: start");

@@ -399,10 +399,11 @@ void ZGui::CreateWindow ( QWidget* )
 	dlgStat = NULL;
 	
 	codec = NULL;
+	logMes("Set code page: "+codePage);
 	if ( !codePage.isEmpty() )
 		codec = QTextCodec::codecForName( codePage );
 	if ( !codec )
-		codec = QTextCodec::codecForName( "CP1251" );
+		codec = QTextCodec::codecForName( "cp1251" );
 	
 	isShown = true;
 
@@ -850,7 +851,8 @@ void ZGui::slot_onIncomingMsg(ICQKid2Message msg)
 			break;
 		case ICQKid2Message::LOCAL8BIT :
 			logMes_3("Coded: 8 bit encoded with "+QString::number(msg.codepage)+" codepage");
-			mes = codec->toUnicode( msg.text.c_str() );
+			//mes = codec->toUnicode( msg.text.c_str() );
+			mes = strtoqstr( msg.text.c_str() );
 			break;
 		case ICQKid2Message::UCS2BE :
 			logMes_3("Coded: UCS-2 Big endian encoded");
@@ -2183,6 +2185,7 @@ void ZGui::openChat(ZContactItem* listitem)
 	logMes_2("openChat: start");
 
 	showedChat = true;
+	lbContact->setUpdateList( !showedChat );
 
 	mesList messanges;
 	QString textMes = "";
@@ -2292,6 +2295,7 @@ void ZGui::openChat(ZContactItem* listitem)
 	#endif
 
 	showedChat = false;
+	lbContact->setUpdateList( !showedChat );
 	
 	qApp->installEventFilter( this );
 

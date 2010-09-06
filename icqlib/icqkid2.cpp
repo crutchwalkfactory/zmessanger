@@ -139,11 +139,6 @@ ICQKid2::~ICQKid2()
 bool ICQKid2::doConnect ( uint32_t astat )
 {
 	logMes_4 ( "ICQKid2::doConnect" );
-#ifdef _WIN32
-	WORD wVersionRequested = MAKEWORD ( 1, 1 );
-	WSADATA wsaData;
-	if ( WSAStartup ( wVersionRequested, &wsaData ) !=0 ) return false;
-#endif
 	stepConnect = 0;
 
 	connect_error_code=0;
@@ -386,6 +381,7 @@ bool ICQKid2::doConnect_phase2 ( uint32_t astat, string boss_host, int boss_port
 	logMes_4 ( "connect_phase_percentage = 100" );
 	return true;
 }
+
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
 bool ICQKid2::setStatus ( uint32_t astat )
@@ -2442,38 +2438,40 @@ bool ICQKid2::activateSSI ( void )
 }
 
 // ----------------=========ooooOOOOOOOOOoooo=========----------------
-bool ICQKid2::sendStatus ( uint32_t astat, bool ext )
+bool ICQKid2::sendStatus ( uint32_t astat, bool /*ext*/ )
 {
 	logMes_4 ( "ICQKid2::sendStatus" );
 	vector<uint8_t> vec;
 	TLVPack tlvp;
 
-	tlvp.data.push_back ( TLVField ( astat|STATUS_DCDISABLED, 0x0006 ) ); // Online status
-	if ( ext ) 
+	tlvp.data.push_back ( TLVField ( astat, 0x0006 ) ); // Online status
+	
+	/*if ( ext ) 
 	{
-	tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x0008 ) ); // Unknown
+		//tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x0008 ) ); // Unknown
 
+		
+		uint8_t dc_info[] =
+		{
+			0x00, 0x00, 0x00, 0x00,  // Internal IP address
+			0x00, 0x00, 0x00, 0x00,  // Internal TCP port 
+			//0x04,  					// DC type - DC not possible 
+			0x06,  					// DC type - DC not possible 
+			0x00, 0x0A,				// DC protocol version - ICQ Lite (9) 
+			0x0a, 0x0b, 0x33, 0x45,  // DC Auth cookie 
+			0x00, 0x00, 0x0b, 0xf5,  // Web Front Port 
+			0x00, 0x00, 0x00, 0x01,  // Client futures 
+			0x00, 0x00, 0x00, 0x00,  // Last Info Update 
+			0x00, 0x00, 0x00, 0x00,  // Last Extended Info Update (i.e. icqphone status) 
+			0x00, 0x00, 0x00, 0x00,  // Last Extended Status Update (i.e. phonebook) 
+			0x00, 0x00
+		};  //Unknown 
+		tlvp.data.push_back ( TLVField ( dc_info, sizeof ( dc_info ), 0x000c ) ); // DC Info
+		
 
-	uint8_t dc_info[] =
-	{
-		0x00, 0x00, 0x00, 0x00,  // Internal IP address
-		0x00, 0x00, 0x00, 0x00,  // Internal TCP port 
-		0x04,  					// DC type - DC not possible 
-		0x00, 0x09,				// DC protocol version - ICQ Lite (9) 
-		0x0a, 0x0b, 0x33, 0x45,  // DC Auth cookie 
-		0x00, 0x00, 0x0b, 0xf5,  // Web Front Port 
-		0x00, 0x00, 0x00, 0x01,  // Client futures 
-		0x00, 0x00, 0x00, 0x00,  // Last Info Update 
-		0x00, 0x00, 0x00, 0x00,  // Last Extended Info Update (i.e. icqphone status) 
-		0x00, 0x00, 0x00, 0x00,  // Last Extended Status Update (i.e. phonebook) 
-		0x00, 0x00
-	};  //Unknown 
-	tlvp.data.push_back ( TLVField ( dc_info, sizeof ( dc_info ), 0x000c ) ); // DC Info
-
-
-	//if ( ext ) 
-	tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x001f ) ); // Unknown
-	}
+		//if ( ext ) 
+		//tlvp.data.push_back ( TLVField ( ( uint16_t ) 0x0000, 0x001f ) ); // Unknown		
+	}*/
 
 	tlvp.encode_to ( vec );
 	if ( sendSNAC ( 0x0001, 0x001e, NULL, &vec ) !=1 ) return false;
@@ -2677,6 +2675,7 @@ bool ICQKid2::sendMD5authorize ( uint32_t * snac_sync, vector<uint8_t> & md5_sal
 	tlv_pack.data.push_back ( TLVField ( ( uint32_t ) 0x0000043d, TLV_CLI_NUM_DISTR ) ); // Client distribution number
 	tlv_pack.data.push_back ( TLVField ( "ru", TLV_CLI_LANG ) ); // Client language
 	tlv_pack.data.push_back ( TLVField ( "ru", TLV_CLI_COUNTRY ) ); // Client country
+	tlv_pack.data.push_back ( TLVField ( ( uint8_t ) 0x03,  TLV_SSL_FLAG ) );
 // skip TLV 0x4a - SSI flag: 1 - SSI only, 0 - family 0x03
 // Versions of componets made like icq 5.1, otherwise avatars and xStatus couldn't work
 

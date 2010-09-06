@@ -6,6 +6,7 @@
 #PLATFORM=EZX-EM30
 
 NOTMAKETOBIN=YES
+BUILD_NUMBER_FILE=buildNum.txt
 APPNAME=zIM
 
 XMPP=no
@@ -36,7 +37,6 @@ ifeq ($(PLATFORM),EZX-ZN5)
 QTDIR   :=	$(TOOLPREFIX)/lib/qt-zn5
 EZXDIR  :=	$(TOOLPREFIX)/lib/ezx-zn5
 DIRECTIV =	-DEZX_ZN5 -DNEW_PLATFORM -DCUTED_PLATFORM -DFixByQT -D_MainMenuFix
-#-D_ZScrollPanel
 TARGET	=      $(APPNAME)_ZN5
 endif
 
@@ -84,6 +84,8 @@ INCPATH	= -I. -I./comp -I./icqlib -I./dlg -I./header -I./NAPI
 ifeq ($(XMPP),yes)
 INCPATH	+= -I./xmpp
 endif
+
+DIRECTIV += -DBUILD_DATE=$$(date +'"%d.%m.%Y_%H:%M"') -DBUILD_NUMBER=$$(cat $(BUILD_NUMBER_FILE))
 
 CC	=	$(TOOLPREFIX)/bin/arm-linux-gnueabi-gcc
 CXX	=	$(TOOLPREFIX)/bin/arm-linux-gnueabi-g++
@@ -413,11 +415,11 @@ $(TARGET): $(UICDECLS) $(OBJECTS) $(OBJMOC)
 		$(STRIP) -s $(MAKETO)$(TARGET)
 endif
 
-#ifeq ($(PLATFORM),EZX-V8)
+	@if ! test -f $(BUILD_NUMBER_FILE); then echo 0 > $(BUILD_NUMBER_FILE); fi
+	@echo $$(($$(cat $(BUILD_NUMBER_FILE)) + 1)) > $(BUILD_NUMBER_FILE)
+
+
 moc: $(SRCMOC)
-#else
-#moc: $(SRCMOC2)
-#endif
 
 clean:
 	-rm -f $(OBJECTS) $(OBJMOC) $(SRCMOC) $(UICIMPLS) $(UICDECLS)

@@ -99,7 +99,7 @@ ZSettingsDlg::ZSettingsDlg()
 	optTonePath = new ZOptionItem(alert, ZOptionItem::EDIT_ONE_OF_LIST);
 	optTonePath->setTitle( LNG_RINGTONEPATH );
 	
-	QDir dirTone ( ProgDir+"/alert/", QString("*.mp3") );
+	QDir dirTone ( ProgDir+"/alert/", QString("*.mp3 *.wav") );
 	dirTone.setFilter ( QDir::Files | QDir::Hidden );
 	toneList = new QStringList( dirTone.entryList() );
 	toneList->sort();
@@ -315,9 +315,9 @@ void ZSettingsDlg::saveSetting()
 	cfg.writeEntry("Alert", "Vibrate", optVibrate->getNum());
 	cfg.writeEntry("Alert", "Ring", optTone->getNum());
 	cfg.writeEntry("Alert", "Volume", optToneVol->getNum() );
-	cfg.writeEntry(QString("Alert"), QString("Path"), optTonePath->getText());
+	cfg.writeEntry(QString("Alert"), QString("Path"), *(toneList->at(optTonePath->getNum())) );
 		
-	cfg.writeEntry(QString("ContactList"), QString("jampNewMes"), *(optSortType->at(optJampNewMes->getNum())) );
+	cfg.writeEntry(QString("ContactList"), QString("jampNewMes"), optJampNewMes->getNum() );
 	cfg.writeEntry(QString("ContactList"), QString("sortType"), optSortType->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowOffLine"), !optShowOffLine->getNum());
 	cfg.writeEntry(QString("ContactList"), QString("dontShowGroup"), !optShowGroup->getNum());
@@ -356,13 +356,13 @@ void ZSettingsDlg::saveSetting()
 	cfg_alertRing = optTone->getNum();
 	cfg_alertRingVol = optToneVol->getNum();
 	
-	zgui->lbContact->setJampToNewMes( *(optSortType->at(optJampNewMes->getNum())) );
+	zgui->lbContact->setJampToNewMes( optJampNewMes->getNum() );
 	cfg_dontShowGroup = !optShowGroup->getNum();
 	cfg_rigthAlignXStatus = optRigthXStatus->getNum();
 	cfg_notSendTypeMes = !optSendTypeMes->getNum();
 	cfg_sendByCenter = optSendByCenter->getNum();
 
-	cfg_alertPath = optTonePath->getText();
+	cfg_alertPath = *(toneList->at(optTonePath->getNum()));
 	zgui->lbContact->setSortType( (ZMyListBox::SORT_TYPE)optSortType->getNum() );
 	cfg_maxNumLines = optMaxNumLine->getNum();
 	cfg_mesFontSize = optMesFontSize->getNum();

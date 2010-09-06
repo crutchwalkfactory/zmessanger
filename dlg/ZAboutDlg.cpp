@@ -13,11 +13,12 @@
 #include "config.h"
 
 #include <qlabel.h>
+#include <qfont.h>
+
 #include <ZApplication.h>
 #include <ZSoftKey.h>
 #include <ZLabel.h>
 #include <ZImage.h>
-#include <ZScrollPanel.h>
 #include <ZSeparator.h>
 
 #include "zDefs.h"
@@ -27,7 +28,11 @@ ZAboutDialog::ZAboutDialog()
 {
 	setMainWidgetTitle(LNG_ABOUT);
 	
-	ZScrollPanel * sv = new ZScrollPanel(this);
+	myWidget = new ZWidget ();
+	tabWidget = new ZNavTabWidget( myWidget );
+	connect(tabWidget,SIGNAL(currentChanged(QWidget* )),this,SLOT(slotPageChanged(QWidget* )));
+	
+	sv = new ZScrollPanel(this);
 	
 	ZImage *img = new ZImage( this );
 	img->setPixmap ( QPixmap( ProgDir + "/zMessanger_usr.png" ) );
@@ -92,16 +97,65 @@ ZAboutDialog::ZAboutDialog()
 	a->setPreferredWidth(SCREEN_WIDTH-10);
 	sv->addChild(a, 15,130);
 	
-	a = new ZLabel("Based on zSimpleGUI by BeZ",this);
-	a->setAutoResize(true);
-	a->setPreferredWidth(SCREEN_WIDTH-10);
-	sv->addChild(a, 15,190);
-	
 	sep = new ZSeparator();
 	sep->setLength(SCREEN_WIDTH-20);
-	sv->addChild(sep, 10,220);			
+	sv->addChild(sep, 10,190);			
 
-	setContentWidget ( sv );  
+	phoneInfo = new ZListBox( tabWidget );
+	
+	font.setPointSize ( 16 );
+	phoneInfo->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
+	phoneInfo->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StHighlightSelected, font );	
+	phoneInfo->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StSelected, font );	
+	phoneInfo->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StHighlighted, font );	
+	
+	ZSettingItem* item;
+
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "zIM "+model+" "+ver, false);
+	phoneInfo->insertItem( item );
+
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "Trafic", true);
+    item->setSeparator("-",NULL);
+	item->setSelectable(false);	
+	phoneInfo->insertItem( item, -1, false );
+
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "IN:", true);
+	item->appendSubItem(0, QString::number((double)trafIN/1024, 'g', 2)+" KB" );
+	phoneInfo->insertItem( item );
+	
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "OUT:", true);
+	item->appendSubItem(0, QString::number((double)trafOUT/1024, 'g', 2)+" KB" );
+	phoneInfo->insertItem( item );
+	
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "Build", true);
+    item->setSeparator("-",NULL);
+	item->setSelectable(false);	
+	phoneInfo->insertItem( item, -1, false );
+
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "Build number:", false);
+	item->appendSubItem(0, QString::number( BUILD_NUMBER ), false );
+	phoneInfo->insertItem( item );
+	
+	item = new ZSettingItem(phoneInfo, "%M");
+	item->appendSubItem(0, "Buld date:", false);
+	item->appendSubItem(0, QString( BUILD_DATE ), false );
+	phoneInfo->insertItem( item );	
+	
+	phoneInfo->setCurrentItem(1);
+	
+	QPixmap pm;
+	pm.load( ProgDir+ "/image/tab_about.png");
+	tabWidget->addTab(sv, QIconSet(pm), "");	
+	pm.load( ProgDir+ "/image/tab_othe_info.png");
+	tabWidget->addTab(phoneInfo, QIconSet(pm), "");		
+
+	setContentWidget ( tabWidget );  
 	
 	ZSoftKey *softKey = new ZSoftKey ( NULL, this, this );
 	softKey->setText ( ZSoftKey::LEFT, LNG_OK, ( ZSoftKey::TEXT_PRIORITY ) 0 );
@@ -111,6 +165,25 @@ ZAboutDialog::ZAboutDialog()
 
 ZAboutDialog::~ZAboutDialog()
 {
+	delete myWidget;
+}
 
+void ZAboutDialog::slotPageChanged(QWidget* )
+{
+	int i = tabWidget->currentPageIndex();
+	
+	switch (i)
+	{
+		case 0:
+		{
+			sv->setFocus();
+			break;
+		}
+		case 1:
+		{
+			phoneInfo->setFocus();
+			break;
+		}
+	}
 }
 

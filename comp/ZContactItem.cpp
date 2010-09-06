@@ -44,8 +44,6 @@ ZContactItem::ZContactItem( ZMyListBox* _container, CONTACT_TYPE _type ):
 		case ITEM_CONACT:
 			// for dont jump image in list
 			setPixmap ( GET_NUM_FAKE(type), QPixmap(ProgDir + "/CL/fake.png") );
-			
-			//connect( this, SIGNAL(needUpdate()), lbParent, SLOT(UpdateList()));	
 			break;
 		case ITEM_SPLITER:
 			setSelectable(false);
