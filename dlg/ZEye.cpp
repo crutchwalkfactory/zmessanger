@@ -36,8 +36,10 @@ ZEyeDialog::ZEyeDialog()
 	QFont font ( qApp->font() );
 	font.setPointSize ( 14 );
 	
-	lbList->setItemFont (ZListBox::LISTITEM_REGION_C, font, true );
-	lbList->setItemFont (ZListBox::LISTITEM_REGION_C, font, false );
+	lbList->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StStandard, font );
+	lbList->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StHighlightSelected, font );	
+	lbList->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StSelected, font );	
+	lbList->setItemFont (ZListBox::LISTITEM_REGION_A, ZSkinBase::StHighlighted, font );	
 
 	QString title;
 	QString action;

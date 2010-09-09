@@ -72,8 +72,6 @@ class xTextView : public ZScrollView
 				
 	private slots: 
 		virtual void viewportPaintEvent( QPaintEvent * pe);
-		void resizeEvent( QResizeEvent* event );
-		
 		void keyPressEvent( QKeyEvent* pEvent );
 		
 #ifdef _ZScrollPanel

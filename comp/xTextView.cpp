@@ -41,7 +41,8 @@ xTextView::xTextView(QWidget* parent, zEmotIcons * smile)
 	setFocusPolicy( StrongFocus );
 	
 	setHScrollBarMode( QScrollView::AlwaysOff );
-	setVScrollBarMode( QScrollView::Auto );
+	//setVScrollBarMode( QScrollView::Auto );
+	setVScrollBarMode( QScrollView::AlwaysOff );
 } 
 
 xTextView::~xTextView()
@@ -201,11 +202,6 @@ void xTextView::setText(QString str, bool repait)
 void xTextView::addText(QString str, bool repait)
 {
 	insertText(str, colLines);
-	#ifndef NEW_PLATFORM
-	resizeContents(width(), std::max((colLines+1)*(font.pixelSize()+1),height()) );
-	#else
-	resizeContents(width(), std::max((colLines+1)*font.pixelSize(),height()-20) );
-	#endif
 	isEnd = false;
 	if (repait)
 		viewport()->update();
@@ -218,7 +214,6 @@ void xTextView::nextLine()
 	if ( colLines-lineOnPage > posLines )
 	{
 		posLines++;	
-		scrollBy(0, +font.pixelSize());
 		viewport()->update();
 		isEnd = false;
 	}
@@ -229,7 +224,6 @@ void xTextView::prevLine()
 	if ( posLines > 0 )
 	{
 		posLines--;
-		scrollBy(0, -font.pixelSize());
 		viewport()->update();
 		isEnd = false;
 	}
@@ -240,7 +234,6 @@ void xTextView::pageUp()
 	if ( posLines > lineOnPage )
 	{
 		posLines = std::max(0,posLines-lineOnPage);
-		scrollBy(0, -(font.pixelSize()*lineOnPage));
 	} else
 	{
 		posLines = 0;	
@@ -255,7 +248,7 @@ void xTextView::pageDown()
 	if ( (height()-20)/font.pixelSize() < colLines-posLines )
 	{
 		posLines = std::min(posLines+lineOnPage, colLines) ;	
-		scrollBy(0, +(font.pixelSize()*lineOnPage));
+		//scrollBy(0, +(font.pixelSize()*lineOnPage));
 		viewport()->update();
 		isEnd = false;
 	} else
@@ -301,7 +294,6 @@ void xTextView::toEnd()
 		posLines = colLines - lineOnPage;
 	else
 		posLines = colLines - line;
-	setContentsPos(0, contentsHeight() );
 	viewport()->update();
 	isEnd = true;
 }
@@ -465,7 +457,8 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 	// draw text
 	int posY=10;
 	notEndColor = false;
-	for (int i = posLines; i < colLines; i++ )
+	int i;
+	for (i = posLines; i < colLines; i++ )
 	{
 		smiles = smile(&text[i]);
 		left = 5;
@@ -540,6 +533,12 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 		if ( posY > viewport()->height() )
 			break;
 	}
+	//draw scroll bar
+	QPen pen;
+	pen.setWidth(3);
+	p.setPen( pen );
+	p.drawLine( width()-4, (int)(((double)posLines/colLines)*(height()-10)), width()-4, (int)(((double)i/colLines)*(height()-10))+10 );	
+	
 	#ifndef NO_ANI_SMILE
 	for ( int i=0; i<MAX_SMILE_ON_SCREEN; i++ )
 		if ( !aniSmileUse[i] && aniSmileCash[i] )
@@ -549,22 +548,11 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 			aniSmileCash[i]=NULL;
 		}
 	#endif		
+
 	bitBlt(viewport(), 0, 0, &pixmap); 
 	ZScrollView::viewportPaintEvent(pe); 
 	
 	logMes("xTextView::PaintEvent end");
-}
-
-void xTextView::resizeEvent( QResizeEvent* event )
-{
-	ZScrollView::resizeEvent(event); 
-	lineOnPage = (height()-20) / maxLineHeigth;
-	#ifndef NEW_PLATFORM
-	resizeContents(width(), std::max((colLines+1)*(font.pixelSize()+1),height()) );
-	#else
-	resizeContents(width(), std::max((colLines+1)*font.pixelSize(),height()-10) );
-	#endif
-	setContentsPos(0, posLines*font.pixelSize() );
 }
 
 void xTextView::keyPressEvent( QKeyEvent* pEvent )

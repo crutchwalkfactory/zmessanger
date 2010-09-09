@@ -76,7 +76,7 @@ class ZGui :public ZKbMainWidget
     
     ZContactItem * getICQContact(string uin);
     int  icqAddUser(QString Name, string uin, int Status, int xStatus, int clientId, int id, int groupId = -1, bool auth = false, bool mes = false, bool invisible = false);
-    int  icqAddGroup(QString Name, int groupId);  
+    int  icqAddGroup(QString Name, int groupId, int id);  
 
     void showProc(QString text);
     void setOperat(QString text, int max);
@@ -174,6 +174,8 @@ class ZGui :public ZKbMainWidget
     void menu_statusChange(int status);
     void menu_privStatusChange(int status);
 	
+	void slot_rightSoftKey();
+	
     void slot_onUserNotify(string uin, uint32_t stat1, uint32_t stat2, bool invis_flag);
     void slot_onIncomingMTN(string from, uint16_t atype);
     void slot_onIncomingMsg(ICQKid2Message msg);
@@ -219,7 +221,7 @@ class ZGui :public ZKbMainWidget
     ZStatusInfo * dlgStat;
     zChatForm * dlgChat;
     ZSoftKey *softKey;
-    ZOptionsMenu* menuContact;
+    ZOptionsMenu* menuContact;    
     ZOptionsMenu* menustatus;
     ZOptionsMenu* menuCL;
     ZOptionsMenu* menuProfile;
@@ -227,6 +229,8 @@ class ZGui :public ZKbMainWidget
 
     bool isShown;
     int timeNotAction;
+
+	bool rSoftKey;
 
     ZWidget * myWidget;
     ZHeader* m_pHeader;

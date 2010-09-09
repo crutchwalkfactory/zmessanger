@@ -64,6 +64,7 @@
 
 #ifdef CUTED_PLATFORM
 #define insertItem(a,b,c,d,e,f) insertItem(QString("   ")+a,b,c,d,e,f)
+#define changeItem(a,b,c) changeItem(a,QString("   ")+b,c)
 #endif
 
 static NAPILink *napi_link;
@@ -274,7 +275,8 @@ void ZGui::CreateWindow ( QWidget* )
 	softKey = new ZSoftKey("CST_2A", this, this);
 
 	QRect rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+	QPoint pointUP = rect.bottomRight();
+	
 	logMes_3("CreateWindow: Create Menu");
 	menu = new ZOptionsMenu ( rect, softKey, NULL, 0); 
 	menu->setItemSpacing(10);
@@ -287,6 +289,8 @@ void ZGui::CreateWindow ( QWidget* )
 	menuProfile = new ZOptionsMenu ( rect, softKey, NULL, 0); 
 	menuProfile->setItemSpacing(10);
 	menuProfile->setSpacing(0);
+	menuProfile->setPosition( ZOptionsMenu::BottomRight, pointUP );
+
 
 	menuCL = new ZOptionsMenu ( rect, softKey, NULL, 0); 
 	menuCL->setItemSpacing(10);
@@ -295,11 +299,11 @@ void ZGui::CreateWindow ( QWidget* )
 	menuContact = new ZOptionsMenu ( rect, softKey, NULL, 0); 
 	menuContact->setItemSpacing(10);
 	menuContact->setSpacing(0);
+	menuContact->setPosition( ZOptionsMenu::BottomRight, pointUP );
 
 	menuPrivatStatus = new ZOptionsMenu ( rect, softKey, NULL, 0); 
 	menuPrivatStatus->setItemSpacing(10);
 	menuPrivatStatus->setSpacing(0);
-
 
 	#ifdef _MainMenuFix
 	connect( menu, SIGNAL( canceled() ), this, SLOT( slotFixMenuBag() ) );
@@ -312,6 +316,7 @@ void ZGui::CreateWindow ( QWidget* )
 	softKey->setOptMenu ( ZSoftKey::LEFT, menu );
 	softKey->setText ( ZSoftKey::LEFT, LNG_MENU );
 	softKey->setTextForOptMenuHide( LNG_MENU );
+	softKey->setClickedSlot ( ZSoftKey::RIGHT, this, SLOT ( slot_rightSoftKey() ) );
 	setSoftKey( softKey );
 	
 	createMenuDisconected();	
@@ -534,20 +539,7 @@ void ZGui::createMenuConected()
 		pm->load(ProgDir+ "/status/icq/lunch.png");
 		menustatus->insertItem ( LNG_LANCH , NULL, pm, true, 11, 11 );
 		
-		connect( menustatus, SIGNAL( activated( int ) ), this, SLOT( menu_statusChange( int ) ) );
-		
-		pm->load(ProgDir+ "/status/private/1.png");
-		menuPrivatStatus->insertItem ( LNG_ALL_CAN_SEE , NULL, pm, true, 1, 1);
-		pm->load(ProgDir+ "/status/private/2.png");
-		menuPrivatStatus->insertItem ( LNG_NOBODY_CAN_SEE , NULL, pm, true, 2, 2);	
-		pm->load(ProgDir+ "/status/private/3.png");
-		menuPrivatStatus->insertItem ( LNG_VISLIST_CAN_SEE , NULL, pm, true, 3, 3);		
-		pm->load(ProgDir+ "/status/private/4.png");
-		menuPrivatStatus->insertItem ( LNG_INVISLIST_CANNOT_SEE , NULL, pm, true, 4, 4);
-		pm->load(ProgDir+ "/status/private/5.png");
-		menuPrivatStatus->insertItem ( LNG_CONTACTLIST_CAN_SEE , NULL, pm, true, 5, 5);		
-		
-		connect( menuPrivatStatus, SIGNAL( activated( int ) ), this, SLOT( menu_privStatusChange( int ) ) );					
+		connect( menustatus, SIGNAL( activated( int ) ), this, SLOT( menu_statusChange( int ) ) );				
 	}
 
 	pm->load(ProgDir+ "/menu/user_add.png");
@@ -607,13 +599,25 @@ void ZGui::createMenuConected()
 			pm->load( ProgDir + QString ( "/status/icq/x/icq_xstatus" ) + QString::number(icq->getMyXStatus()-1) + ".png");
 		menu->insertItem ( LNG_XSTATUS , NULL, pm, true, MENU_MY_XSTATUS_ID, MENU_MY_XSTATUS_ID );
 		
+		pm->load(ProgDir+ "/status/private/1.png");
+		menuPrivatStatus->insertItem ( LNG_ALL_CAN_SEE , NULL, pm, true, 1, 1);
+		pm->load(ProgDir+ "/status/private/2.png");
+		menuPrivatStatus->insertItem ( LNG_NOBODY_CAN_SEE , NULL, pm, true, 2, 2);	
+		pm->load(ProgDir+ "/status/private/3.png");
+		menuPrivatStatus->insertItem ( LNG_VISLIST_CAN_SEE , NULL, pm, true, 3, 3);		
+		pm->load(ProgDir+ "/status/private/4.png");
+		menuPrivatStatus->insertItem ( LNG_INVISLIST_CANNOT_SEE , NULL, pm, true, 4, 4);
+		pm->load(ProgDir+ "/status/private/5.png");
+		menuPrivatStatus->insertItem ( LNG_CONTACTLIST_CAN_SEE , NULL, pm, true, 5, 5);		
+		connect( menuPrivatStatus, SIGNAL( activated( int ) ), this, SLOT( menu_privStatusChange( int ) ) );	
+		
 		pm->load( ProgDir + QString ( "/status/private/" ) + QString::number(icq->getMyPrivacyStatus()) + ".png");
 		menu->insertItem ( LNG_PRIVATE_STATUS , menuPrivatStatus, pm, true, MENU_MY_PSTATUS_ID, MENU_MY_PSTATUS_ID);	
 		
 		menu->insertSeparator(5, 5); 
 	}
 
-  	pm  = new QPixmap();
+	pm->load(ProgDir+ "/menu/CL.png");
 	menu->insertItem ( LNG_CONTACTLIST , menuCL, pm, true, 6, 6 );
 	menu->insertSeparator(7, 7); 
 	pm->load(ProgDir+ "/menu/settings.png");
@@ -646,7 +650,8 @@ void ZGui::createMenuConected()
 	menuContact->connectItem ( 1, this, SLOT ( menu_showXStatus() ) );
 	menuContact->connectItem ( 2, this, SLOT ( menu_userInfo() ) );
 	
-	softKey->setOptMenu ( ZSoftKey::RIGHT, menuContact );
+	//softKey->setOptMenu ( ZSoftKey::RIGHT, menuContact );
+	rSoftKey=1;
 	softKey->setText ( ZSoftKey::RIGHT, LNG_MENUCONTACT, ( ZSoftKey::TEXT_PRIORITY ) 0 );
 }
 
@@ -663,7 +668,7 @@ void ZGui::createMenuDisconected()
 	QPixmap* pm  = new QPixmap();
 	
 	pm->load(ProgDir+ "/menu/connect.png");
-	menu->insertItem ( LNG_CONNECT , NULL, pm, true, 0, 0 );	
+	menu->insertItem ( LNG_CONNECT , NULL, pm, true, 0, 0 );
 	menu->insertSeparator(1, 1);
 	#ifdef _VersionTest
 	pm  = new QPixmap();
@@ -671,7 +676,7 @@ void ZGui::createMenuDisconected()
 	menu->insertSeparator(3, 3); 
 	#endif
 	pm->load(ProgDir+ "/menu/settings.png");
-	menu->insertItem ( LNG_SETTING , NULL, pm, true, 4, 4 );	
+	menu->insertItem ( LNG_SETTING , NULL, pm, true, 4, 4 );
 	pm->load(ProgDir+ "/menu/about.png");
 	menu->insertItem ( LNG_ABOUT , NULL, pm, true, 5, 5 );
 	menu->insertSeparator(6, 6); 
@@ -705,7 +710,8 @@ void ZGui::createMenuDisconected()
 	menuProfile->connectItem ( 2, this, SLOT ( menu_profile_change() ) );
 	menuProfile->connectItem ( 3, this, SLOT ( menu_profile_setdef() ) );	
 	
-	softKey->setOptMenu ( ZSoftKey::RIGHT, menuProfile );
+	//softKey->setOptMenu ( ZSoftKey::RIGHT, menuProfile );
+	rSoftKey=0;
 	softKey->setText ( ZSoftKey::RIGHT, LNG_MENU_PROFILES, ( ZSoftKey::TEXT_PRIORITY )0 );
 }
 
@@ -775,6 +781,21 @@ void * slot_onClickMenu( void * status)
 		zgui->menu->changeItem( MENU_MY_STATUS_ID, LNG_STATUS, pm );
 	}
 	pthread_exit(NULL);
+}
+
+void ZGui::slot_rightSoftKey()
+{
+	switch ( rSoftKey )
+	{
+		case 0:
+			menuProfile->popup();
+			break;
+		case 1:
+			ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
+			if ( !listitem->isGroup() )	
+				menuContact->popup();
+			break;
+	}
 }
 
 void ZGui::menu_statusChange(int status)
@@ -1172,28 +1193,37 @@ void ZGui::menu_profile_del()
 	if ( lbContact->currentItem() < 0 )
 		return;	
 	
-	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
-
-	int n = listitem->getReservedData();
+	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );	
 	
-	ZConfig cfg(ProgDir+"/zMessanger.cfg");
-
-	if ( listitem->getProtocol() == PROT_ICQ )
+	ZMessageDlg* dlg = new ZMessageDlg( "", LNG_CONFIRM_DELETE_PROFILE.arg(listitem->getNick()), ZMessageDlg::TypeChoose, 0, myWidget);
+	dlg->setMsgIcon(ICON_DLG_QUESTION);
+	
+	if ( dlg->exec() )
 	{
-		cfg.writeEntry(QString("Login"), QString("UIN")+QString::number(n), "");
-		cfg.writeEntry(QString("Login"), QString("PAS")+QString::number(n), "");
+		int n = listitem->getReservedData();
+		
+		ZConfig cfg(ProgDir+"/zMessanger.cfg");
+
+		if ( listitem->getProtocol() == PROT_ICQ )
+		{
+			cfg.writeEntry(QString("Login"), QString("UIN")+QString::number(n), "");
+			cfg.writeEntry(QString("Login"), QString("PAS")+QString::number(n), "");
+		}
+		#ifdef _XMPP
+		if ( listitem->getProtocol() == PROT_JABBER )
+		{
+			cfg.writeEntry(QString("Login"), QString("JID")+QString::number(n), "");
+			cfg.writeEntry(QString("Login"), QString("JPAS")+QString::number(n), "");
+		}
+		#endif
+		
+		cfg.flush();
+		
+		lbContact->takeItem( listitem );
 	}
-	#ifdef _XMPP
-	if ( listitem->getProtocol() == PROT_JABBER )
-	{
-		cfg.writeEntry(QString("Login"), QString("JID")+QString::number(n), "");
-		cfg.writeEntry(QString("Login"), QString("JPAS")+QString::number(n), "");
-	}
-	#endif
 	
-	cfg.flush();
-	
-	lbContact->takeItem( listitem );
+	delete dlg;
+	dlg = NULL;
 }
 
 void ZGui::menu_profile_add()
@@ -1305,7 +1335,7 @@ void ZGui::menu_profile_change()
 void ZGui::menu_showXStatus()
 {
 	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
-	if ( listitem->getProtocol() != PROT_ICQ && !listitem->isGroup() )
+	if ( listitem->getProtocol() != PROT_ICQ || listitem->isGroup() )
 		return;
 	
 	qApp->removeEventFilter( this );
@@ -1319,7 +1349,7 @@ void ZGui::menu_showXStatus()
 void ZGui::menu_userInfo()
 {
 	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
-	if ( listitem->getProtocol() != PROT_ICQ && !listitem->isGroup() )
+	if ( listitem->getProtocol() != PROT_ICQ || listitem->isGroup() )
 		return;
 
 	qApp->removeEventFilter( this );
@@ -1656,7 +1686,9 @@ void ZGui::menu_settings()
 void ZGui::menu_copyUin()
 {
 	ZContactItem* listitem = lbContact->item ( lbContact->currentItem() );
-
+	if ( listitem->isGroup() )
+		return;
+	
 	QClipboard *cb = QApplication::clipboard();
 	cb->setText( strtoqstr( listitem->getUID() ) );
 }
@@ -1726,7 +1758,7 @@ void ZGui::slot_ReturnToIdle( int )
 	activSlot(false);
 }
 
-int ZGui::icqAddGroup( QString Name, int groupId )
+int ZGui::icqAddGroup( QString Name, int groupId, int id )
 {
 	QPixmap pm;
 	pm.load( ProgDir + "/CL/group.png" );
@@ -1735,6 +1767,7 @@ int ZGui::icqAddGroup( QString Name, int groupId )
 	listitem->setGroup( true );
 	listitem->setNick( Name.simplifyWhiteSpace() );
 	listitem->setGroupId( groupId );
+	listitem->setReservedData(id);
 
 	lbContact->groupAdd(listitem, groupId );
 	return -1;
@@ -1875,7 +1908,7 @@ void ZGui::printContact(bool Clear)
 	logMes_1("Contact in list: "+QString::number(icq->getCountCL()));
 
 	for (int i=0; i<icq->getCountGroup(); ++i)
-		icqAddGroup( strtoqstr( icq->getGroupName(i).c_str() ), icq->getGroupItemId(i) );
+		icqAddGroup( strtoqstr( icq->getGroupName(i).c_str() ), icq->getGroupItemId(i), i );
 	for (int j=0; j<icq->getCountCL(); ++j)
 		if ( !cfg_dontShowOffLine || (cfg_dontShowOffLine &&  icq->getStatus(j) != STATUS_OFFLINE) || icq->isMesIcon(j) )
 			icqAddUser(strtoqstr( icq->getNick(j).c_str() ), icq->getUIN(j), icq->getStatus(j), icq->getXStatus(j), icq->getClientId(j), j, icq->getGroupId(j),  icq->isWaitAuth(j), icq->isMesIcon(j) );

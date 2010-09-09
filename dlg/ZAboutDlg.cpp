@@ -116,7 +116,7 @@ ZAboutDialog::ZAboutDialog()
 	phoneInfo->insertItem( item );
 
 	item = new ZSettingItem(phoneInfo, "%M");
-	item->appendSubItem(0, "Trafic", true);
+	item->appendSubItem(0, "Traffic", true);
     item->setSeparator("-",NULL);
 	item->setSelectable(false);	
 	phoneInfo->insertItem( item, -1, false );

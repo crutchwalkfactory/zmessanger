@@ -22,7 +22,7 @@ ARMLIB     := $(TOOLPREFIX)/arm-linux-gnueabi/lib
 ifeq ($(PLATFORM),EZX-Z6)
 QTDIR   :=	$(TOOLPREFIX)/lib/qt-2.3.8
 EZXDIR  :=	$(TOOLPREFIX)/lib/ezx-z6
-DIRECTIV =	-DEZX_Z6 -DOLD_SDK -D_MainMenuFix
+DIRECTIV =	-DEZX_Z6 -DOLD_SDK
 TARGET	=      $(APPNAME)_Z6
 endif
 

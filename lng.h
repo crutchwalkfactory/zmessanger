@@ -176,6 +176,7 @@
 #define LNG_GROUPNAME QString::fromUtf8("Название группы:")
 #define LNG_REMOVEGROUP_QUESTION QString::fromUtf8("Удалить группу?")
 #define LNG_COPYRIGHT QString::fromUtf8("©")
+#define LNG_CONFIRM_DELETE_PROFILE QString::fromUtf8("Вы действительно хотите удалить профиль %1?")
 
 //zChatForm
 #define LNG_TEXT QString::fromUtf8("Текст:")

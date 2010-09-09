@@ -255,7 +255,8 @@ void ZImgeSelect::slotLeftSoftKey()
 		ZImgeSelect * dlg = new ZImgeSelect(smile, !addHotStatus);
 		dlg->exec();
 		delete dlg;
-		dlg = NULL; 
+		dlg = NULL;
+		return;
 	}
 	reject();
 }
