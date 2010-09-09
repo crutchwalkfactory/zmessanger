@@ -41,7 +41,6 @@ xTextView::xTextView(QWidget* parent, zEmotIcons * smile)
 	setFocusPolicy( StrongFocus );
 	
 	setHScrollBarMode( QScrollView::AlwaysOff );
-	//setVScrollBarMode( QScrollView::Auto );
 	setVScrollBarMode( QScrollView::AlwaysOff );
 } 
 
@@ -123,7 +122,6 @@ void xTextView::insertText(QString str, int insertTo)
 	int line=insertTo;
 	int spasePos;
 	int spaseLen;
-	//int smilePos;		
 	int len;
 	int maxWidth = width() - fm.maxWidth() - 18;
 	while ( pos < str.length() )
@@ -247,8 +245,7 @@ void xTextView::pageDown()
 {
 	if ( (height()-20)/font.pixelSize() < colLines-posLines )
 	{
-		posLines = std::min(posLines+lineOnPage, colLines) ;	
-		//scrollBy(0, +(font.pixelSize()*lineOnPage));
+		posLines = std::min(posLines+lineOnPage, colLines) ;
 		viewport()->update();
 		isEnd = false;
 	} else
@@ -492,7 +489,7 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 					for ( i=0; i<MAX_SMILE_ON_SCREEN; i++ )
 						if ( !aniSmileUse[i] && aniSmileNum[i] == it.data().num && aniSmileCash[i] )
 						{
-							moveChild(aniSmileCash[i], left+1, contentsY() + posY-maxHeigth);
+							moveChild(aniSmileCash[i], left+1, posY-maxHeigth);
 
 							aniSmileUse[i]=true;
 							noFind=false;
@@ -516,7 +513,7 @@ void xTextView::viewportPaintEvent(QPaintEvent * pe)
 						aniSmileCash[i]->setBackgroundColor( viewport()->backgroundColor() );
 						aniSmileCash[i]->setFixedHeight ( smileIcon->getSmileHeigth(aniSmileNum[i]) );
 						aniSmileCash[i]->setFixedWidth ( smileIcon->getSmileWidth(aniSmileNum[i])+1 );
-						addChild( aniSmileCash[i], left+1, contentsY() + posY-maxHeigth );
+						addChild( aniSmileCash[i], left+1, posY-maxHeigth );
 						aniSmileCash[i]->show();
 						aniSmileCash[i]->startshow();
 					}

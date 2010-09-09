@@ -305,14 +305,6 @@ void ZGui::CreateWindow ( QWidget* )
 	menuPrivatStatus->setItemSpacing(10);
 	menuPrivatStatus->setSpacing(0);
 
-	#ifdef _MainMenuFix
-	connect( menu, SIGNAL( canceled() ), this, SLOT( slotFixMenuBag() ) );
-	connect( menu, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );		
-	connect( menuCL, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );	
-	connect( menuPrivatStatus, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );	
-	connect( menustatus, SIGNAL( activated( int ) ), this, SLOT( slotFixMenuBag( int ) ) );		
-	#endif
-
 	softKey->setOptMenu ( ZSoftKey::LEFT, menu );
 	softKey->setText ( ZSoftKey::LEFT, LNG_MENU );
 	softKey->setTextForOptMenuHide( LNG_MENU );
@@ -1357,12 +1349,6 @@ void ZGui::menu_userInfo()
 	dlgUserInfo->exec();
 	delete dlgUserInfo;	
 	qApp->installEventFilter( this );
-}
-
-void ZGui::slotFixMenuBag()
-{
-	softKey->eventFilter( myWidget, &QKeyEvent(QEvent::KeyPress,Z6KEY_LSK,0,1));
-	softKey->eventFilter( myWidget, &QKeyEvent(QEvent::KeyRelease,Z6KEY_LSK,0,0));
 }
 
 void ZGui::menu_connect()

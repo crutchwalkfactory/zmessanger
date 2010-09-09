@@ -166,8 +166,6 @@ class ZGui :public ZKbMainWidget
     void slot_ReturnToIdle( int reason );
     void updateStatus(); 
     void cancellICQ();
-    void slotFixMenuBag();
-    void slotFixMenuBag( int ) { slotFixMenuBag(); };
 
     void openChatTest();
     void openChat(ZContactItem* listitem);
